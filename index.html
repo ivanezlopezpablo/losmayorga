@@ -885,6 +885,58 @@
         }
         .distribuidora-alert-bar .btn-ver-vencimientos:hover { background: rgba(255,255,255,0.32); }
 
+        /* BARRA "BUSCAR POR MARCA" (visible para cualquier preventista logueado) */
+        .marcas-bar {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: linear-gradient(90deg, #0c4a6e, #0284c7);
+            color: white;
+            padding: 10px 16px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            box-shadow: var(--shadow-sm);
+            animation: slideInRight 0.6s ease;
+        }
+        .marcas-bar .btn-ver-marcas {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.35);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .marcas-bar .btn-ver-marcas:hover { background: rgba(255,255,255,0.32); }
+
+        .marcas-modal-card { max-width: 560px; }
+        .marcas-tab-bar {
+            display: flex; gap: 6px; overflow-x: auto; padding: 4px 0 12px;
+            border-bottom: 1px solid var(--border); margin-bottom: 12px;
+        }
+        .marcas-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .marcas-todos {
+            grid-column: 1 / -1;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 6px; padding: 16px; border-radius: 14px; cursor: pointer;
+            background: linear-gradient(135deg, #fce7f3, #fbcfe8);
+            color: #9d174d; font-weight: 900; font-size: 0.82rem;
+            transition: all 0.2s ease;
+        }
+        .marcas-todos:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+        .marcas-todos i { font-size: 1.3rem; }
+        .marcas-card {
+            background: #f8fafb; border: 1.5px solid var(--border); border-radius: 14px;
+            padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+            cursor: pointer; transition: all 0.2s ease;
+        }
+        .marcas-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); border-color: var(--primary-light); }
+        .marcas-card img { width: 100%; height: 64px; object-fit: contain; border-radius: 8px; background: white; }
+        .marcas-card-name { font-size: 0.7rem; font-weight: 800; text-align: center; color: var(--text-dark); }
+
         .vencimientos-modal-card { max-width: 640px; }
         .venc-row {
             display: flex; align-items: center; justify-content: space-between; gap: 10px;
@@ -977,6 +1029,12 @@
 
     <div id="preventa-banner" class="preventa-status-banner">
         <i class="fas fa-user-tie"></i> MODO PREVENTA ACTIVO - Catálogo Exclusivo
+    </div>
+
+    <!-- BARRA "BUSCAR POR MARCA" - visible para cualquier preventista logueado -->
+    <div id="marcas-bar" class="marcas-bar">
+        <span><i class="fas fa-tags"></i> Buscar visualmente por marca</span>
+        <button class="btn-ver-marcas" onclick="openMarcasPanel()">Ver marcas</button>
     </div>
 
     <!-- BARRA INTERNA - solo visible para "Directo a la Distribuidora" -->
@@ -1106,6 +1164,19 @@
         </div>
     </div>
 
+    <!-- MODAL BUSCAR POR MARCA (solo preventistas) -->
+    <div class="modal-overlay" id="marcas-modal">
+        <div class="modal-card marcas-modal-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <h2 style="font-size:1.1rem; font-weight:900; color:var(--primary);"><i class="fas fa-tags"></i> Buscar por Marca</h2>
+                <button class="btn-close" onclick="closeMarcasPanel()">✕</button>
+            </div>
+            <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:10px;">Elegí una sección y tocá el logo de la marca que buscás.</p>
+            <div class="marcas-tab-bar" id="marcas-tab-bar"></div>
+            <div class="marcas-grid" id="marcas-grid"></div>
+        </div>
+    </div>
+
     <!-- MODAL LOGIN PREVENTISTA -->
     <div class="modal-overlay" id="login-modal">
         <div class="modal-card modal-login-card">
@@ -1211,9 +1282,11 @@
     //  - CSV_URL_PREVENTA: catálogo adicional exclusivo de preventistas
     //    (en este sheet el precio final de cada producto =
     //     Precio Individual x Unidades por Bulto)
+    //  - CSV_URL_MARCAS: logos de marca para la búsqueda visual (solo preventistas)
     // ==========================================================
     const CSV_URL_PUBLICO = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTtIs8b6w2l3XSTbkTw0bnqh2SXfTebJjITShgpPJ-jxImqOpnY1rjVHHYNRFqqQBypLxeCKFPrK-C/pub?gid=957503224&single=true&output=csv';
     const CSV_URL_PREVENTA = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTtIs8b6w2l3XSTbkTw0bnqh2SXfTebJjITShgpPJ-jxImqOpnY1rjVHHYNRFqqQBypLxeCKFPrK-C/pub?gid=15522074&single=true&output=csv';
+    const CSV_URL_MARCAS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTtIs8b6w2l3XSTbkTw0bnqh2SXfTebJjITShgpPJ-jxImqOpnY1rjVHHYNRFqqQBypLxeCKFPrK-C/pub?gid=65938486&single=true&output=csv';
 
     const PHONE_PUBLICO = "5492994051600";
     const PHONE_PREVENTA = "5492994836067";
@@ -1228,6 +1301,7 @@
     // Catálogos crudos, cargados una sola vez desde cada hoja
     let PRODUCTS_PUBLICO = [];
     let PRODUCTS_PREVENTA_EXTRA = [];
+    let BRAND_LOGOS = []; // logos de marca (búsqueda visual, solo preventistas)
 
     // Catálogo activo según el rol actual (público, o público + preventa)
     let ALL_PRODUCTS = [];
@@ -1235,6 +1309,8 @@
     let cart = {};
     let selectedMainCat = 'TODOS';
     let selectedTagFilter = 'TODOS';
+    let selectedCategoryBucket = null; // usado por "Buscar por Marca" > "Todos los Productos"
+    let selectedMarcasTab = 'Almacen';
     let currentRole = "PUBLICO";
     let activePreventista = "";
     let activePreventaKey = "";
@@ -1409,16 +1485,19 @@
     // Carga ambas hojas en paralelo y arma los catálogos crudos
     async function loadProductsFromSheets() {
         try {
-            const [respPublico, respPreventa] = await Promise.all([
+            const [respPublico, respPreventa, respMarcas] = await Promise.all([
                 fetch(CSV_URL_PUBLICO),
-                fetch(CSV_URL_PREVENTA)
+                fetch(CSV_URL_PREVENTA),
+                fetch(CSV_URL_MARCAS)
             ]);
 
             const csvPublico = respPublico.ok ? await respPublico.text() : '';
             const csvPreventa = respPreventa.ok ? await respPreventa.text() : '';
+            const csvMarcas = respMarcas.ok ? await respMarcas.text() : '';
 
             PRODUCTS_PUBLICO = csvPublico ? parseCSV(csvPublico, 'publico') : [];
             PRODUCTS_PREVENTA_EXTRA = csvPreventa ? parseCSV(csvPreventa, 'preventa') : [];
+            BRAND_LOGOS = csvMarcas ? parseBrandLogosCSV(csvMarcas) : [];
             markNewProducts(PRODUCTS_PUBLICO);
             markNewProducts(PRODUCTS_PREVENTA_EXTRA);
         } catch (error) {
@@ -1428,8 +1507,59 @@
             document.getElementById('loader').style.display = 'none';
             document.getElementById('product-grid').style.display = 'grid';
             filterProducts();
+            refreshMarcasBarVisibility();
             setTimeout(maybeShowPromoPopup, 900);
         }
+    }
+
+    // Convierte la hoja de logos de marca (Marca, Sección, Imagen) en objetos {name, bucket, image}
+    function parseBrandLogosCSV(csvText) {
+        const lines = csvText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        if (lines.length < 2) return [];
+
+        const result = [];
+        for (let i = 1; i < lines.length; i++) {
+            const cols = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+            if (cols.length < 3) continue;
+
+            const name = (cols[0] || '').trim().replace(/^"|"$/g, '');
+            const bucketRaw = (cols[1] || '').trim().replace(/^"|"$/g, '');
+            const imageRaw = (cols[2] || '').trim().replace(/^"|"$/g, '');
+            if (!name) continue;
+
+            result.push({ name, bucket: normalizeMarcaBucket(bucketRaw), image: formatDriveUrl(imageRaw) });
+        }
+        return result;
+    }
+
+    function normalizeMarcaBucket(raw) {
+        const v = (raw || '').toLowerCase();
+        if (v.startsWith('refrig')) return 'Refrigerados';
+        if (v.startsWith('limp')) return 'Limpieza';
+        return 'Almacen';
+    }
+
+    // NOTA IMPORTANTE: las tres secciones (Almacén / Refrigerados / Limpieza) de la hoja de
+    // marcas son una clasificación más amplia que la "Subcategoría" de cada producto (ej: "Quesos",
+    // "Leches", "Fideos"). Para que "Todos los Productos" funcione bien en cada sección, se arma
+    // este mapa manual de Subcategoría -> Sección. Si en el futuro agregan una Subcategoría nueva
+    // que no esté en este mapa, esos productos no van a aparecer al tocar "Todos los Productos"
+    // (aunque sí van a seguir apareciendo en el catálogo general y al buscar por marca puntual).
+    const CATEGORY_BUCKET_MAP = {
+        'leches': 'Refrigerados', 'mantecas y cremas': 'Refrigerados', 'yogures': 'Refrigerados',
+        'quesos': 'Refrigerados', 'embutidos y fiambres': 'Refrigerados', 'carnes': 'Refrigerados',
+        'congelados': 'Refrigerados', 'refrigerados': 'Refrigerados',
+        'masas y pastas': 'Almacen', 'arroz': 'Almacen', 'fideos': 'Almacen',
+        'mercadería mixta': 'Almacen', 'mercaderia mixta': 'Almacen', 'harinas': 'Almacen',
+        'aceites / vinagres / grasa': 'Almacen', 'azucar/edulcorantes': 'Almacen',
+        'azúcar/edulcorantes': 'Almacen', 'caldos': 'Almacen', 'condimentos': 'Almacen',
+        'almacen': 'Almacen', 'almacén': 'Almacen',
+        'limpieza': 'Limpieza'
+    };
+
+    function getCategoryBucket(mainCategory) {
+        if (!mainCategory) return null;
+        return CATEGORY_BUCKET_MAP[mainCategory.trim().toLowerCase()] || null;
     }
 
     // Arma el catálogo ALL_PRODUCTS según el rol actual y refresca filtros/marcas/categorías
@@ -1599,6 +1729,7 @@
     function onBrandChange() { filterProducts(); }
     function selectMainCategory(cat, el) {
         selectedMainCat = cat;
+        selectedCategoryBucket = null;
         document.querySelectorAll('.cat-tab').forEach(c => c.classList.remove('active'));
         el.classList.add('active');
         filterProducts();
@@ -1661,7 +1792,9 @@
         const selectedBrand = document.getElementById('brand-select').value;
 
         let results = ALL_PRODUCTS.filter(p => {
-            let matchesCat = selectedMainCat === 'TODOS' || p.mainCategory === selectedMainCat;
+            let matchesCat = selectedCategoryBucket
+                ? getCategoryBucket(p.mainCategory) === selectedCategoryBucket
+                : (selectedMainCat === 'TODOS' || p.mainCategory === selectedMainCat);
             let matchesBrand = selectedBrand === 'TODOS' || p.brand === selectedBrand;
             let matchesTag = true;
 
@@ -1956,6 +2089,7 @@
         btn.onclick = logoutPreventa;
 
         updateSideMenuAuthUI();
+        refreshMarcasBarVisibility();
     }
 
     function updateSideMenuAuthUI() {
@@ -2031,6 +2165,8 @@
         try { localStorage.removeItem(SESSION_STORAGE_KEY); } catch (e) {}
 
         updateSideMenuAuthUI();
+        refreshMarcasBarVisibility();
+        selectedCategoryBucket = null;
 
         // Vuelve a mostrar solo el catálogo público
         rebuildActiveCatalog();
@@ -2038,6 +2174,7 @@
         filterProducts();
         updateCartFloatBar();
         closeVencimientosPanel();
+        closeMarcasPanel();
         refreshDistribuidoraAlert();
     }
 
@@ -2149,6 +2286,120 @@
         document.getElementById('vencimientos-modal').classList.remove('active');
         clearInterval(vencimientosInterval);
         vencimientosInterval = null;
+    }
+
+    // ==========================================================
+    //  BUSCAR POR MARCA (VISUAL) - solo preventistas logueados
+    // ==========================================================
+    const MARCAS_TABS = [
+        { bucket: 'Almacen', label: 'Almacén' },
+        { bucket: 'Refrigerados', label: 'Refrigerados' },
+        { bucket: 'Limpieza', label: 'Limpieza' }
+    ];
+
+    function refreshMarcasBarVisibility() {
+        const bar = document.getElementById('marcas-bar');
+        if (!bar) return;
+        bar.style.display = (currentRole === "PREVENTA") ? 'flex' : 'none';
+    }
+
+    function openMarcasPanel() {
+        closeSideMenu();
+        renderMarcasTabs();
+        renderMarcasGrid();
+        document.getElementById('marcas-modal').classList.add('active');
+    }
+
+    function closeMarcasPanel() {
+        document.getElementById('marcas-modal').classList.remove('active');
+    }
+
+    function renderMarcasTabs() {
+        const container = document.getElementById('marcas-tab-bar');
+        container.innerHTML = MARCAS_TABS.map(t => `
+            <div class="cat-tab ${t.bucket === selectedMarcasTab ? 'active' : ''}" onclick="selectMarcasTab('${t.bucket}')"><span>${t.label}</span></div>
+        `).join('');
+    }
+
+    function selectMarcasTab(bucket) {
+        selectedMarcasTab = bucket;
+        renderMarcasTabs();
+        renderMarcasGrid();
+    }
+
+    function renderMarcasGrid() {
+        const container = document.getElementById('marcas-grid');
+        const brands = BRAND_LOGOS.filter(b => b.bucket === selectedMarcasTab);
+
+        let html = `
+            <div class="marcas-todos" onclick="filterByBucket('${selectedMarcasTab}')">
+                <i class="fas fa-th-large"></i>
+                <span>Todos los Productos</span>
+            </div>
+        `;
+
+        if (brands.length === 0) {
+            html += `<p style="grid-column:1/-1; text-align:center; color:#999; padding:16px 0; font-size:0.82rem;">Sin marcas cargadas en esta sección todavía.</p>`;
+        } else {
+            html += brands.map(b => `
+                <div class="marcas-card" onclick="selectBrandFromVisual('${b.name.replace(/'/g, "\\'")}')">
+                    <img src="${b.image}" alt="${b.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/150x90?text=${encodeURIComponent(b.name)}'">
+                    <div class="marcas-card-name">${b.name}</div>
+                </div>
+            `).join('');
+        }
+
+        container.innerHTML = html;
+    }
+
+    function scrollToCatalog() {
+        const el = document.getElementById('main-categories-bar');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function resetToTodosTag() {
+        selectedTagFilter = 'TODOS';
+        document.querySelectorAll('.tag-chip').forEach(c => c.classList.remove('active'));
+        const todosChip = document.querySelector('.tag-chip.todos');
+        if (todosChip) todosChip.classList.add('active');
+    }
+
+    // "Todos los Productos" dentro de una sección (Almacén/Refrigerados/Limpieza)
+    function filterByBucket(bucket) {
+        closeMarcasPanel();
+        selectedMainCat = 'TODOS';
+        selectedCategoryBucket = bucket;
+        resetToTodosTag();
+        document.getElementById('brand-select').value = 'TODOS';
+        document.getElementById('search-input').value = '';
+        toggleSearchClearBtn();
+        filterProducts();
+        scrollToCatalog();
+    }
+
+    // Click sobre el logo de una marca puntual
+    function selectBrandFromVisual(brandName) {
+        closeMarcasPanel();
+        selectedMainCat = 'TODOS';
+        selectedCategoryBucket = null;
+        resetToTodosTag();
+
+        const select = document.getElementById('brand-select');
+        const options = Array.from(select.options).map(o => o.value);
+        const exactMatch = options.find(v => v.toLowerCase() === brandName.toLowerCase());
+
+        if (exactMatch) {
+            select.value = exactMatch;
+            document.getElementById('search-input').value = '';
+        } else {
+            // La marca del logo no coincide exactamente con ninguna marca cargada en productos:
+            // se usa como texto de búsqueda para no dejar al usuario sin resultados.
+            select.value = 'TODOS';
+            document.getElementById('search-input').value = brandName;
+        }
+        toggleSearchClearBtn();
+        filterProducts();
+        scrollToCatalog();
     }
 
     let cartListExpanded = false;
