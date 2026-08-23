@@ -118,24 +118,6 @@
             }
         }
 
-        @keyframes lockShake {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-5deg); }
-            75% { transform: rotate(5deg); }
-        }
-
-        @keyframes chipPulse {
-            0% {
-                box-shadow: 0 8px 28px rgba(0,31,84,0.35);
-            }
-            50% {
-                box-shadow: 0 12px 40px rgba(0,31,84,0.55);
-            }
-            100% {
-                box-shadow: 0 8px 28px rgba(0,31,84,0.35);
-            }
-        }
-
         @keyframes fireFlicker {
             0%, 100% {
                 transform: scale(1) translateY(0px);
@@ -152,6 +134,28 @@
             75% {
                 transform: scale(1.25) translateY(-3px);
                 text-shadow: 0 0 16px rgba(245, 158, 11, 0.9);
+            }
+        }
+
+        @keyframes starTwinkle {
+            0%, 100% {
+                transform: scale(1) rotateZ(0deg);
+                text-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+            }
+            50% {
+                transform: scale(1.3) rotateZ(15deg);
+                text-shadow: 0 0 20px rgba(251, 191, 36, 0.9);
+            }
+        }
+
+        @keyframes popupSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.85) translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
             }
         }
 
@@ -182,44 +186,267 @@
             }
         }
 
+        @keyframes slideProductIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* POPUP OVERLAY */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            backdrop-filter: blur(5px);
+            animation: fadeInDown 0.3s ease;
+        }
+
+        .popup-overlay.active {
+            display: flex;
+        }
+
+        .popup-content {
+            background: white;
+            border-radius: 24px;
+            padding: 28px;
+            max-width: 520px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: popupSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+
+        .popup-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .popup-close:hover {
+            color: var(--danger);
+            transform: rotate(90deg) scale(1.2);
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 50%;
+        }
+
+        .popup-header {
+            text-align: center;
+            margin-bottom: 28px;
+            padding-top: 16px;
+        }
+
+        .popup-icon {
+            font-size: 4.5rem;
+            margin-bottom: 16px;
+            display: block;
+            animation: fireFlicker 0.25s ease infinite;
+        }
+
+        .popup-icon.star {
+            animation: starTwinkle 0.8s ease infinite;
+        }
+
+        .popup-title {
+            font-size: 1.9rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .popup-subtitle {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .popup-products {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .popup-product-card {
+            background: linear-gradient(135deg, #f8fafb, #f0f4f8);
+            padding: 14px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border: 2px solid var(--border);
+            transition: all 0.3s ease;
+            animation: slideProductIn 0.5s ease;
+            cursor: pointer;
+        }
+
+        .popup-product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 31, 84, 0.15);
+            border-color: var(--primary);
+            background: linear-gradient(135deg, #ffffff, #f8fafb);
+        }
+
+        .popup-product-image {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .popup-product-info {
+            flex: 1;
+        }
+
+        .popup-product-name {
+            font-weight: 800;
+            font-size: 0.88rem;
+            color: var(--primary);
+            line-height: 1.3;
+            margin-bottom: 4px;
+        }
+
+        .popup-product-details {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .popup-product-price {
+            font-size: 1rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin-top: 4px;
+        }
+
+        .popup-price.oferta {
+            color: #ef4444;
+        }
+
+        .popup-actions {
+            display: flex;
+            gap: 12px;
+            flex-direction: column;
+        }
+
+        .popup-btn {
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.96rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .popup-btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 31, 84, 0.2);
+        }
+
+        .popup-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 31, 84, 0.35);
+        }
+
+        .popup-btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .popup-btn-secondary:hover {
+            background: var(--bg-light);
+            transform: translateY(-2px);
+        }
+
         @media (max-width: 768px) {
-            /* DESACTIVAR ANIMACIONES PESADAS EN MÓVIL */
-            .tag-chip.promo {
-                animation: none !important;
+            .popup-content {
+                padding: 20px;
+                max-width: 95%;
             }
 
-            .tag-chip.promo i,
-            .tag-chip.promo::before {
-                animation: none !important;
+            .popup-icon {
+                font-size: 3.5rem;
+            }
+
+            .popup-title {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* RESTO DEL CSS ORIGINAL */
+        @media (max-width: 768px) {
+            .product-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             }
 
             .cart-float-main {
-                animation: none !important;
+                width: 70px;
+                height: 70px;
             }
 
-            .nav-item.active .nav-icon-svg,
-            .cat-tab.active i {
-                animation: none !important;
+            .desktop-nav {
+                display: none;
             }
 
-            /* Reducir transiciones en móvil */
-            * {
-                transition: all 0.15s ease !important;
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .header {
+                margin-bottom: 20px;
+                padding: 20px 15px;
             }
         }
 
-        @keyframes cartItemAdd {
-            0% {
-                opacity: 1;
-                transform: scale(1.2) translate(-20px, -20px);
-            }
-            100% {
-                opacity: 0;
-                transform: scale(0.8) translate(0, 0);
-            }
+        .lockShake {
+            animation: lockShake 0.3s ease;
         }
 
-        /* HEADER PRINCIPAL */
+        @keyframes lockShake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
+        }
+
+        /* CABECERA PRINCIPAL */
         .app-header {
             background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
             color: white;
@@ -455,7 +682,7 @@
             box-shadow: 0 2px 8px rgba(255,255,255,0.3);
         }
 
-        /* FILTROS - REDISEÑO CON COLORES VIBRANTES */
+        /* FILTROS */
         .tag-filters-bar {
             display: flex;
             gap: 6px;
@@ -507,7 +734,6 @@
             transform: scale(1.2);
         }
 
-        /* COLORES POR TIPO DE FILTRO */
         .tag-chip.todos {
             background: linear-gradient(135deg, #dbeafe, #bfdbfe);
             color: #1e40af;
@@ -557,18 +783,6 @@
             border-color: #f87171;
         }
 
-        .sin-gluten-logo {
-            height: 18px;
-            width: 18px;
-            object-fit: contain;
-            filter: brightness(0.8);
-            transition: all 0.3s ease;
-        }
-
-        .tag-chip.sintacc:hover .sin-gluten-logo {
-            filter: brightness(1.1) drop-shadow(0 0 4px rgba(255, 255, 255, 0.6));
-        }
-
         .tag-chip.sintacc:hover {
             background: linear-gradient(135deg, #f87171, #ef4444);
             color: white;
@@ -599,7 +813,6 @@
             box-shadow: 0 8px 24px rgba(16, 185, 129, 0.45);
         }
 
-        /* ESTADO ACTIVO */
         .tag-chip.active { 
             background: linear-gradient(135deg, var(--primary), var(--primary-light));
             color: white;
@@ -607,6 +820,18 @@
             box-shadow: 0 8px 28px rgba(0,31,84,0.35);
             font-weight: 900;
             animation: chipPulse 0.6s ease;
+        }
+
+        @keyframes chipPulse {
+            0% {
+                box-shadow: 0 8px 28px rgba(0,31,84,0.35);
+            }
+            50% {
+                box-shadow: 0 12px 40px rgba(0,31,84,0.55);
+            }
+            100% {
+                box-shadow: 0 8px 28px rgba(0,31,84,0.35);
+            }
         }
 
         .tag-chip.active i {
@@ -839,6 +1064,18 @@
             margin-bottom: 8px;
         }
 
+        .product-new-badge {
+            font-size: 0.65rem;
+            color: #065f46;
+            font-weight: 800;
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            padding: 3px 7px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-bottom: 8px;
+            margin-left: 4px;
+        }
+
         .price-box { 
             margin-bottom: 10px; 
         }
@@ -920,176 +1157,6 @@
             transform: scale(1.05);
         }
 
-        /* CARRITO FLOTANTE - OCULTO */
-        .cart-float-bar {
-            display: none !important;
-        }
-
-        /* NAVEGACIÓN INFERIOR - OCULTA */
-        .bottom-nav { 
-            display: none !important;
-        }
-
-        .mode-preventa .bottom-nav { 
-            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-            border-color: #334155; 
-        }
-
-        .nav-item { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            color: #64748b; 
-            font-size: 0.65rem; 
-            font-weight: 600; 
-            cursor: pointer; 
-            width: 25%;
-            height: 100%;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative;
-        }
-
-        .nav-item:hover {
-            transform: translateY(-3px);
-            color: var(--primary);
-        }
-
-        .mode-preventa .nav-item { 
-            color: #64748b; 
-        }
-
-        .mode-preventa .nav-item:hover {
-            color: #FF8C00;
-        }
-
-        .nav-item.active { 
-            color: var(--primary); 
-            font-weight: 800;
-        }
-
-        .nav-item.active::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 24px;
-            height: 3px;
-            background: var(--primary);
-            border-radius: 0 0 4px 4px;
-            animation: slideInRight 0.3s ease;
-        }
-
-        .mode-preventa .nav-item.active { 
-            color: #FF8C00;
-        }
-
-        .mode-preventa .nav-item.active::before {
-            background: #FF8C00;
-        }
-
-        .nav-icon-svg { 
-            width: 22px; 
-            height: 22px; 
-            stroke: currentColor; 
-            fill: none; 
-            stroke-width: 1.8; 
-            stroke-linecap: round; 
-            stroke-linejoin: round; 
-            margin-bottom: 3px;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .nav-item.active .nav-icon-svg {
-            animation: float 2s ease-in-out infinite;
-            stroke-width: 2.2;
-        }
-
-        /* NAVIGATION DESKTOP */
-        .desktop-nav {
-            display: none;
-            position: fixed;
-            right: 20px;
-            top: 100px;
-            z-index: 1400;
-            gap: 8px;
-            flex-direction: column;
-        }
-
-        @media (min-width: 769px) {
-            .desktop-nav {
-                display: flex;
-            }
-            
-            body {
-                padding-bottom: 20px;
-            }
-        }
-
-        .desktop-nav-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 16px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            color: white;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0,31,84,0.2);
-            position: relative;
-        }
-
-        .desktop-nav-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(0,31,84,0.35);
-        }
-
-        .desktop-nav-btn:active {
-            animation: bounce 0.3s ease;
-        }
-
-        .mode-preventa .desktop-nav-btn {
-            background: linear-gradient(135deg, #FF6F00, #FF8C00);
-            box-shadow: 0 4px 12px rgba(255, 140, 0, 0.2);
-        }
-
-        .mode-preventa .desktop-nav-btn:hover {
-            box-shadow: 0 6px 20px rgba(255, 140, 0, 0.35);
-        }
-
-        .desktop-nav-btn-cart {
-            position: fixed;
-            right: 20px;
-            bottom: 20px;
-            width: 70px;
-            height: 70px;
-            font-size: 2rem;
-            border-radius: 20px;
-            animation: cartPulse 1.2s ease-in-out infinite;
-        }
-
-        .desktop-nav-btn-cart::after {
-            content: attr(data-count);
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #ef4444;
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            font-weight: 900;
-        }
-
         /* CARRITO FLOTANTE PRINCIPAL */
         .cart-float-main {
             position: fixed;
@@ -1160,7 +1227,18 @@
             animation: cartItemAdd 0.8s ease-in forwards;
         }
 
-        /* MODALES */
+        @keyframes cartItemAdd {
+            0% {
+                opacity: 1;
+                transform: scale(1.2) translate(-20px, -20px);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.8) translate(0, 0);
+            }
+        }
+
+        /* MODAL LOGIN */
         .modal-overlay { 
             position: fixed; 
             top: 0; 
@@ -1194,7 +1272,6 @@
             animation: slideInRight 0.4s ease;
         }
 
-        /* MODAL LOGIN ESPECIAL */
         .modal-login-card {
             max-width: 380px;
             text-align: center;
@@ -1418,16 +1495,55 @@
             color: var(--text-muted);
             font-weight: 600;
         }
-
-        /* RESPONSIVE */
-        @media (max-width: 360px) {
-            .product-grid {
-                grid-template-columns: 1fr;
-            }
-        }
     </style>
 </head>
 <body>
+
+    <!-- POPUP OFERTAS -->
+    <div class="popup-overlay" id="popup-ofertas">
+        <div class="popup-content">
+            <button class="popup-close" onclick="closePromoPopup('ofertas')">✕</button>
+            <div class="popup-header">
+                <span class="popup-icon">🔥</span>
+                <h2 class="popup-title">¡TENEMOS OFERTAS!</h2>
+                <p class="popup-subtitle">Descuentos especiales en productos seleccionados</p>
+            </div>
+            <div class="popup-products" id="promo-ofertas-products">
+                <!-- Se llenarán con JavaScript -->
+            </div>
+            <div class="popup-actions">
+                <button class="popup-btn popup-btn-primary" onclick="goToOfertas()">
+                    <i class="fas fa-fire"></i> Ver Todas las Ofertas
+                </button>
+                <button class="popup-btn popup-btn-secondary" onclick="closePromoPopup('ofertas')">
+                    Después
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP PRODUCTOS NUEVOS -->
+    <div class="popup-overlay" id="popup-nuevos">
+        <div class="popup-content">
+            <button class="popup-close" onclick="closePromoPopup('nuevos')">✕</button>
+            <div class="popup-header">
+                <span class="popup-icon star">⭐</span>
+                <h2 class="popup-title">¡PRODUCTOS NUEVOS!</h2>
+                <p class="popup-subtitle">Acaba de llegar stock nuevo a nuestro catálogo</p>
+            </div>
+            <div class="popup-products" id="promo-nuevos-products">
+                <!-- Se llenarán con JavaScript -->
+            </div>
+            <div class="popup-actions">
+                <button class="popup-btn popup-btn-primary" onclick="goToNuevos()">
+                    <i class="fas fa-star"></i> Ver Productos Nuevos
+                </button>
+                <button class="popup-btn popup-btn-secondary" onclick="closePromoPopup('nuevos')">
+                    Después
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- CABECERA PRINCIPAL -->
     <header class="app-header">
@@ -1459,28 +1575,6 @@
             </select>
         </div>
     </header>
-
-    <!-- NAVEGACIÓN DESKTOP (Solo en pantallas grandes) -->
-    <div class="desktop-nav" id="desktop-nav">
-        <button class="desktop-nav-btn" onclick="focusSearchInput()" title="Buscar">
-            <i class="fas fa-search"></i>
-        </button>
-        <button class="desktop-nav-btn" onclick="openLocationModal()" title="Ubicación">
-            <i class="fas fa-map-marker-alt"></i>
-        </button>
-        <button class="desktop-nav-btn" onclick="openAboutModal()" title="Acerca de">
-            <i class="fas fa-info-circle"></i>
-        </button>
-    </div>
-
-    <!-- CARRITO FLOTANTE PRINCIPAL -->
-    <div class="cart-float-main" id="cart-float-main" onclick="toggleCartModal(true)">
-        <div class="cart-icon-container">
-            <i class="fas fa-shopping-cart"></i>
-            <span id="cart-main-badge" class="cart-badge">0</span>
-        </div>
-        <div class="cart-item-animator" id="cart-item-animator"></div>
-    </div>
 
     <div id="preventa-banner" class="preventa-status-banner">
         <i class="fas fa-user-tie" style="margin-right:6px;"></i> MODO PREVENTA ACTIVO - Catálogo Exclusivo
@@ -1518,7 +1612,7 @@
         </div>
     </div>
 
-    <!-- FILTROS POR ETIQUETAS - CTA VISUAL -->
+    <!-- FILTROS POR ETIQUETAS -->
     <div class="tag-filters-bar">
         <div class="tag-chip todos active" onclick="selectTagFilter('TODOS', this)">
             <i class="fas fa-th-large"></i><span>Ver Todo</span>
@@ -1527,7 +1621,7 @@
             <span>Ofertas</span>
         </div>
         <div class="tag-chip sintacc" onclick="selectTagFilter('SINTACC', this)">
-            <img src="https://www.argentina.gob.ar/sites/default/files/sin_gluten_legal-01.png" alt="Sin Gluten" class="sin-gluten-logo"><span>Sin Gluten</span>
+            <i class="fas fa-leaf"></i><span>Sin Gluten</span>
         </div>
         <div class="tag-chip masvendido" onclick="selectTagFilter('MASVENDIDO', this)">
             <i class="fas fa-heart"></i><span>Favoritos</span>
@@ -1567,11 +1661,14 @@
         </div>
     </main>
 
-    <!-- BARRA FLOTANTE CARRITO - OCULTA -->
-    <div class="cart-float-bar" id="cart-float-bar" style="display: none !important;"></div>
-
-    <!-- NAVEGACIÓN INFERIOR - OCULTA -->
-    <nav class="bottom-nav" style="display: none !important;"></nav>
+    <!-- CARRITO FLOTANTE PRINCIPAL -->
+    <div class="cart-float-main" id="cart-float-main" onclick="toggleCartModal(true)">
+        <div class="cart-icon-container">
+            <i class="fas fa-shopping-cart"></i>
+            <span id="cart-main-badge" class="cart-badge">0</span>
+        </div>
+        <div class="cart-item-animator" id="cart-item-animator"></div>
+    </div>
 
     <!-- MODAL CARRITO -->
     <div class="modal-overlay" id="cart-modal">
@@ -1588,7 +1685,7 @@
         </div>
     </div>
 
-    <!-- MODAL LOGIN PREVENTISTA MEJORADA -->
+    <!-- MODAL LOGIN PREVENTISTA -->
     <div class="modal-overlay" id="login-modal">
         <div class="modal-card modal-login-card">
             <div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
@@ -1692,29 +1789,24 @@
         "PREV2026C": "Directo a la Distribuidora"
     };
 
+    let ALL_PRODUCTS = [];
+    let FILTERED_PRODUCTS = [];
+    let cart = {};
+    let currentRole = "PUBLICO";
+    let activePreventista = "";
+    let selectedMainCat = "TODOS";
+    let selectedTagFilter = "TODOS";
+    let currentSlide = 0;
     let searchTimeout;
+
     function debounceSearch() {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
             filterProducts();
-        }, 300); // Espera 300ms después de dejar de escribir
+        }, 300);
     }
 
-    // OPTIMIZACIÓN DE RENDIMIENTO
     const isMobile = window.innerWidth <= 768;
-    const isSlowConnection = navigator.connection && (navigator.connection.effectiveType === '4g' || navigator.connection.effectiveType === '3g');
-
-    if (isMobile || isSlowConnection) {
-        // En móvil o conexión lenta, desactivar animaciones pesadas
-        const style = document.createElement('style');
-        style.innerHTML = `
-            * { transition: none !important; }
-            @keyframes fireFlicker { to { transform: scale(1); } }
-            @keyframes cartPulse { to { transform: translateY(0px); } }
-        `;
-        document.head.appendChild(style);
-    }
-    let activePreventista = "";
 
     window.addEventListener('DOMContentLoaded', () => {
         loadProductsFromSheets();
@@ -1749,7 +1841,73 @@
             renderMainCategories();
             renderBrandsSelector();
             filterProducts();
+            
+            // Mostrar popups de ofertas y nuevos después de 1.5 segundos
+            setTimeout(() => {
+                showPromoPopups();
+            }, 1500);
         }
+    }
+
+    function showPromoPopups() {
+        const ofertas = ALL_PRODUCTS.filter(p => p.isPromo);
+        const nuevos = ALL_PRODUCTS.filter(p => p.isNuevo);
+
+        if (ofertas.length > 0) {
+            renderPromoPopup('ofertas', ofertas);
+            openPromoPopup('ofertas');
+        } else if (nuevos.length > 0) {
+            renderPromoPopup('nuevos', nuevos);
+            openPromoPopup('nuevos');
+        }
+    }
+
+    function renderPromoPopup(type, items) {
+        const containerId = type === 'ofertas' ? 'promo-ofertas-products' : 'promo-nuevos-products';
+        const container = document.getElementById(containerId);
+        
+        // Mostrar solo los primeros 4 productos
+        const displayItems = items.slice(0, 4);
+        
+        container.innerHTML = displayItems.map((item, index) => `
+            <div class="popup-product-card" style="animation-delay: ${index * 0.1}s;">
+                <div class="popup-product-image">${item.emoji || '📦'}</div>
+                <div class="popup-product-info">
+                    <div class="popup-product-name">${item.title}</div>
+                    <div class="popup-product-details">${item.caracteristicasBulto}</div>
+                    <div class="popup-product-price ${type === 'ofertas' ? 'oferta' : ''}">$${item.priceNormal.toLocaleString('es-AR', {minimumFractionDigits:2})}</div>
+                </div>
+            </div>
+        `).join('');
+
+        if (items.length > 4) {
+            const remaining = items.length - 4;
+            container.innerHTML += `
+                <div class="popup-product-card" style="justify-content: center; background: linear-gradient(135deg, #f0f4f8, #e0e8f0); border-style: dashed; animation-delay: 0.4s;">
+                    <span style="font-weight: 900; color: var(--primary);">+${remaining} más</span>
+                </div>
+            `;
+        }
+    }
+
+    function openPromoPopup(type) {
+        document.getElementById(`popup-${type}`).classList.add('active');
+    }
+
+    function closePromoPopup(type) {
+        document.getElementById(`popup-${type}`).classList.remove('active');
+    }
+
+    function goToOfertas() {
+        closePromoPopup('ofertas');
+        selectTagFilter('PROMO', document.querySelectorAll('.tag-chip')[1]);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function goToNuevos() {
+        closePromoPopup('nuevos');
+        selectTagFilter('NUEVO', document.querySelectorAll('.tag-chip')[4]);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function formatDriveUrl(url) {
@@ -1809,11 +1967,27 @@
             if (priceNormal <= 0) continue;
 
             const isPromo = (row['En Promo'] || '').toString().trim() !== '';
+            const isNuevo = (row['Nuevo'] || row['NUEVO'] || '').toString().trim() !== '';
             const isSinTacc = (row['SIN GLUTEN'] || row['SIN TACC'] || '').toUpperCase().includes('SI') || title.toLowerCase().includes('sin tacc');
             const normalImage = formatDriveUrl(row['Imagen del Producto']);
             const expiration = row['Vencimiento'] || row['Fecha Vto'] || '';
 
-            products.push({ id, sku, mainCategory, subCategory, title, brand, packInfo, caracteristicasBulto, priceNormal, isPromo, isSinTacc, image: normalImage, isOutOfStock, expiration });
+            // Asignar emoji automático basado en la categoría
+            let emoji = '📦';
+            if (title.toLowerCase().includes('leche') || title.toLowerCase().includes('yogur')) emoji = '🥛';
+            else if (title.toLowerCase().includes('café') || title.toLowerCase().includes('té')) emoji = '☕';
+            else if (title.toLowerCase().includes('pan') || title.toLowerCase().includes('pastas')) emoji = '🍞';
+            else if (title.toLowerCase().includes('queso')) emoji = '🧀';
+            else if (title.toLowerCase().includes('carnes') || title.toLowerCase().includes('jamón')) emoji = '🍖';
+            else if (title.toLowerCase().includes('aceite')) emoji = '🫒';
+            else if (title.toLowerCase().includes('bebida') || title.toLowerCase().includes('agua')) emoji = '🥤';
+            else if (mainCategory === 'Almacén') emoji = '🏪';
+
+            products.push({ 
+                id, sku, mainCategory, subCategory, title, brand, packInfo, 
+                caracteristicasBulto, priceNormal, isPromo, isNuevo, isSinTacc, 
+                image: normalImage, isOutOfStock, expiration, emoji
+            });
         }
         return products;
     }
@@ -1860,13 +2034,11 @@
         document.querySelectorAll('.cat-tab').forEach(c => c.classList.remove('active'));
         el.classList.add('active');
         
-        // Agregar feedback visual
         const grid = document.getElementById('product-grid');
         if (grid) {
             grid.style.opacity = '0.6';
         }
         
-        // Filtrar de forma asincrónica
         setTimeout(() => {
             filterProducts();
             if (grid) {
@@ -1879,17 +2051,13 @@
         selectedTagFilter = tag;
         document.querySelectorAll('.tag-chip').forEach(c => c.classList.remove('active'));
         el.classList.add('active');
-        el.classList.add('animate__pulse');
-        setTimeout(() => el.classList.remove('animate__pulse'), 600);
         
-        // Agregar clase loading al grid para feedback visual
         const grid = document.getElementById('product-grid');
         if (grid) {
             grid.style.opacity = '0.6';
             grid.style.pointerEvents = 'none';
         }
         
-        // Filtrar de forma asincrónica para no bloquear
         setTimeout(() => {
             filterProducts();
             if (grid) {
@@ -1910,6 +2078,7 @@
 
             if (selectedTagFilter === 'PROMO') matchesTag = p.isPromo;
             else if (selectedTagFilter === 'SINTACC') matchesTag = p.isSinTacc;
+            else if (selectedTagFilter === 'NUEVO') matchesTag = p.isNuevo;
 
             let matchesQuery = p.title.toLowerCase().includes(query) || p.sku.toLowerCase().includes(query) || p.brand.toLowerCase().includes(query);
             return matchesCat && matchesBrand && matchesTag && matchesQuery;
@@ -1946,7 +2115,7 @@
                     </div>
                     ${p.sku ? `<div style="font-size:0.6rem; color:#888;"><i class="fas fa-barcode" style="margin-right:2px;"></i> ${p.sku}</div>` : ''}
                     <div class="product-brand">${p.brand}</div>
-                    <div class="product-title">${p.title}</div>
+                    <div class="product-title">${p.title}${p.isNuevo ? '<span class="product-new-badge"><i class="fas fa-star"></i> NUEVO</span>' : ''}</div>
                     <div class="product-pack-info"><i class="fas fa-box-open" style="margin-right:3px;"></i> ${p.caracteristicasBulto}</div>
                 </div>
                 <div>
@@ -1981,15 +2150,13 @@
             return;
         }
 
-        // Mostrar loader mientras se renderizan
         grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:20px; color:#999;">
-            <div style="font-size:2rem; animation:spin 1s linear infinite; display:inline-block;">⏳</div>
+            <div style="font-size:2rem; animation:spin-slow 1s linear infinite; display:inline-block;">⏳</div>
             <p style="font-size:0.85rem; margin-top:8px;">Cargando...</p>
         </div>`;
 
-        // Renderizar en chunks para no bloquear
         let index = 0;
-        const chunkSize = isMobile ? 10 : 20; // Menos en móvil para más fluido
+        const chunkSize = isMobile ? 10 : 20;
 
         function renderChunk() {
             const chunk = products.slice(index, index + chunkSize);
@@ -1999,20 +2166,18 @@
             }).join('');
 
             if (index === 0) {
-                grid.innerHTML = html; // Primera vez, reemplazar loader
+                grid.innerHTML = html;
             } else {
-                grid.innerHTML += html; // Agregar más
+                grid.innerHTML += html;
             }
 
             index += chunkSize;
 
-            // Si hay más productos, renderizar el siguiente chunk
             if (index < products.length) {
                 requestAnimationFrame(renderChunk);
             }
         }
 
-        // Usar requestAnimationFrame para no bloquear el main thread
         requestAnimationFrame(renderChunk);
     }
 
@@ -2024,18 +2189,25 @@
         cart[id].qty += delta;
         if (cart[id].qty <= 0) delete cart[id];
 
-        // Animar partícula al carrito si se suma (SOLO en desktop)
         if (delta > 0 && window.innerWidth > 768) {
             animateCartItem(product);
         }
 
-        // OPTIMIZADO: Solo actualizar el producto específico, no todo el grid
         updateProductDisplay(id);
         updateCartFloatBar();
     }
 
+    function animateCartItem(product) {
+        const animator = document.getElementById('cart-item-animator');
+        const particle = document.createElement('div');
+        particle.className = 'cart-item-particle';
+        particle.textContent = product.emoji || '📦';
+        animator.appendChild(particle);
+
+        setTimeout(() => particle.remove(), 800);
+    }
+
     function updateProductDisplay(id) {
-        // Buscar todos los elementos del producto (puede estar en featured y en grid)
         const productElements = document.querySelectorAll(`[data-product-id="${id}"]`);
         
         productElements.forEach(element => {
@@ -2059,7 +2231,6 @@
     }
 
     function updateCartFloatBar() {
-        const floatBar = document.getElementById('cart-float-bar');
         const mainCartBadge = document.getElementById('cart-main-badge');
         let totalItems = 0;
         let totalPrice = 0;
@@ -2070,22 +2241,11 @@
             totalPrice += item.product.priceNormal * item.qty;
         });
 
-        // Actualizar badge en carrito flotante principal
         if (mainCartBadge) {
             mainCartBadge.innerText = totalItems;
         }
-
-        if (totalItems > 0) {
-            let totalConEnvio = currentRole === "PUBLICO" ? totalPrice + COSTO_ENVIO : totalPrice;
-            if (floatBar) floatBar.style.display = 'flex';
-            document.getElementById('cart-float-count').innerText = `${totalItems} bulto${totalItems > 1 ? 's' : ''}`;
-            document.getElementById('cart-float-total').innerText = `$${totalConEnvio.toLocaleString('es-AR', {minimumFractionDigits:2})}`;
-        } else {
-            if (floatBar) floatBar.style.display = 'none';
-        }
     }
 
-    // MODAL LOGIN
     function openLoginModal() {
         document.getElementById('pass-input').value = "";
         document.getElementById('login-error').style.display = 'none';
@@ -2152,7 +2312,6 @@
         updateCartFloatBar();
     }
 
-    // CARRITO
     function toggleCartModal(show) {
         const modal = document.getElementById('cart-modal');
         if (show) { renderCartSummary(); modal.classList.add('active'); }
@@ -2184,7 +2343,7 @@
             return `
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed #e2e8f0; padding:10px 0;">
                     <div>
-                        <strong style="font-size:0.83rem;">${item.product.title}</strong>
+                        <strong style="font-size:0.83rem;">${item.product.emoji} ${item.product.title}</strong>
                         <div style="font-size:0.7rem; color:#718096; margin-top:2px;">${item.product.caracteristicasBulto} - $${item.product.priceNormal.toLocaleString('es-AR')} c/u</div>
                     </div>
                     <div style="text-align:right;">
@@ -2316,18 +2475,6 @@
 
             window.open(`https://wa.me/${PHONE_PREVENTA}?text=${encodeURIComponent(msg)}`, '_blank');
         }
-    }
-
-    function switchTabNav(tab, el) {
-        document.querySelectorAll('.bottom-nav .nav-item').forEach(n => n.classList.remove('active'));
-        el.classList.add('active');
-        if (tab === 'inicio') window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function focusSearchInput() {
-        const input = document.getElementById('search-input');
-        input.focus();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function openAboutModal() { document.getElementById('about-modal').classList.add('active'); }
