@@ -885,57 +885,80 @@
         }
         .distribuidora-alert-bar .btn-ver-vencimientos:hover { background: rgba(255,255,255,0.32); }
 
-        /* BARRA "BUSCAR POR MARCA" (visible para cualquier preventista logueado) */
-        .marcas-bar {
-            display: none;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            background: linear-gradient(90deg, #0c4a6e, #0284c7);
-            color: white;
-            padding: 10px 16px;
-            font-size: 0.78rem;
-            font-weight: 800;
-            box-shadow: var(--shadow-sm);
-            animation: slideInRight 0.6s ease;
+        /* CHIP "MARCAS" - a la izquierda de "Ver Todo", separado por un divisor */
+        .tag-chip.marcas {
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            color: #1e40af;
+            border-color: #60a5fa;
         }
-        .marcas-bar .btn-ver-marcas {
-            background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(255,255,255,0.35);
+        .tag-chip.marcas.active {
+            background: linear-gradient(135deg, #0c4a6e, #0284c7);
             color: white;
-            padding: 6px 12px;
-            border-radius: 16px;
-            font-size: 0.72rem;
-            font-weight: 800;
-            cursor: pointer;
-            white-space: nowrap;
+            border-color: #0284c7;
+            box-shadow: 0 8px 28px rgba(2,132,199,0.35);
         }
-        .marcas-bar .btn-ver-marcas:hover { background: rgba(255,255,255,0.32); }
+        .mode-preventa .tag-chip.marcas.active { background: linear-gradient(135deg, #FF6F00, #FF8C00); border-color: #FF8C00; }
+        .tag-chip-divider {
+            display: flex; align-items: center;
+            color: var(--text-muted);
+            font-weight: 300;
+            font-size: 1rem;
+            padding: 0 2px;
+            user-select: none;
+        }
+        .mode-preventa .tag-chip-divider { color: #64748b; }
 
-        .marcas-modal-card { max-width: 560px; }
+        /* PANEL INLINE "BUSCAR POR MARCA" - se despliega en el flujo de la página (no es modal) */
+        .marcas-inline-section {
+            background: linear-gradient(135deg, #ffffff, #f0f7ff);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 16px 18px;
+            animation: fadeInDown 0.35s ease;
+        }
+        .mode-preventa .marcas-inline-section { background: linear-gradient(135deg, #1e293b, #0f172a); border-color: #334155; }
+        .marcas-inline-header {
+            font-size: 0.88rem; font-weight: 900; color: var(--primary);
+            margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+        }
+        .mode-preventa .marcas-inline-header { color: #FF8C00; }
+
         .marcas-tab-bar {
-            display: flex; gap: 6px; overflow-x: auto; padding: 4px 0 12px;
+            display: flex; gap: 6px; overflow-x: auto; padding: 2px 0 12px;
             border-bottom: 1px solid var(--border); margin-bottom: 12px;
         }
+        .mode-preventa .marcas-tab-bar { border-color: #334155; }
         .marcas-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        @media (min-width: 640px) { .marcas-grid { grid-template-columns: repeat(3, 1fr); } }
         .marcas-todos {
             grid-column: 1 / -1;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: 6px; padding: 16px; border-radius: 14px; cursor: pointer;
+            display: flex; flex-direction: row; align-items: center; justify-content: center;
+            gap: 8px; padding: 14px; border-radius: 14px; cursor: pointer;
             background: linear-gradient(135deg, #fce7f3, #fbcfe8);
             color: #9d174d; font-weight: 900; font-size: 0.82rem;
             transition: all 0.2s ease;
         }
         .marcas-todos:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
-        .marcas-todos i { font-size: 1.3rem; }
+        .marcas-todos i { font-size: 1.2rem; }
         .marcas-card {
             background: #f8fafb; border: 1.5px solid var(--border); border-radius: 14px;
-            padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+            padding: 8px; display: flex; flex-direction: column; align-items: center; gap: 6px;
             cursor: pointer; transition: all 0.2s ease;
         }
+        .mode-preventa .marcas-card { background: #1e293b; border-color: #334155; }
         .marcas-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); border-color: var(--primary-light); }
-        .marcas-card img { width: 100%; height: 64px; object-fit: contain; border-radius: 8px; background: white; }
+        .marcas-card-img-box {
+            width: 100%; height: 78px; border-radius: 10px; overflow: hidden;
+            background: white; position: relative;
+        }
+        .marcas-card-img-box img {
+            width: 100%; height: 100%;
+            object-fit: cover; object-position: center;
+            transform: scale(1.12);
+            transition: transform 0.25s ease;
+        }
+        .marcas-card:hover .marcas-card-img-box img { transform: scale(1.22); }
         .marcas-card-name { font-size: 0.7rem; font-weight: 800; text-align: center; color: var(--text-dark); }
+        .mode-preventa .marcas-card-name { color: #f8fafc; }
 
         .vencimientos-modal-card { max-width: 640px; }
         .venc-row {
@@ -1031,12 +1054,6 @@
         <i class="fas fa-user-tie"></i> MODO PREVENTA ACTIVO - Catálogo Exclusivo
     </div>
 
-    <!-- BARRA "BUSCAR POR MARCA" - visible para cualquier preventista logueado -->
-    <div id="marcas-bar" class="marcas-bar">
-        <span><i class="fas fa-tags"></i> Buscar visualmente por marca</span>
-        <button class="btn-ver-marcas" onclick="openMarcasPanel()">Ver marcas</button>
-    </div>
-
     <!-- BARRA INTERNA - solo visible para "Directo a la Distribuidora" -->
     <div id="distribuidora-alert-bar" class="distribuidora-alert-bar">
         <span><i class="fas fa-hourglass-half"></i> <span id="distribuidora-alert-text">Productos por vencer</span></span>
@@ -1077,10 +1094,19 @@
 
     <!-- FILTROS POR ETIQUETA -->
     <div class="tag-filters-bar">
+        <div class="tag-chip marcas" id="tag-chip-marcas" onclick="toggleMarcasInline()" style="display:none;"><i class="fas fa-tags"></i><span>Modo App Vieja</span></div>
+        <div class="tag-chip-divider" id="tag-chip-marcas-divider" style="display:none;">|</div>
         <div class="tag-chip todos active" onclick="selectTagFilter('TODOS', this)"><i class="fas fa-th-large"></i><span>Ver Todo</span></div>
         <div class="tag-chip promo" onclick="selectTagFilter('PROMO', this)"><span>Ofertas</span></div>
         <div class="tag-chip sintacc" onclick="selectTagFilter('SINTACC', this)"><img src="https://www.argentina.gob.ar/sites/default/files/sin_gluten_legal-01.png" alt="Sin Gluten" class="sin-gluten-logo"><span>Sin Gluten</span></div>
         <div class="tag-chip nuevo" onclick="selectTagFilter('NUEVOS', this)"><span>Nuevos</span></div>
+    </div>
+
+    <!-- PANEL INLINE "BUSCAR POR MARCA" - se despliega debajo de los filtros, sin modal -->
+    <div class="marcas-inline-section" id="marcas-inline-section" style="display:none;">
+        <div class="marcas-inline-header"><i class="fas fa-tags"></i> Modo App Vieja - Buscar por Marca</div>
+        <div class="marcas-tab-bar" id="marcas-tab-bar"></div>
+        <div class="marcas-grid" id="marcas-grid"></div>
     </div>
 
     <!-- CATEGORÍAS -->
@@ -1161,19 +1187,6 @@
             </div>
             <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:14px;">Ordenados de más urgente a menos urgente. El contador se actualiza en vivo, segundo a segundo.</p>
             <div id="vencimientos-list"></div>
-        </div>
-    </div>
-
-    <!-- MODAL BUSCAR POR MARCA (solo preventistas) -->
-    <div class="modal-overlay" id="marcas-modal">
-        <div class="modal-card marcas-modal-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <h2 style="font-size:1.1rem; font-weight:900; color:var(--primary);"><i class="fas fa-tags"></i> Buscar por Marca</h2>
-                <button class="btn-close" onclick="closeMarcasPanel()">✕</button>
-            </div>
-            <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:10px;">Elegí una sección y tocá el logo de la marca que buscás.</p>
-            <div class="marcas-tab-bar" id="marcas-tab-bar"></div>
-            <div class="marcas-grid" id="marcas-grid"></div>
         </div>
     </div>
 
@@ -1507,7 +1520,7 @@
             document.getElementById('loader').style.display = 'none';
             document.getElementById('product-grid').style.display = 'grid';
             filterProducts();
-            refreshMarcasBarVisibility();
+            refreshMarcasChipVisibility();
             setTimeout(maybeShowPromoPopup, 900);
         }
     }
@@ -1728,6 +1741,7 @@
 
     function onBrandChange() { filterProducts(); }
     function selectMainCategory(cat, el) {
+        closeMarcasInline();
         selectedMainCat = cat;
         selectedCategoryBucket = null;
         document.querySelectorAll('.cat-tab').forEach(c => c.classList.remove('active'));
@@ -1736,6 +1750,7 @@
     }
 
     function selectTagFilter(tag, el) {
+        closeMarcasInline();
         selectedTagFilter = tag;
         document.querySelectorAll('.tag-chip').forEach(c => c.classList.remove('active'));
         el.classList.add('active');
@@ -2089,7 +2104,7 @@
         btn.onclick = logoutPreventa;
 
         updateSideMenuAuthUI();
-        refreshMarcasBarVisibility();
+        refreshMarcasChipVisibility();
     }
 
     function updateSideMenuAuthUI() {
@@ -2165,7 +2180,7 @@
         try { localStorage.removeItem(SESSION_STORAGE_KEY); } catch (e) {}
 
         updateSideMenuAuthUI();
-        refreshMarcasBarVisibility();
+        refreshMarcasChipVisibility();
         selectedCategoryBucket = null;
 
         // Vuelve a mostrar solo el catálogo público
@@ -2174,7 +2189,7 @@
         filterProducts();
         updateCartFloatBar();
         closeVencimientosPanel();
-        closeMarcasPanel();
+        closeMarcasInline();
         refreshDistribuidoraAlert();
     }
 
@@ -2290,6 +2305,8 @@
 
     // ==========================================================
     //  BUSCAR POR MARCA (VISUAL) - solo preventistas logueados
+    //  Panel inline (no modal): se abre/cierra debajo de los filtros, como
+    //  otra forma de búsqueda alternativa, sin tapar el resto de la pantalla.
     // ==========================================================
     const MARCAS_TABS = [
         { bucket: 'Almacen', label: 'Almacén' },
@@ -2297,21 +2314,55 @@
         { bucket: 'Limpieza', label: 'Limpieza' }
     ];
 
-    function refreshMarcasBarVisibility() {
-        const bar = document.getElementById('marcas-bar');
-        if (!bar) return;
-        bar.style.display = (currentRole === "PREVENTA") ? 'flex' : 'none';
+    let marcasInlineOpen = false;
+
+    function refreshMarcasChipVisibility() {
+        const chip = document.getElementById('tag-chip-marcas');
+        const divider = document.getElementById('tag-chip-marcas-divider');
+        const visible = currentRole === "PREVENTA";
+        if (chip) chip.style.display = visible ? 'flex' : 'none';
+        if (divider) divider.style.display = visible ? 'flex' : 'none';
+        if (!visible) closeMarcasInline();
     }
 
-    function openMarcasPanel() {
-        closeSideMenu();
-        renderMarcasTabs();
-        renderMarcasGrid();
-        document.getElementById('marcas-modal').classList.add('active');
+    function toggleMarcasInline() {
+        marcasInlineOpen = !marcasInlineOpen;
+        const section = document.getElementById('marcas-inline-section');
+        const chip = document.getElementById('tag-chip-marcas');
+        const catBar = document.getElementById('main-categories-bar');
+        const catalogSection = document.getElementById('catalog-section');
+        const featuredSection = document.getElementById('featured-section');
+
+        if (marcasInlineOpen) {
+            // Entra en "Modo App Vieja": se oculta el catálogo de la app nueva (categorías,
+            // ofertas destacadas y grilla) y solo se muestra la búsqueda visual por marca.
+            renderMarcasTabs();
+            renderMarcasGrid();
+            section.style.display = 'block';
+            if (chip) chip.classList.add('active');
+            if (catBar) catBar.style.display = 'none';
+            if (catalogSection) catalogSection.style.display = 'none';
+            if (featuredSection) featuredSection.style.display = 'none';
+        } else {
+            // Vuelve a "App Nueva": se restaura el catálogo normal.
+            section.style.display = 'none';
+            if (chip) chip.classList.remove('active');
+            if (catBar) catBar.style.display = '';
+            if (catalogSection) catalogSection.style.display = '';
+            filterProducts();
+        }
     }
 
-    function closeMarcasPanel() {
-        document.getElementById('marcas-modal').classList.remove('active');
+    function closeMarcasInline() {
+        marcasInlineOpen = false;
+        const section = document.getElementById('marcas-inline-section');
+        const chip = document.getElementById('tag-chip-marcas');
+        const catBar = document.getElementById('main-categories-bar');
+        const catalogSection = document.getElementById('catalog-section');
+        if (section) section.style.display = 'none';
+        if (chip) chip.classList.remove('active');
+        if (catBar) catBar.style.display = '';
+        if (catalogSection) catalogSection.style.display = '';
     }
 
     function renderMarcasTabs() {
@@ -2343,7 +2394,9 @@
         } else {
             html += brands.map(b => `
                 <div class="marcas-card" onclick="selectBrandFromVisual('${b.name.replace(/'/g, "\\'")}')">
-                    <img src="${b.image}" alt="${b.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/150x90?text=${encodeURIComponent(b.name)}'">
+                    <div class="marcas-card-img-box">
+                        <img src="${b.image}" alt="${b.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/150x90?text=${encodeURIComponent(b.name)}'">
+                    </div>
                     <div class="marcas-card-name">${b.name}</div>
                 </div>
             `).join('');
@@ -2366,7 +2419,7 @@
 
     // "Todos los Productos" dentro de una sección (Almacén/Refrigerados/Limpieza)
     function filterByBucket(bucket) {
-        closeMarcasPanel();
+        closeMarcasInline();
         selectedMainCat = 'TODOS';
         selectedCategoryBucket = bucket;
         resetToTodosTag();
@@ -2379,7 +2432,7 @@
 
     // Click sobre el logo de una marca puntual
     function selectBrandFromVisual(brandName) {
-        closeMarcasPanel();
+        closeMarcasInline();
         selectedMainCat = 'TODOS';
         selectedCategoryBucket = null;
         resetToTodosTag();
