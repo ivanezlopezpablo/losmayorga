@@ -1710,6 +1710,49 @@
             transform: rotate(90deg);
         }
 
+        /* BOTONES DE PAGINACIÓN */
+        .btn-pagination {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(0, 31, 84, 0.2);
+        }
+
+        .btn-pagination:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 31, 84, 0.3);
+        }
+
+        .btn-pagination:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-pagination i {
+            font-size: 0.85rem;
+        }
+
+        #pagination-container {
+            background: #f8fafb;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        #page-info {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+            color: var(--text-dark);
+        }
+
         .loader-box { 
             text-align: center; 
             padding: 50px 20px; 
@@ -1857,6 +1900,22 @@
         .ai-chat-button:hover {
             transform: scale(1.15);
             box-shadow: 0 10px 40px rgba(139, 92, 246, 0.55);
+            cursor: grab;
+        }
+
+        .ai-chat-button.dragging {
+            cursor: grabbing;
+            opacity: 0.9;
+        }
+
+        .cart-float-main:hover {
+            transform: scale(1.15);
+            cursor: grab;
+        }
+
+        .cart-float-main.dragging {
+            cursor: grabbing;
+            opacity: 0.9;
         }
 
         .ai-chat-modal {
@@ -2243,6 +2302,27 @@
             </div>
 
             <div class="product-grid" id="product-grid" style="display:none;"></div>
+            
+            <!-- CONTROLES DE PAGINACIÓN -->
+            <div id="pagination-container" style="display:none; margin-top:30px; margin-bottom:40px;">
+                <div style="display:flex; justify-content:center; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <button class="btn-pagination" id="btn-prev-page" onclick="goToPreviousPage()">
+                        <i class="fas fa-chevron-left"></i> Anterior
+                    </button>
+                    
+                    <div id="page-info" style="padding:8px 16px; background:#f0f0f0; border-radius:8px; font-weight:700; min-width:120px; text-align:center; font-size:0.95rem;">
+                        Página 1 de 1
+                    </div>
+                    
+                    <button class="btn-pagination" id="btn-next-page" onclick="goToNextPage()">
+                        Siguiente <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                
+                <div style="text-align:center; margin-top:12px; font-size:0.85rem; color:#999;">
+                    Mostrando <span id="items-showing">0</span> de <span id="items-total">0</span> productos
+                </div>
+            </div>
         </div>
     </main>
 
@@ -2443,6 +2523,12 @@
     let cart = {};
     let currentRole = "PUBLICO";
     let activePreventista = "";
+    
+    // PAGINACIÓN
+    let currentPage = 1;
+    let itemsPerPage = 20;
+    let totalPages = 1;
+    let isSearching = false; // Para detectar si hay búsqueda/filtro activo
     let selectedMainCat = "TODOS";
     let selectedTagFilter = "TODOS";
     let currentSlide = 0;
@@ -2472,6 +2558,7 @@
     window.addEventListener('DOMContentLoaded', () => {
         loadProductsFromSheets();
         startHeroAutoSlide();
+        initDraggableButtons(); // Inicializar botones draggables
     });
 
     function startHeroAutoSlide() {
@@ -2851,6 +2938,12 @@
         const query = document.getElementById('search-input').value.toLowerCase().trim();
         const selectedBrand = document.getElementById('brand-select').value;
 
+        // Detectar si hay búsqueda/filtro activo
+        isSearching = query.length > 0 || selectedBrand !== 'TODOS' || selectedMainCat !== 'TODOS' || selectedTagFilter !== 'TODOS';
+
+        // Resetear paginación cuando se cambian filtros
+        resetPagination();
+
         FILTERED_PRODUCTS = ALL_PRODUCTS.filter(p => {
             let matchesCat = selectedMainCat === 'TODOS' || p.mainCategory === selectedMainCat;
             let matchesBrand = selectedBrand === 'TODOS' || p.brand === selectedBrand;
@@ -2923,24 +3016,51 @@
 
     function renderProductsGrid(products) {
         const grid = document.getElementById('product-grid');
+        const paginationContainer = document.getElementById('pagination-container');
+        
         if (products.length === 0) {
             grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:40px 20px; color:#999;">
                 <i class="fas fa-inbox" style="font-size:3rem; margin-bottom:12px; opacity:0.5;"></i>
                 <p style="font-size:0.95rem; font-weight:600;">Sin productos para esta combinación</p>
             </div>`;
+            paginationContainer.style.display = 'none';
             return;
         }
 
+        // Calcular paginación
+        totalPages = Math.ceil(products.length / itemsPerPage);
+        
+        // Si estamos buscando/filtrando, mostrar todos los resultados (sin limitar a 20)
+        if (isSearching && products.length <= itemsPerPage) {
+            // Si la búsqueda tiene 20 o menos productos, no paginar
+            totalPages = 1;
+        }
+        
+        // Validar página actual
+        if (currentPage > totalPages) {
+            currentPage = totalPages;
+        }
+        if (currentPage < 1) {
+            currentPage = 1;
+        }
+
+        // Calcular rango de productos para esta página
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const pageProducts = products.slice(startIndex, endIndex);
+
+        // Mostrar loader
         grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:20px; color:#999;">
             <div style="font-size:2rem; animation:spin-slow 1s linear infinite; display:inline-block;">⏳</div>
             <p style="font-size:0.85rem; margin-top:8px;">Cargando...</p>
         </div>`;
 
+        // Renderizar productos de la página actual
         let index = 0;
-        const chunkSize = isMobile ? 6 : 12; // Menos chunks en móvil para mejor rendimiento
+        const chunkSize = isMobile ? 6 : 12;
 
         function renderChunk() {
-            const chunk = products.slice(index, index + chunkSize);
+            const chunk = pageProducts.slice(index, index + chunkSize);
             const html = chunk.map(p => {
                 const qty = cart[p.id] ? cart[p.id].qty : 0;
                 return renderProductCard(p, qty);
@@ -2954,12 +3074,67 @@
 
             index += chunkSize;
 
-            if (index < products.length) {
+            if (index < pageProducts.length) {
                 requestAnimationFrame(renderChunk);
+            } else {
+                // Cuando termina de renderizar, mostrar/actualizar paginación
+                updatePaginationControls(products.length);
             }
         }
 
         requestAnimationFrame(renderChunk);
+    }
+
+    function updatePaginationControls(totalProducts) {
+        const paginationContainer = document.getElementById('pagination-container');
+        const pageInfo = document.getElementById('page-info');
+        const btnPrev = document.getElementById('btn-prev-page');
+        const btnNext = document.getElementById('btn-next-page');
+        const itemsShowing = document.getElementById('items-showing');
+        const itemsTotal = document.getElementById('items-total');
+
+        // Mostrar/ocultar paginación según cantidad de productos
+        if (totalProducts > itemsPerPage) {
+            paginationContainer.style.display = 'block';
+        } else {
+            paginationContainer.style.display = 'none';
+            return;
+        }
+
+        // Actualizar info de página
+        pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
+
+        // Actualizar contador de productos
+        const startItem = (currentPage - 1) * itemsPerPage + 1;
+        const endItem = Math.min(currentPage * itemsPerPage, totalProducts);
+        itemsShowing.textContent = `${startItem}-${endItem}`;
+        itemsTotal.textContent = totalProducts;
+
+        // Habilitar/deshabilitar botones
+        btnPrev.disabled = currentPage === 1;
+        btnNext.disabled = currentPage === totalPages;
+
+        // Scroll al top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function goToNextPage() {
+        if (currentPage < totalPages) {
+            currentPage++;
+            filterProducts();
+        }
+    }
+
+    function goToPreviousPage() {
+        if (currentPage > 1) {
+            currentPage--;
+            filterProducts();
+        }
+    }
+
+    function resetPagination() {
+        currentPage = 1;
+        totalPages = 1;
     }
 
     function updateQty(id, delta) {
@@ -3578,13 +3753,132 @@
         } catch (e) {}
     }
 
-    // Service Worker para PWA
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('data:application/javascript,' + encodeURIComponent(`
-            self.addEventListener('install', event => event.waitUntil(self.skipWaiting()));
-            self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
-            self.addEventListener('fetch', event => event.respondWith(fetch(event.request).catch(() => new Response('Offline'))));
-        `));
+    // FUNCIONES PARA BOTONES DRAGGABLES (ARRASTRABLES)
+    
+    class DraggableButton {
+        constructor(elementId, storageKey) {
+            this.element = document.getElementById(elementId);
+            this.storageKey = storageKey;
+            this.isDragging = false;
+            this.offset = { x: 0, y: 0 };
+            this.init();
+        }
+
+        init() {
+            if (!this.element) return;
+            
+            // Restaurar posición guardada
+            this.restorePosition();
+            
+            // Event listeners para mouse
+            this.element.addEventListener('mousedown', (e) => this.startDrag(e));
+            document.addEventListener('mousemove', (e) => this.drag(e));
+            document.addEventListener('mouseup', () => this.stopDrag());
+            
+            // Event listeners para touch (móvil)
+            this.element.addEventListener('touchstart', (e) => this.startDrag(e));
+            document.addEventListener('touchmove', (e) => this.drag(e));
+            document.addEventListener('touchend', () => this.stopDrag());
+            
+            // Prevenir que se arrastre si clickea un botón dentro
+            this.element.addEventListener('click', (e) => {
+                if (this.isDragging) {
+                    e.stopPropagation();
+                    this.isDragging = false;
+                }
+            });
+        }
+
+        startDrag(e) {
+            this.isDragging = true;
+            this.element.classList.add('dragging');
+            
+            const rect = this.element.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            this.offset.x = clientX - rect.left;
+            this.offset.y = clientY - rect.top;
+        }
+
+        drag(e) {
+            if (!this.isDragging) return;
+            
+            e.preventDefault();
+            
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            let left = clientX - this.offset.x;
+            let top = clientY - this.offset.y;
+            
+            // Limitar dentro de la pantalla
+            const maxX = window.innerWidth - this.element.offsetWidth;
+            const maxY = window.innerHeight - this.element.offsetHeight;
+            
+            left = Math.max(0, Math.min(left, maxX));
+            top = Math.max(0, Math.min(top, maxY));
+            
+            this.element.style.position = 'fixed';
+            this.element.style.left = left + 'px';
+            this.element.style.top = top + 'px';
+            this.element.style.right = 'auto';
+            this.element.style.bottom = 'auto';
+        }
+
+        stopDrag() {
+            if (!this.isDragging) return;
+            
+            this.isDragging = false;
+            this.element.classList.remove('dragging');
+            
+            // Guardar posición
+            const position = {
+                left: this.element.style.left,
+                top: this.element.style.top
+            };
+            localStorage.setItem(this.storageKey, JSON.stringify(position));
+        }
+
+        restorePosition() {
+            const saved = localStorage.getItem(this.storageKey);
+            if (saved) {
+                try {
+                    const position = JSON.parse(saved);
+                    this.element.style.position = 'fixed';
+                    this.element.style.left = position.left;
+                    this.element.style.top = position.top;
+                    this.element.style.right = 'auto';
+                    this.element.style.bottom = 'auto';
+                } catch (e) {
+                    console.error('Error restaurando posición:', e);
+                }
+            }
+        }
+
+        reset() {
+            localStorage.removeItem(this.storageKey);
+            this.element.style.position = '';
+            this.element.style.left = '';
+            this.element.style.top = '';
+            this.element.style.right = '';
+            this.element.style.bottom = '';
+        }
+    }
+
+    // Inicializar botones draggables cuando cargue el DOM
+    let cartDraggable, aiDraggable;
+    
+    function initDraggableButtons() {
+        cartDraggable = new DraggableButton('cart-float-main', 'cart-button-position');
+        aiDraggable = new DraggableButton('ai-chat-button', 'ai-button-position');
+    }
+
+    // Función para resetear posiciones (botón en settings si lo quieres)
+    function resetButtonPositions() {
+        if (cartDraggable) cartDraggable.reset();
+        if (aiDraggable) aiDraggable.reset();
+        alert('Posiciones de botones restablecidas a su lugar original');
     }
 </script>
 </body>
