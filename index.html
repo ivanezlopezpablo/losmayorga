@@ -182,6 +182,32 @@
             }
         }
 
+        @media (max-width: 768px) {
+            /* DESACTIVAR ANIMACIONES PESADAS EN MÓVIL */
+            .tag-chip.promo {
+                animation: none !important;
+            }
+
+            .tag-chip.promo i,
+            .tag-chip.promo::before {
+                animation: none !important;
+            }
+
+            .cart-float-main {
+                animation: none !important;
+            }
+
+            .nav-item.active .nav-icon-svg,
+            .cat-tab.active i {
+                animation: none !important;
+            }
+
+            /* Reducir transiciones en móvil */
+            * {
+                transition: all 0.15s ease !important;
+            }
+        }
+
         @keyframes cartItemAdd {
             0% {
                 opacity: 1;
@@ -446,7 +472,7 @@
 
         .tag-chip {
             padding: 8px 12px;
-            border-radius: 12px;
+            border-radius: 18px;
             background: linear-gradient(135deg, #f0f4f8, #e8eef5);
             color: var(--text-dark);
             font-size: 0.75rem;
@@ -611,7 +637,7 @@
 
         .cat-tab {
             padding: 7px 12px;
-            border-radius: 10px;
+            border-radius: 16px;
             background: linear-gradient(135deg, #f0f4f8, #e8eef5);
             color: #475569;
             font-size: 0.72rem;
@@ -1425,10 +1451,10 @@
 
         <div class="search-container">
             <div class="search-box">
-                <input type="text" class="search-input" id="search-input" placeholder="🔍 Buscar producto, SKU, marca..." oninput="filterProducts()">
+                <input type="text" class="search-input" id="search-input" placeholder="🔍 Buscar producto, SKU, marca..." oninput="debounceSearch()">
                 <span class="search-icon"><i class="fas fa-search"></i></span>
             </div>
-            <select class="brand-select-header" id="brand-select" onchange="filterProducts()">
+            <select class="brand-select-header" id="brand-select" onchange="onBrandChange()">
                 <option value="TODOS">Todas las Marcas</option>
             </select>
         </div>
@@ -1626,6 +1652,31 @@
         </div>
     </div>
 
+    <!-- MODAL UBICACIÓN -->
+    <div class="modal-overlay" id="location-modal">
+        <div class="modal-card" style="text-align:center;">
+            <div style="display:flex; justify-content:flex-end; margin-bottom:12px;">
+                <button class="btn-close" onclick="closeLocationModal()">✕</button>
+            </div>
+            <div style="font-size:3rem; margin-bottom:12px; animation:float 3s ease-in-out infinite;">📍</div>
+            <h2 style="color:var(--primary); font-size:1.2rem; margin-bottom:12px; font-weight:900;">Nuestra Ubicación</h2>
+            <div style="background:linear-gradient(135deg, #f0f4f8, #e8eef5); padding:16px; border-radius:12px; margin-bottom:18px;">
+                <p style="font-size:0.95rem; font-weight:600; color:var(--primary); margin-bottom:8px;">
+                    <i class="fas fa-map-pin" style="margin-right:6px;"></i> Rincón de los Sauces, Neuquén
+                </p>
+                <p style="font-size:0.85rem; color:var(--text-dark); margin-bottom:6px;">
+                    <i class="fas fa-phone" style="margin-right:6px;"></i> Contacto disponible
+                </p>
+                <p style="font-size:0.8rem; color:var(--text-muted);">
+                    Atendemos mayoristas y negocios de la región
+                </p>
+            </div>
+            <button onclick="closeLocationModal()" style="background:linear-gradient(135deg, var(--primary), var(--primary-light)); color:white; border:none; padding:12px 20px; border-radius:10px; font-weight:bold; cursor:pointer; width:100%; transition:all 0.3s ease;">
+                <i class="fas fa-check-circle" style="margin-right:6px;"></i> Cerrar
+            </button>
+        </div>
+    </div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 <script>
     const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTtIs8b6w2l3XSTbkTw0bnqh2SXfTebJjITShgpPJ-jxImqOpnY1rjVHHYNRFqqQBypLxeCKFPrK-C/pub?gid=957503224&single=true&output=csv';
@@ -1641,13 +1692,28 @@
         "PREV2026C": "Directo a la Distribuidora"
     };
 
-    let ALL_PRODUCTS = [];
-    let FILTERED_PRODUCTS = [];
-    let selectedMainCat = 'TODOS';
-    let selectedTagFilter = 'TODOS';
-    let currentSlide = 0;
-    let cart = {};
-    let currentRole = "PUBLICO";
+    let searchTimeout;
+    function debounceSearch() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            filterProducts();
+        }, 300); // Espera 300ms después de dejar de escribir
+    }
+
+    // OPTIMIZACIÓN DE RENDIMIENTO
+    const isMobile = window.innerWidth <= 768;
+    const isSlowConnection = navigator.connection && (navigator.connection.effectiveType === '4g' || navigator.connection.effectiveType === '3g');
+
+    if (isMobile || isSlowConnection) {
+        // En móvil o conexión lenta, desactivar animaciones pesadas
+        const style = document.createElement('style');
+        style.innerHTML = `
+            * { transition: none !important; }
+            @keyframes fireFlicker { to { transform: scale(1); } }
+            @keyframes cartPulse { to { transform: translateY(0px); } }
+        `;
+        document.head.appendChild(style);
+    }
     let activePreventista = "";
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -1775,11 +1841,38 @@
         }).join('');
     }
 
+    function onBrandChange() {
+        const grid = document.getElementById('product-grid');
+        if (grid) {
+            grid.style.opacity = '0.6';
+        }
+        
+        setTimeout(() => {
+            filterProducts();
+            if (grid) {
+                grid.style.opacity = '1';
+            }
+        }, 0);
+    }
+
     function selectMainCategory(cat, el) {
         selectedMainCat = cat;
         document.querySelectorAll('.cat-tab').forEach(c => c.classList.remove('active'));
         el.classList.add('active');
-        filterProducts();
+        
+        // Agregar feedback visual
+        const grid = document.getElementById('product-grid');
+        if (grid) {
+            grid.style.opacity = '0.6';
+        }
+        
+        // Filtrar de forma asincrónica
+        setTimeout(() => {
+            filterProducts();
+            if (grid) {
+                grid.style.opacity = '1';
+            }
+        }, 0);
     }
 
     function selectTagFilter(tag, el) {
@@ -1788,7 +1881,22 @@
         el.classList.add('active');
         el.classList.add('animate__pulse');
         setTimeout(() => el.classList.remove('animate__pulse'), 600);
-        filterProducts();
+        
+        // Agregar clase loading al grid para feedback visual
+        const grid = document.getElementById('product-grid');
+        if (grid) {
+            grid.style.opacity = '0.6';
+            grid.style.pointerEvents = 'none';
+        }
+        
+        // Filtrar de forma asincrónica para no bloquear
+        setTimeout(() => {
+            filterProducts();
+            if (grid) {
+                grid.style.opacity = '1';
+                grid.style.pointerEvents = 'auto';
+            }
+        }, 0);
     }
 
     function filterProducts() {
@@ -1845,17 +1953,19 @@
                     <div class="price-box">
                         <div class="price-current">$${p.priceNormal.toLocaleString('es-AR', {minimumFractionDigits:2})}</div>
                     </div>
-                    ${p.isOutOfStock ? `
-                        <button class="btn-add-cart" disabled><i class="fas fa-ban" style="margin-right:4px;"></i> Sin Stock</button>
-                    ` : qty === 0 ? `
-                        <button class="btn-add-cart" onclick="updateQty('${p.id}', 1)"><i class="fas fa-plus-circle" style="margin-right:4px;"></i> Agregar</button>
-                    ` : `
-                        <div class="qty-controls-card">
-                            <button class="btn-qty-card" onclick="updateQty('${p.id}', -1)">−</button>
-                            <span style="font-size:0.85rem; font-weight:800;">${qty}</span>
-                            <button class="btn-qty-card" onclick="updateQty('${p.id}', 1)">+</button>
-                        </div>
-                    `}
+                    <div data-product-id="${p.id}">
+                        ${p.isOutOfStock ? `
+                            <button class="btn-add-cart" disabled><i class="fas fa-ban" style="margin-right:4px;"></i> Sin Stock</button>
+                        ` : qty === 0 ? `
+                            <button class="btn-add-cart" onclick="updateQty('${p.id}', 1)"><i class="fas fa-plus-circle" style="margin-right:4px;"></i> Agregar</button>
+                        ` : `
+                            <div class="qty-controls-card">
+                                <button class="btn-qty-card" onclick="updateQty('${p.id}', -1)">−</button>
+                                <span style="font-size:0.85rem; font-weight:800;">${qty}</span>
+                                <button class="btn-qty-card" onclick="updateQty('${p.id}', 1)">+</button>
+                            </div>
+                        `}
+                    </div>
                 </div>
             </div>
         `;
@@ -1871,10 +1981,39 @@
             return;
         }
 
-        grid.innerHTML = products.map(p => {
-            const qty = cart[p.id] ? cart[p.id].qty : 0;
-            return renderProductCard(p, qty);
-        }).join('');
+        // Mostrar loader mientras se renderizan
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:20px; color:#999;">
+            <div style="font-size:2rem; animation:spin 1s linear infinite; display:inline-block;">⏳</div>
+            <p style="font-size:0.85rem; margin-top:8px;">Cargando...</p>
+        </div>`;
+
+        // Renderizar en chunks para no bloquear
+        let index = 0;
+        const chunkSize = isMobile ? 10 : 20; // Menos en móvil para más fluido
+
+        function renderChunk() {
+            const chunk = products.slice(index, index + chunkSize);
+            const html = chunk.map(p => {
+                const qty = cart[p.id] ? cart[p.id].qty : 0;
+                return renderProductCard(p, qty);
+            }).join('');
+
+            if (index === 0) {
+                grid.innerHTML = html; // Primera vez, reemplazar loader
+            } else {
+                grid.innerHTML += html; // Agregar más
+            }
+
+            index += chunkSize;
+
+            // Si hay más productos, renderizar el siguiente chunk
+            if (index < products.length) {
+                requestAnimationFrame(renderChunk);
+            }
+        }
+
+        // Usar requestAnimationFrame para no bloquear el main thread
+        requestAnimationFrame(renderChunk);
     }
 
     function updateQty(id, delta) {
@@ -1885,8 +2024,38 @@
         cart[id].qty += delta;
         if (cart[id].qty <= 0) delete cart[id];
 
-        filterProducts();
+        // Animar partícula al carrito si se suma (SOLO en desktop)
+        if (delta > 0 && window.innerWidth > 768) {
+            animateCartItem(product);
+        }
+
+        // OPTIMIZADO: Solo actualizar el producto específico, no todo el grid
+        updateProductDisplay(id);
         updateCartFloatBar();
+    }
+
+    function updateProductDisplay(id) {
+        // Buscar todos los elementos del producto (puede estar en featured y en grid)
+        const productElements = document.querySelectorAll(`[data-product-id="${id}"]`);
+        
+        productElements.forEach(element => {
+            const qty = cart[id] ? cart[id].qty : 0;
+            const product = ALL_PRODUCTS.find(p => p.id === id);
+            
+            if (product.isOutOfStock) {
+                element.innerHTML = `<button class="btn-add-cart" disabled><i class="fas fa-ban" style="margin-right:4px;"></i> Sin Stock</button>`;
+            } else if (qty === 0) {
+                element.innerHTML = `<button class="btn-add-cart" onclick="updateQty('${id}', 1)"><i class="fas fa-plus-circle" style="margin-right:4px;"></i> Agregar</button>`;
+            } else {
+                element.innerHTML = `
+                    <div class="qty-controls-card">
+                        <button class="btn-qty-card" onclick="updateQty('${id}', -1)">−</button>
+                        <span style="font-size:0.85rem; font-weight:800;">${qty}</span>
+                        <button class="btn-qty-card" onclick="updateQty('${id}', 1)">+</button>
+                    </div>
+                `;
+            }
+        });
     }
 
     function updateCartFloatBar() {
@@ -2065,12 +2234,10 @@
                 <h3 style="font-size:0.9rem; margin-bottom:12px; font-weight:800;"><i class="fas fa-user-check" style="margin-right:6px;"></i> Datos Preventa</h3>
                 <input type="text" id="client-name" class="form-control" placeholder="Nombre del Cliente *" required>
                 <input type="text" id="client-address" class="form-control" placeholder="Domicilio de Envío *" required>
-                <label style="font-size:0.75rem; font-weight:700; display:block; margin-bottom:6px;"><i class="fas fa-user-tie" style="margin-right:4px;"></i> Nombre del Vendedor:</label>
-                <select id="seller-select" class="form-control">
-                    <option value="Iván" ${activePreventista === 'Iván' ? 'selected' : ''}>👤 Iván</option>
-                    <option value="Ulises" ${activePreventista === 'Ulises' ? 'selected' : ''}>👤 Ulises</option>
-                    <option value="Directo a Distribuidora" ${activePreventista === 'Directo a la Distribuidora' ? 'selected' : ''}>🏢 Directo a Distribuidora</option>
-                </select>
+                <div style="background: linear-gradient(135deg, #E65100, #FF8C00); color: white; padding: 12px; border-radius: 10px; margin-bottom: 16px; font-weight: 700;">
+                    <div style="font-size: 0.75rem; opacity: 0.9; margin-bottom: 4px;"><i class="fas fa-user-tie" style="margin-right: 4px;"></i> Vendedor Logueado:</div>
+                    <div style="font-size: 1.1rem;"><i class="fas fa-check-circle" style="margin-right: 6px;"></i> ${activePreventista}</div>
+                </div>
                 <button class="btn-whatsapp-send" onclick="sendWhatsAppOrder()">
                     <i class="fab fa-whatsapp"></i> Enviar Pedido Preventa
                 </button>
@@ -2124,7 +2291,6 @@
         } else {
             const clientName = document.getElementById('client-name').value.trim();
             const address = document.getElementById('client-address').value.trim();
-            const sellerName = document.getElementById('seller-select').value;
 
             if (!clientName || !address) {
                 alert("Por favor completa los campos obligatorios (*)");
@@ -2143,7 +2309,7 @@
             msg += `${itemsFormatted}\n \n\n `;
             msg += `-----------------------------------------------\n`;
             msg += `*Total a PAGAR* : $${subtotal.toLocaleString('es-AR', {minimumFractionDigits:2})}\n`;
-            msg += `*Nombre del Vendedor*: ${sellerName}\n`;
+            msg += `*Vendedor Responsable*: ${activePreventista}\n`;
             msg += `----------------------------------------------\n`;
             msg += `🚚 _ENVIAR PEDIDO A:_\n`;
             msg += `*Domicilio de Envío:* ${address}`;
@@ -2166,6 +2332,14 @@
 
     function openAboutModal() { document.getElementById('about-modal').classList.add('active'); }
     function closeAboutModal() { document.getElementById('about-modal').classList.remove('active'); }
+    function openLocationModal() { 
+        const modal = document.getElementById('location-modal');
+        if (modal) modal.classList.add('active');
+    }
+    function closeLocationModal() { 
+        const modal = document.getElementById('location-modal');
+        if (modal) modal.classList.remove('active');
+    }
     function shareApp() {
         if (navigator.share) navigator.share({ title: 'Distribuidora Los Mayorga', url: window.location.href });
         else alert('Enlace: ' + window.location.href);
