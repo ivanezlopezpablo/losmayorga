@@ -721,7 +721,16 @@
     </div>
 
 <script>
-    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTtIs8b6w2l3XSTbkTw0bnqh2SXfTebJjITShgpPJ-jxImqOpnY1rjVHHYNRFqqQBypLxeCKFPrK-C/pub?gid=957503224&single=true&output=csv';
+    // ==========================================================
+    //  FUENTES DE DATOS (Google Sheets publicados como CSV)
+    //  - CSV_URL_PUBLICO: catálogo que ve cualquier cliente
+    //  - CSV_URL_PREVENTA: catálogo adicional exclusivo de preventistas
+    //    (en este sheet el precio final de cada producto =
+    //     Precio Individual x Unidades por Bulto)
+    // ==========================================================
+    const CSV_URL_PUBLICO = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTtIs8b6w2l3XSTbkTw0bnqh2SXfTebJjITShgpPJ-jxImqOpnY1rjVHHYNRFqqQBypLxeCKFPrK-C/pub?gid=957503224&single=true&output=csv';
+    const CSV_URL_PREVENTA = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTtIs8b6w2l3XSTbkTw0bnqh2SXfTebJjITShgpPJ-jxImqOpnY1rjVHHYNRFqqQBypLxeCKFPrK-C/pub?gid=15522074&single=true&output=csv';
+
     const PHONE_PUBLICO = "5492994051600";
     const PHONE_PREVENTA = "5492994836067";
     let COSTO_ENVIO = 2000;
@@ -732,6 +741,11 @@
         "PREV2026C": "Directo a la Distribuidora"
     };
 
+    // Catálogos crudos, cargados una sola vez desde cada hoja
+    let PRODUCTS_PUBLICO = [];
+    let PRODUCTS_PREVENTA_EXTRA = [];
+
+    // Catálogo activo según el rol actual (público, o público + preventa)
     let ALL_PRODUCTS = [];
     let FILTERED_PRODUCTS = [];
     let cart = {};
@@ -766,21 +780,39 @@
         document.querySelectorAll('.hero-dot').forEach((dot, i) => dot.classList.toggle('active', i === index));
     }
 
+    // Carga ambas hojas en paralelo y arma los catálogos crudos
     async function loadProductsFromSheets() {
         try {
-            const response = await fetch(CSV_URL);
-            if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-            const data = await response.text();
-            ALL_PRODUCTS = parseCSV(data);
+            const [respPublico, respPreventa] = await Promise.all([
+                fetch(CSV_URL_PUBLICO),
+                fetch(CSV_URL_PREVENTA)
+            ]);
+
+            const csvPublico = respPublico.ok ? await respPublico.text() : '';
+            const csvPreventa = respPreventa.ok ? await respPreventa.text() : '';
+
+            PRODUCTS_PUBLICO = csvPublico ? parseCSV(csvPublico, 'publico') : [];
+            PRODUCTS_PREVENTA_EXTRA = csvPreventa ? parseCSV(csvPreventa, 'preventa') : [];
         } catch (error) {
             console.error("Error al cargar datos:", error);
         } finally {
+            rebuildActiveCatalog();
             document.getElementById('loader').style.display = 'none';
             document.getElementById('product-grid').style.display = 'grid';
-            renderMainCategories();
-            renderBrandsSelector();
             filterProducts();
         }
+    }
+
+    // Arma el catálogo ALL_PRODUCTS según el rol actual y refresca filtros/marcas/categorías
+    function rebuildActiveCatalog() {
+        if (currentRole === "PREVENTA") {
+            // Preventista: catálogo público + catálogo adicional de preventa
+            ALL_PRODUCTS = PRODUCTS_PUBLICO.concat(PRODUCTS_PREVENTA_EXTRA);
+        } else {
+            ALL_PRODUCTS = PRODUCTS_PUBLICO;
+        }
+        renderMainCategories();
+        renderBrandsSelector();
     }
 
     function formatDriveUrl(url) {
@@ -801,12 +833,24 @@
         return parseFloat(cleaned) || 0;
     }
 
-    function parseCSV(csvText) {
+    // Convierte un texto tipo "12" o "12,5" en número (para Unidades por Bulto)
+    function parseUnits(value) {
+        if (!value) return 1;
+        const cleaned = value.toString().trim().replace(',', '.');
+        const n = parseFloat(cleaned);
+        return (!isNaN(n) && n > 0) ? n : 1;
+    }
+
+    // sheetType: 'publico' -> hoja actual de clientes (Precio Individual ya es el precio final del bulto)
+    //            'preventa' -> hoja nueva (Precio Individual es precio unitario; el precio final
+    //                          del producto = Precio Individual x Unidades por Bulto)
+    function parseCSV(csvText, sheetType) {
         const lines = csvText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
         if (lines.length < 2) return [];
 
         const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
         const products = [];
+        const idPrefix = sheetType === 'preventa' ? 'PV-' : 'PU-';
 
         for (let i = 1; i < lines.length; i++) {
             const currentline = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
@@ -823,36 +867,42 @@
             if (['desactivar', '1', 'si', 'true'].includes(disabledVal)) continue;
 
             const isOutOfStock = ['sin stock', '1', 'si', 'true'].includes(sinStockVal);
-            const id = row['🔒 Row ID'] || row['Formula (No Tocar)'] || i.toString();
             const sku = row['SKU'] || '';
             const title = row['Producto'] || 'Producto sin nombre';
-            const mainCategory = row['Engloba en'] || row['Categoría'] || 'Almacén';
-            const subCategory = row['Subcategoría'] || '';
+            const mainCategory = row['Subcategoría'] || row['Engloba en'] || row['Categoría'] || 'Almacén';
+            const subCategory = '';
             const brand = row['Marca'] || 'Otras';
-            const packInfo = row['Otro Dato'] || 'Unidad';
-            const caracteristicasBulto = row['Características'] || 'Unidad';
-            
-            const priceNormal = cleanPrice(row['Precio Individual'] || row['Precio Comercios']);
-            const pricePromoVal = cleanPrice(row['Precio Promo'] || row['Precio Oferta']);
 
-            if (priceNormal <= 0) continue;
+            const precioIndividual = cleanPrice(row['Precio Individual'] || row['Precio Comercios']);
+            if (precioIndividual <= 0) continue;
+
+            let finalPrice, packInfo;
+
+            if (sheetType === 'preventa') {
+                // Precio final = valor individual x unidades por bulto
+                const unidadesPorBulto = parseUnits(row['Unidades por Bulto']);
+                finalPrice = precioIndividual * unidadesPorBulto;
+                packInfo = unidadesPorBulto > 1 ? `Bulto x${unidadesPorBulto}` : 'Unidad';
+            } else {
+                // Hoja pública: el precio ya viene calculado por bulto
+                finalPrice = precioIndividual;
+                packInfo = row['Características'] || row['Otro Dato'] || 'Unidad';
+            }
 
             const promoCol = (row['En Promo'] || row['Oferta'] || '').toString().trim().toUpperCase();
-            const hasPromoFlag = promoCol.includes('PROMO') || promoCol.includes('OFERTA') || promoCol === 'SI' || promoCol === 'TRUE';
-            const hasValidPromoPrice = pricePromoVal > 0 && pricePromoVal < priceNormal;
-            
-            const isPromo = hasPromoFlag || hasValidPromoPrice;
-            const finalPrice = hasValidPromoPrice ? pricePromoVal : priceNormal;
+            const isPromo = promoCol.includes('PROMO') || promoCol.includes('OFERTA') || promoCol === 'SI' || promoCol === 'TRUE';
 
-            const isSinTacc = (row['SIN GLUTEN'] || row['SIN TACC'] || '').toUpperCase().includes('SI') || title.toLowerCase().includes('sin tacc');
+            const isSinTacc = (row['SIN GLUTEN'] || row['SIN TACC'] || '').toUpperCase().includes('SI') || title.toLowerCase().includes('sin tacc') || title.toLowerCase().includes('sin gluten');
             const normalImage = formatDriveUrl(row['Imagen del Producto']);
-            const expiration = row['Vencimiento'] || row['Fecha Vto'] || '';
+            const expiration = row['Fecha Vencimiento'] || row['Vencimiento'] || row['Fecha Vto'] || '';
+            const id = idPrefix + (sku ? sku : i);
 
             products.push({
                 id, sku, mainCategory, subCategory, title, brand,
-                packInfo, caracteristicasBulto, priceNormal, pricePromoVal,
+                packInfo, caracteristicasBulto: packInfo,
+                priceNormal: finalPrice, pricePromoVal: 0,
                 finalPrice, isPromo, isSinTacc, image: normalImage,
-                isOutOfStock, expiration
+                isOutOfStock, expiration, source: sheetType
             });
         }
         return products;
@@ -861,12 +911,15 @@
     function renderBrandsSelector() {
         const brands = ['TODOS', ...new Set(ALL_PRODUCTS.map(p => p.brand).filter(b => b.trim() !== ''))].sort();
         const select = document.getElementById('brand-select');
+        const previousValue = select.value || 'TODOS';
         select.innerHTML = brands.map(b => `<option value="${b}">${b === 'TODOS' ? '✓ Todas las Marcas' : b}</option>`).join('');
+        select.value = brands.includes(previousValue) ? previousValue : 'TODOS';
     }
 
     function renderMainCategories() {
         const mainCats = ['TODOS', ...new Set(ALL_PRODUCTS.map(p => p.mainCategory))];
         const container = document.getElementById('main-categories-bar');
+        if (!mainCats.includes(selectedMainCat)) selectedMainCat = 'TODOS';
         container.innerHTML = mainCats.map(cat => `
             <div class="cat-tab ${cat === selectedMainCat ? 'active' : ''}" onclick="selectMainCategory('${cat}', this)">
                 <span>${cat === 'TODOS' ? 'Todas' : cat}</span>
@@ -1049,6 +1102,12 @@
             btn.onclick = logoutPreventa;
 
             closeLoginModal();
+            // Ahora el catálogo activo incluye el público + los productos exclusivos de preventa
+            rebuildActiveCatalog();
+            selectedMainCat = 'TODOS';
+            selectedTagFilter = 'TODOS';
+            document.querySelectorAll('.tag-chip').forEach(c => c.classList.remove('active'));
+            document.querySelector('.tag-chip.todos').classList.add('active');
             filterProducts();
             updateCartFloatBar();
         } else {
@@ -1067,6 +1126,9 @@
         btn.innerHTML = '<i class="fas fa-lock"></i> Acceso';
         btn.onclick = openLoginModal;
 
+        // Vuelve a mostrar solo el catálogo público
+        rebuildActiveCatalog();
+        selectedMainCat = 'TODOS';
         filterProducts();
         updateCartFloatBar();
     }
