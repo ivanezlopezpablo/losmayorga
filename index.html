@@ -1,0 +1,1015 @@
+  <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Distribuidora Los Mayorga - Catálogo Mayorista</title>
+    
+    <style>
+        :root {
+            --primary: #001f54;
+            --primary-dark: #001233;
+            --accent-green: #00a650;
+            --accent-yellow: #ffc107;
+            --wa-green: #25D366;
+            --bg-light: #f4f6f8;
+            --card-bg: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --danger: #ef4444;
+            --shadow-sm: 0 2px 5px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        ::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            padding-bottom: 85px;
+            width: 100vw;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background-color 0.4s ease;
+        }
+
+        body.mode-preventa {
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+
+        /* HEADER PRINCIPAL */
+        .app-header {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: white;
+            padding: 12px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 500;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            width: 100%;
+            transition: background 0.4s ease;
+        }
+
+        .mode-preventa .app-header {
+            background: linear-gradient(135deg, #064e3b, #047857);
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            max-width: 100%;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-logo {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: var(--primary);
+            font-size: 1.1rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .header-title h1 {
+            font-size: 1rem;
+            font-weight: 800;
+        }
+
+        .header-title p {
+            font-size: 0.7rem;
+            opacity: 0.85;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-share, .btn-login {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* BUSCADOR Y FILTRO DE MARCAS */
+        .search-container {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 11px 40px 11px 14px;
+            border-radius: 25px;
+            border: none;
+            font-size: 0.88rem;
+            outline: none;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1rem;
+            color: #888;
+        }
+
+        .brand-select-header {
+            padding: 0 14px;
+            border-radius: 25px;
+            border: none;
+            font-size: 0.8rem;
+            font-weight: 700;
+            background: #ffffff;
+            color: var(--primary);
+            outline: none;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        /* BANNER PREVENTA */
+        .preventa-status-banner {
+            background: #047857;
+            color: white;
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 6px 12px;
+            display: none;
+        }
+
+        /* BANNER SLIDER */
+        .hero-banner-slider {
+            position: relative;
+            background: linear-gradient(135deg, #001f54, #0284c7);
+            color: white;
+            overflow: hidden;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow-sm);
+            width: 100%;
+        }
+
+        .hero-slides-wrapper {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+            width: 300%;
+        }
+
+        .hero-slide {
+            width: 33.333%;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            min-height: 110px;
+        }
+
+        .hero-slide-text h2 { font-size: 1.15rem; font-weight: 800; margin-bottom: 4px; }
+        .hero-slide-text p { font-size: 0.78rem; opacity: 0.9; line-height: 1.3; }
+        .hero-slide-img { width: 85px; height: 85px; object-fit: cover; border-radius: 12px; flex-shrink: 0; }
+
+        .hero-dots-container {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 3px 8px;
+            border-radius: 10px;
+        }
+
+        .hero-dot { width: 7px; height: 7px; background: rgba(255, 255, 255, 0.5); border-radius: 50%; cursor: pointer; transition: all 0.3s; }
+        .hero-dot.active { background: #ffffff; width: 16px; border-radius: 8px; }
+
+        /* FILTROS POR ETIQUETAS */
+        .tag-filters-bar {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 8px 16px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--border);
+            width: 100%;
+        }
+
+        .mode-preventa .tag-filters-bar { background: #1e293b; border-color: #334155; }
+
+        .tag-chip {
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: #f1f5f9;
+            color: var(--text-dark);
+            font-size: 0.75rem;
+            font-weight: 700;
+            white-space: nowrap;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .mode-preventa .tag-chip { background: #334155; color: #f8fafc; }
+        .tag-chip.active { background: var(--primary); color: white; }
+        .mode-preventa .tag-chip.active { background: #10b981; color: white; }
+
+        /* CATEGORÍAS */
+        .main-categories-bar {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding: 8px 16px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--border);
+            width: 100%;
+        }
+
+        .mode-preventa .main-categories-bar { background: #1e293b; border-color: #334155; }
+
+        .cat-tab {
+            padding: 5px 12px;
+            border-radius: 14px;
+            background: #fafafa;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 700;
+            white-space: nowrap;
+            cursor: pointer;
+            border: 1px solid var(--border);
+        }
+
+        .cat-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .mode-preventa .cat-tab.active { background: #047857; border-color: #047857; color: white; }
+
+        /* MAIN CONTAINER */
+        .main-container { padding: 12px 16px; width: 100%; }
+        .section-header { font-size: 0.88rem; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+        .product-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; }
+
+        @media (min-width: 640px) { .product-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; } }
+
+        .product-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+        }
+
+        .mode-preventa .product-card { background: #1e293b; border-color: #334155; color: #f8fafc; }
+        .mode-preventa .product-title { color: #f8fafc; }
+
+        .product-img-box {
+            position: relative;
+            width: 100%;
+            height: 125px;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            margin-bottom: 6px;
+        }
+
+        .product-img-box img.main-img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .product-brand { font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); margin-bottom: 2px; }
+        .product-title { font-size: 0.82rem; font-weight: 700; line-height: 1.25; color: var(--text-dark); height: 32px; overflow: hidden; margin-bottom: 4px; }
+        .product-pack-info { font-size: 0.68rem; color: #0284c7; font-weight: 800; background: #e0f2fe; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-bottom: 6px; width: fit-content; }
+
+        .price-box { margin-bottom: 8px; }
+        .price-current { font-size: 1.05rem; font-weight: 900; color: var(--text-dark); }
+        .mode-preventa .price-current { color: #10b981; }
+
+        .btn-add-cart { background: var(--primary); color: white; border: none; padding: 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 800; width: 100%; cursor: pointer; }
+        .mode-preventa .btn-add-cart { background: #047857; }
+
+        .qty-controls-card { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; border: 1px solid var(--border); border-radius: 6px; padding: 2px; }
+        .mode-preventa .qty-controls-card { background: #334155; border-color: #475569; }
+        .btn-qty-card { background: white; border: 1px solid var(--border); width: 28px; height: 28px; border-radius: 4px; font-weight: bold; font-size: 0.9rem; cursor: pointer; }
+
+        /* CARRITO FLOTANTE */
+        .cart-float-bar {
+            position: fixed;
+            bottom: 68px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 32px);
+            max-width: 650px;
+            background: var(--primary);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 6px 20px rgba(0, 31, 84, 0.35);
+            z-index: 1500;
+            cursor: pointer;
+        }
+
+        .mode-preventa .cart-float-bar { background: #047857; }
+
+        /* NAVEGACIÓN INFERIOR */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100vw; height: 60px; background: white; border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 1400; }
+        .mode-preventa .bottom-nav { background: #1e293b; border-color: #334155; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: #475569; font-size: 0.68rem; font-weight: 600; cursor: pointer; width: 25%; }
+        .mode-preventa .nav-item { color: #94a3b8; }
+        .nav-item.active { color: var(--primary); font-weight: 800; }
+        .mode-preventa .nav-item.active { color: #10b981; }
+
+        .nav-icon-svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; margin-bottom: 2px; }
+
+        /* MODALES */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(3px); padding: 14px; }
+        .modal-overlay.active { display: flex; }
+        .modal-card { background: white; width: 100%; max-width: 520px; max-height: 88vh; border-radius: 12px; padding: 20px; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.25); color: var(--text-dark); }
+
+        .btn-close { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: #888; }
+        .form-control { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.88rem; margin-bottom: 8px; outline: none; }
+        .btn-whatsapp-send { background: var(--wa-green); color: white; border: none; padding: 12px; border-radius: 8px; font-size: 0.95rem; font-weight: 800; width: 100%; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 8px; }
+
+        .loader-box { text-align: center; padding: 40px 20px; }
+        .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px auto; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <!-- CABECERA PRINCIPAL -->
+    <header class="app-header">
+        <div class="header-top">
+            <div class="header-brand">
+                <div class="header-logo">LM</div>
+                <div class="header-title">
+                    <h1>Los Mayorga</h1>
+                    <p id="app-subtitle">Distribuidora Mayorista - Rincón</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-share" onclick="shareApp()">🔗 Compartir</button>
+                <button class="btn-login" id="auth-btn" onclick="openLoginModal()">🔑 Acceso</button>
+            </div>
+        </div>
+
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" class="search-input" id="search-input" placeholder="Buscar producto, SKU, categoría..." oninput="filterProducts()">
+                <span class="search-icon">🔍</span>
+            </div>
+            <select class="brand-select-header" id="brand-select" onchange="filterProducts()">
+                <option value="TODOS">Todas las Marcas</option>
+            </select>
+        </div>
+    </header>
+
+    <div id="preventa-banner" class="preventa-status-banner">
+        👨‍💼 MODO PREVENTA ACTIVO - Catálogo Exclusivo Comercial
+    </div>
+
+    <!-- BANNER SLIDER -->
+    <div class="hero-banner-slider">
+        <div class="hero-slides-wrapper" id="hero-track">
+            <div class="hero-slide">
+                <div class="hero-slide-text">
+                    <h2>🚚 Envíos a Domicilio</h2>
+                    <p>Repartos directos en Rincón de los Sauces para comercios y familias.</p>
+                </div>
+                <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=300&q=80" class="hero-slide-img" alt="Envios">
+            </div>
+            <div class="hero-slide">
+                <div class="hero-slide-text">
+                    <h2>🔥 Ofertas Semanales</h2>
+                    <p>Descuentos especiales por bulto en marcas seleccionadas.</p>
+                </div>
+                <img src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=300&q=80" class="hero-slide-img" alt="Ofertas">
+            </div>
+            <div class="hero-slide">
+                <div class="hero-slide-text">
+                    <h2>🌾 Línea Sin Gluten</h2>
+                    <p>Variedad de productos certificados aptos para celíacos.</p>
+                </div>
+                <img src="https://images.unsplash.com/photo-1509440159596-0249088772ff?w=300&q=80" class="hero-slide-img" alt="Sin Tacc">
+            </div>
+        </div>
+        <div class="hero-dots-container">
+            <div class="hero-dot active" onclick="setHeroSlide(0)"></div>
+            <div class="hero-dot" onclick="setHeroSlide(1)"></div>
+            <div class="hero-dot" onclick="setHeroSlide(2)"></div>
+        </div>
+    </div>
+
+    <!-- FILTROS POR ETIQUETAS -->
+    <div class="tag-filters-bar">
+        <div class="tag-chip active" onclick="selectTagFilter('TODOS', this)">Todos</div>
+        <div class="tag-chip promo" onclick="selectTagFilter('PROMO', this)">🔥 En Promo</div>
+        <div class="tag-chip sintacc" onclick="selectTagFilter('SINTACC', this)">🛑 SIN GLUTEN</div>
+        <div class="tag-chip" onclick="selectTagFilter('MASVENDIDO', this)">⭐ Más Vendidos</div>
+        <div class="tag-chip" onclick="selectTagFilter('NUEVO', this)">✨ Nuevos</div>
+    </div>
+
+    <!-- CATEGORÍAS PRINCIPALES -->
+    <div class="main-categories-bar" id="main-categories-bar"></div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="main-container">
+        <div class="section-header">
+            <span id="section-title">Catálogo Completo</span>
+            <span id="product-count" style="font-size:0.75rem; color:#777;"></span>
+        </div>
+
+        <div id="loader" class="loader-box">
+            <div class="spinner"></div>
+            <p style="font-size:0.85rem; color:#666; font-weight:600;">Sincronizando productos...</p>
+        </div>
+
+        <div class="product-grid" id="product-grid" style="display:none;"></div>
+    </main>
+
+    <!-- BARRA FLOTANTE CARRITO -->
+    <div class="cart-float-bar" id="cart-float-bar" style="display:none;" onclick="toggleCartModal(true)">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <svg class="nav-icon-svg" viewBox="0 0 24 24" style="stroke:white;">
+                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <path d="M16 10a4 4 0 01-8 0"></path>
+            </svg>
+            <span id="cart-float-count" style="font-size:0.85rem; font-weight:800;">0 bultos</span>
+        </div>
+        <span id="cart-float-total" style="font-size:0.95rem; font-weight:900;">$0,00</span>
+    </div>
+
+    <!-- NAVEGACIÓN INFERIOR -->
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="switchTabNav('inicio', this)">
+            <svg class="nav-icon-svg" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            <span>Menú</span>
+        </div>
+        <div class="nav-item" id="nav-cart-btn" onclick="toggleCartModal(true)">
+            <svg class="nav-icon-svg" viewBox="0 0 24 24"><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path><circle cx="10" cy="21" r="1"></circle><circle cx="18" cy="21" r="1"></circle></svg>
+            <span>Mi Carrito</span>
+        </div>
+        <div class="nav-item" onclick="openAboutModal()">
+            <svg class="nav-icon-svg" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <span>Nosotros</span>
+        </div>
+        <div class="nav-item" onclick="focusSearchInput()">
+            <svg class="nav-icon-svg" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span>Buscar</span>
+        </div>
+    </nav>
+
+    <!-- MODAL CARRITO -->
+    <div class="modal-overlay" id="cart-modal">
+        <div class="modal-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h2 style="font-size:1.1rem; color:var(--text-dark); display:flex; align-items:center; gap:6px; font-weight:900;">
+                    🛒 Tu Pedido Mayorista
+                </h2>
+                <button class="btn-close" onclick="toggleCartModal(false)">✕</button>
+            </div>
+
+            <div id="cart-summary-items" style="margin-bottom:14px; border:1px solid var(--border); border-radius:8px; padding:8px 12px; background:#fafafa;"></div>
+            <div id="cart-checkout-form" style="display:none; border-top:1px solid var(--border); padding-top:14px; margin-top:10px;"></div>
+        </div>
+    </div>
+
+    <!-- MODAL LOGIN PREVENTISTA -->
+    <div class="modal-overlay" id="login-modal">
+        <div class="modal-card" style="max-width:360px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="font-size:1rem; font-weight:800;">Acceso Preventistas</h3>
+                <button class="btn-close" onclick="closeLoginModal()">✕</button>
+            </div>
+            <p style="font-size:0.78rem; color:#666; margin-bottom:10px;">Ingrese su clave especial para habilitar el modo preventa:</p>
+            <input type="password" id="pass-input" placeholder="Clave de acceso" class="form-control">
+            <p id="login-error" style="color:var(--danger); font-size:0.75rem; display:none; margin-bottom:8px;">Clave incorrecta.</p>
+            <button onclick="loginPreventa()" style="background:var(--primary); color:white; border:none; padding:10px; border-radius:6px; font-weight:bold; width:100%; cursor:pointer;">Ingresar</button>
+        </div>
+    </div>
+
+    <!-- MODAL NOSOTROS -->
+    <div class="modal-overlay" id="about-modal">
+        <div class="modal-card" style="text-align:center;">
+            <div style="font-size:2.2rem; margin-bottom:6px;">🏢</div>
+            <h2 style="color:var(--primary); font-size:1.1rem; margin-bottom:4px;">Distribuidora Los Mayorga</h2>
+            <p style="font-size:0.8rem; color:#666; margin-bottom:10px;">Rincón de los Sauces, Neuquén</p>
+            <p style="font-size:0.85rem; line-height:1.4; color:var(--text-dark); margin-bottom:14px;">Venta y distribución mayorista de alimentos, bebidas y artículos de almacén.</p>
+            <button onclick="closeAboutModal()" style="background:var(--primary); color:white; border:none; padding:10px; border-radius:6px; font-weight:bold; cursor:pointer; width:100%;">Cerrar</button>
+        </div>
+    </div>
+
+<script>
+    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTtIs8b6w2l3XSTbkTw0bnqh2SXfTebJjITShgpPJ-jxImqOpnY1rjVHHYNRFqqQBypLxeCKFPrK-C/pub?gid=957503224&single=true&output=csv';
+    
+    // NÚMEROS DE DESTINO
+    const PHONE_PUBLICO = "5492994051600";
+    const PHONE_PREVENTA = "5492994836067";
+
+    // VALOR DE ENVÍO EDITABLE
+    let COSTO_ENVIO = 2000;
+
+    // CLAVES DE PREVENTISTAS
+    const PREVENTA_KEYS = {
+        "PREV2026A": "Iván",
+        "PREV2026B": "Ulises",
+        "PREV2026C": "Directo a la Distribuidora"
+    };
+
+    let ALL_PRODUCTS = [];
+    let FILTERED_PRODUCTS = [];
+    let selectedMainCat = 'TODOS';
+    let selectedTagFilter = 'TODOS';
+    let currentSlide = 0;
+    let cart = {};
+    let currentRole = "PUBLICO"; // "PUBLICO" o "PREVENTA"
+    let activePreventista = "";
+
+    window.addEventListener('DOMContentLoaded', () => {
+        loadProductsFromSheets();
+        startHeroAutoSlide();
+    });
+
+    function startHeroAutoSlide() {
+        setInterval(() => {
+            currentSlide = (currentSlide + 1) % 3;
+            setHeroSlide(currentSlide);
+        }, 4000);
+    }
+
+    function setHeroSlide(index) {
+        currentSlide = index;
+        const track = document.getElementById('hero-track');
+        if (track) track.style.transform = `translateX(-${index * 33.333}%)`;
+        document.querySelectorAll('.hero-dot').forEach((dot, i) => dot.classList.toggle('active', i === index));
+    }
+
+    async function loadProductsFromSheets() {
+        try {
+            const response = await fetch(CSV_URL);
+            if (!response.ok) throw new Error("Google Sheets no respondió");
+            const data = await response.text();
+            ALL_PRODUCTS = parseCSV(data);
+        } catch (error) {
+            console.log("Error al cargar datos remotos.", error);
+        } finally {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('product-grid').style.display = 'grid';
+            renderMainCategories();
+            renderBrandsSelector();
+            filterProducts();
+        }
+    }
+
+    function formatDriveUrl(url) {
+        if (!url) return 'https://via.placeholder.com/180?text=Sin+Imagen';
+        if (url.includes('drive.google.com')) {
+            const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            if (match && match[1]) return `https://lh3.googleusercontent.com/d/${match[1]}`;
+        }
+        return url;
+    }
+
+    function cleanPrice(priceStr) {
+        if (typeof priceStr === 'number') return priceStr;
+        if (!priceStr) return 0;
+        let cleaned = priceStr.toString().replace(/[^0-9,. ]/g, '').trim();
+        if (cleaned.includes('.') && cleaned.includes(',')) {
+            cleaned = cleaned.replace(/\./g, '').replace(',', '.');
+        } else if (cleaned.includes(',')) {
+            cleaned = cleaned.replace(',', '.');
+        }
+        return parseFloat(cleaned) || 0;
+    }
+
+    function parseCSV(csvText) {
+        const lines = csvText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        if (lines.length < 2) return [];
+
+        const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+        const products = [];
+
+        for (let i = 1; i < lines.length; i++) {
+            const currentline = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+            if (currentline.length < headers.length) continue;
+
+            let row = {};
+            for (let j = 0; j < headers.length; j++) {
+                let val = currentline[j] ? currentline[j].trim().replace(/^"|"$/g, '') : '';
+                row[headers[j]] = val;
+            }
+
+            const disabledVal = (row['Desactivar'] || '').toString().trim().toLowerCase();
+            const sinStockVal = (row['Sin Stock'] || '').toString().trim().toLowerCase();
+
+            if (disabledVal === 'desactivar' || disabledVal === '1' || disabledVal === 'si' || disabledVal === 'true') continue;
+
+            const isOutOfStock = (sinStockVal === 'sin stock' || sinStockVal === '1' || sinStockVal === 'si' || sinStockVal === 'true');
+            const id = row['🔒 Row ID'] || row['Formula (No Tocar)'] || i.toString();
+            const sku = row['SKU'] || '';
+            const title = row['Producto'] || 'Producto sin nombre';
+            const mainCategory = row['Engloba en'] || row['Categoría'] || 'Almacén';
+            const subCategory = row['Subcategoría'] || '';
+            const brand = row['Marca'] || 'Otras';
+            const packInfo = row['Otro Dato'] || 'Unidad';
+            const caracteristicasBulto = row['Características'] || 'Unidad';
+            const priceNormal = cleanPrice(row['Precio Individual']);
+
+            if (priceNormal <= 0) continue;
+
+            const isPromo = (row['En Promo'] || '').toString().trim() !== '';
+            const isSinTacc = (row['SIN GLUTEN'] || row['SIN TACC'] || '').toUpperCase().includes('SI') || title.toLowerCase().includes('sin tacc');
+            const normalImage = formatDriveUrl(row['Imagen del Producto']);
+            const expiration = row['Vencimiento'] || row['Fecha Vto'] || '';
+
+            products.push({ id, sku, mainCategory, subCategory, title, brand, packInfo, caracteristicasBulto, priceNormal, isPromo, isSinTacc, image: normalImage, isOutOfStock, expiration });
+        }
+        return products;
+    }
+
+    function renderBrandsSelector() {
+        const brands = ['TODOS', ...new Set(ALL_PRODUCTS.map(p => p.brand).filter(b => b.trim() !== ''))].sort();
+        const select = document.getElementById('brand-select');
+        select.innerHTML = brands.map(b => `<option value="${b}">${b === 'TODOS' ? 'Todas las Marcas' : b}</option>`).join('');
+    }
+
+    function renderMainCategories() {
+        const mainCats = ['TODOS', ...new Set(ALL_PRODUCTS.map(p => p.mainCategory))];
+        const container = document.getElementById('main-categories-bar');
+        container.innerHTML = mainCats.map(cat => `<div class="cat-tab ${cat === selectedMainCat ? 'active' : ''}" onclick="selectMainCategory('${cat}', this)">${cat === 'TODOS' ? 'Todas las Categorías' : cat}</div>`).join('');
+    }
+
+    function selectMainCategory(cat, el) {
+        selectedMainCat = cat;
+        document.querySelectorAll('.cat-tab').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        filterProducts();
+    }
+
+    function selectTagFilter(tag, el) {
+        selectedTagFilter = tag;
+        document.querySelectorAll('.tag-chip').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        filterProducts();
+    }
+
+    function filterProducts() {
+        const query = document.getElementById('search-input').value.toLowerCase().trim();
+        const selectedBrand = document.getElementById('brand-select').value;
+
+        FILTERED_PRODUCTS = ALL_PRODUCTS.filter(p => {
+            let matchesCat = selectedMainCat === 'TODOS' || p.mainCategory === selectedMainCat;
+            let matchesBrand = selectedBrand === 'TODOS' || p.brand === selectedBrand;
+            let matchesTag = true;
+
+            if (selectedTagFilter === 'PROMO') matchesTag = p.isPromo;
+            else if (selectedTagFilter === 'SINTACC') matchesTag = p.isSinTacc;
+
+            let matchesQuery = p.title.toLowerCase().includes(query) || p.sku.toLowerCase().includes(query) || p.brand.toLowerCase().includes(query);
+            return matchesCat && matchesBrand && matchesTag && matchesQuery;
+        });
+
+        document.getElementById('product-count').innerText = `${FILTERED_PRODUCTS.length} artículos`;
+        renderProductsGrid(FILTERED_PRODUCTS);
+    }
+
+    function renderProductsGrid(products) {
+        const grid = document.getElementById('product-grid');
+        if (products.length === 0) {
+            grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:30px; color:#777;">Sin productos para esta combinación.</div>`;
+            return;
+        }
+
+        grid.innerHTML = products.map(p => {
+            const qty = cart[p.id] ? cart[p.id].qty : 0;
+            return `
+                <div class="product-card">
+                    <div>
+                        <div class="product-img-box">
+                            <img class="main-img" src="${p.image}" alt="${p.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/180?text=Sin+Foto'">
+                        </div>
+                        ${p.sku ? `<div style="font-size:0.6rem; color:#888;">SKU: ${p.sku}</div>` : ''}
+                        <div class="product-brand">${p.brand}</div>
+                        <div class="product-title">${p.title}</div>
+                        <div class="product-pack-info">📦 ${p.caracteristicasBulto}</div>
+                    </div>
+                    <div>
+                        <div class="price-box">
+                            <div class="price-current">$${p.priceNormal.toLocaleString('es-AR', {minimumFractionDigits:2})}</div>
+                        </div>
+                        ${p.isOutOfStock ? `
+                            <button class="btn-add-cart" disabled>Sin Stock</button>
+                        ` : qty === 0 ? `
+                            <button class="btn-add-cart" onclick="updateQty('${p.id}', 1)">➕ Agregar</button>
+                        ` : `
+                            <div class="qty-controls-card">
+                                <button class="btn-qty-card" onclick="updateQty('${p.id}', -1)">-</button>
+                                <span style="font-size:0.85rem; font-weight:800;">${qty}</span>
+                                <button class="btn-qty-card" onclick="updateQty('${p.id}', 1)">+</button>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function updateQty(id, delta) {
+        const product = ALL_PRODUCTS.find(p => p.id === id);
+        if (!product || product.isOutOfStock) return;
+
+        if (!cart[id]) cart[id] = { product, qty: 0 };
+        cart[id].qty += delta;
+        if (cart[id].qty <= 0) delete cart[id];
+
+        filterProducts();
+        updateCartFloatBar();
+    }
+
+    function updateCartFloatBar() {
+        const floatBar = document.getElementById('cart-float-bar');
+        let totalItems = 0;
+        let totalPrice = 0;
+
+        Object.keys(cart).forEach(id => {
+            const item = cart[id];
+            totalItems += item.qty;
+            totalPrice += item.product.priceNormal * item.qty;
+        });
+
+        if (totalItems > 0) {
+            let totalConEnvio = currentRole === "PUBLICO" ? totalPrice + COSTO_ENVIO : totalPrice;
+            floatBar.style.display = 'flex';
+            document.getElementById('cart-float-count').innerText = `${totalItems} bulto${totalItems > 1 ? 's' : ''}`;
+            document.getElementById('cart-float-total').innerText = `$${totalConEnvio.toLocaleString('es-AR', {minimumFractionDigits:2})}`;
+        } else {
+            floatBar.style.display = 'none';
+        }
+    }
+
+    // MODAL LOGIN Y CAMBIO DE TEMA
+    function openLoginModal() {
+        document.getElementById('pass-input').value = "";
+        document.getElementById('login-error').style.display = 'none';
+        document.getElementById('login-modal').classList.add('active');
+    }
+    function closeLoginModal() { document.getElementById('login-modal').classList.remove('active'); }
+
+    function loginPreventa() {
+        const key = document.getElementById('pass-input').value.trim();
+        if (PREVENTA_KEYS[key]) {
+            currentRole = "PREVENTA";
+            activePreventista = PREVENTA_KEYS[key];
+            document.body.classList.add('mode-preventa');
+            document.getElementById('preventa-banner').style.display = 'block';
+            document.getElementById('app-subtitle').innerText = `Preventa - ${activePreventista}`;
+            
+            const btn = document.getElementById('auth-btn');
+            btn.innerText = "🚪 Salir";
+            btn.onclick = logoutPreventa;
+
+            closeLoginModal();
+            filterProducts();
+            updateCartFloatBar();
+        } else {
+            document.getElementById('login-error').style.display = 'block';
+        }
+    }
+
+    function logoutPreventa() {
+        currentRole = "PUBLICO";
+        activePreventista = "";
+        document.body.classList.remove('mode-preventa');
+        document.getElementById('preventa-banner').style.display = 'none';
+        document.getElementById('app-subtitle').innerText = "Distribuidora Mayorista - Rincón";
+
+        const btn = document.getElementById('auth-btn');
+        btn.innerText = "🔑 Acceso";
+        btn.onclick = openLoginModal;
+
+        filterProducts();
+        updateCartFloatBar();
+    }
+
+    // CARRITO Y CHECKOUT
+    function toggleCartModal(show) {
+        const modal = document.getElementById('cart-modal');
+        if (show) { renderCartSummary(); modal.classList.add('active'); }
+        else { modal.classList.remove('active'); }
+    }
+
+    function renderCartSummary() {
+        const container = document.getElementById('cart-summary-items');
+        const form = document.getElementById('cart-checkout-form');
+        const itemIds = Object.keys(cart);
+
+        if (itemIds.length === 0) {
+            container.innerHTML = `<div style="text-align:center; padding:20px; color:#777;">El carrito está vacío</div>`;
+            form.style.display = 'none';
+            return;
+        }
+
+        form.style.display = 'block';
+        let subtotal = 0;
+
+        let html = itemIds.map(id => {
+            const item = cart[id];
+            const itemTotal = item.product.priceNormal * item.qty;
+            subtotal += itemTotal;
+
+            return `
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed #ccc; padding:8px 0;">
+                    <div>
+                        <strong style="font-size:0.82rem;">${item.product.title}</strong>
+                        <div style="font-size:0.7rem; color:#666;">${item.product.caracteristicasBulto} - $${item.product.priceNormal.toLocaleString('es-AR')} c/u</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-weight:800; font-size:0.85rem;">$${itemTotal.toLocaleString('es-AR', {minimumFractionDigits:2})}</div>
+                        <span style="font-size:0.75rem;">Cant: ${item.qty}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        if (currentRole === "PUBLICO") {
+            let totalFinal = subtotal + COSTO_ENVIO;
+            html += `
+                <div style="margin-top:10px; font-size:0.85rem;">
+                    <div style="display:flex; justify-content:space-between;"><span>Subtotal:</span><span>$${subtotal.toLocaleString('es-AR', {minimumFractionDigits:2})}</span></div>
+                    <div style="display:flex; justify-content:space-between;"><span>Envío a Domicilio:</span><span>$${COSTO_ENVIO.toLocaleString('es-AR', {minimumFractionDigits:2})}</span></div>
+                    <div style="display:flex; justify-content:space-between; font-weight:900; font-size:1rem; margin-top:4px;"><span>Total:</span><span>$${totalFinal.toLocaleString('es-AR', {minimumFractionDigits:2})}</span></div>
+                </div>
+            `;
+
+            form.innerHTML = `
+                <h3 style="font-size:0.88rem; margin-bottom:8px; font-weight:800;">📋 Datos de Entrega</h3>
+                <input type="text" id="client-fullname" class="form-control" placeholder="Nombre y Apellido Completo *" required>
+                <input type="text" id="client-dni" class="form-control" placeholder="DNI Nro. *" required>
+                <input type="tel" id="client-phone" class="form-control" placeholder="Teléfono de contacto *" required>
+                <input type="text" id="client-address" class="form-control" placeholder="Domicilio de Envío (Calle y Número) *" required>
+                <textarea id="client-address-details" class="form-control" placeholder="Características del Domicilio (Ej: Casa verde) *" rows="2" required></textarea>
+                <label style="font-size:0.75rem; font-weight:700;">Método de Pago:</label>
+                <select id="payment-method" class="form-control">
+                    <option value="Mercado Pago">Mercado Pago</option>
+                    <option value="Efectivo contra entrega">Efectivo contra entrega</option>
+                    <option value="Transferencia Bancaria">Transferencia Bancaria</option>
+                </select>
+                <button class="btn-whatsapp-send" onclick="sendWhatsAppOrder()">Enviar Pedido por WhatsApp</button>
+            `;
+        } else {
+            html += `
+                <div style="margin-top:10px; font-size:0.85rem; display:flex; justify-content:space-between; font-weight:900;">
+                    <span>Total a PAGAR:</span><span>$${subtotal.toLocaleString('es-AR', {minimumFractionDigits:2})}</span>
+                </div>
+            `;
+
+            form.innerHTML = `
+                <h3 style="font-size:0.88rem; margin-bottom:8px; font-weight:800;">📋 Datos Preventa</h3>
+                <input type="text" id="client-name" class="form-control" placeholder="Nombre del Cliente *" required>
+                <input type="text" id="client-address" class="form-control" placeholder="Domicilio de Envío *" required>
+                <label style="font-size:0.75rem; font-weight:700;">Nombre del Vendedor:</label>
+                <select id="seller-select" class="form-control">
+                    <option value="Iván" ${activePreventista === 'Iván' ? 'selected' : ''}>Iván</option>
+                    <option value="Ulises" ${activePreventista === 'Ulises' ? 'selected' : ''}>Ulises</option>
+                    <option value="Directo a Distribuidora" ${activePreventista === 'Directo a la Distribuidora' ? 'selected' : ''}>Directo a Distribuidora</option>
+                </select>
+                <button class="btn-whatsapp-send" onclick="sendWhatsAppOrder()">Enviar Pedido Preventa</button>
+            `;
+        }
+
+        container.innerHTML = html;
+    }
+
+    function sendWhatsAppOrder() {
+        let subtotal = 0;
+
+        if (currentRole === "PUBLICO") {
+            const fullname = document.getElementById('client-fullname').value.trim();
+            const dni = document.getElementById('client-dni').value.trim();
+            const phone = document.getElementById('client-phone').value.trim();
+            const address = document.getElementById('client-address').value.trim();
+            const addressDetails = document.getElementById('client-address-details').value.trim();
+            const payment = document.getElementById('payment-method').value;
+
+            if (!fullname || !dni || !phone || !address || !addressDetails) {
+                alert("Por favor completa todos los campos obligatorios (*)");
+                return;
+            }
+
+            let itemsFormatted = Object.keys(cart).map(id => {
+                const item = cart[id];
+                const itemSub = item.product.priceNormal * item.qty;
+                subtotal += itemSub;
+                let vtoStr = item.product.expiration ? ` | Fecha Vto.: *${item.product.expiration}*` : '';
+                let subcatStr = item.product.subCategory ? `${item.product.subCategory}` : 'Almacén';
+
+                return `🛒 ${item.qty} *${item.product.title}* ${item.product.caracteristicasBulto} - (${subcatStr}${vtoStr}); Precio Unitario $${item.product.priceNormal.toLocaleString('es-AR', {minimumFractionDigits:2})}\n=$${itemSub.toLocaleString('es-AR', {minimumFractionDigits:2})} (Subtotal)`;
+            }).join('\n \n');
+
+            let totalFinal = subtotal + COSTO_ENVIO;
+
+            let msg = `¡Hola *Distribuidora Los MAYORGA*!, soy *${fullname}*, DNI Nro. ${dni} y he realizado el siguiente Pedido de Productos:\n\n`;
+            msg += `${itemsFormatted}\n \n`;
+            msg += `-----------------------------------------------\n`;
+            msg += `*TOTAL A PAGAR ESTIMATIVO* _*(Incluye costo de envio $${COSTO_ENVIO})*_: $${totalFinal.toLocaleString('es-AR', {minimumFractionDigits:2})}\n`;
+            msg += `_Posteriormente se le informará desde Sucursal y una vez armado su pedido el valor real del mismo, debido que puede variar en determinados productos como los Quesos por ejemplo_\n`;
+            msg += `*MÉTODO DE PAGO:* ${payment}\n`;
+            msg += `----------------------------------------------\n`;
+            msg += `🚚 _ENVIAR PEDIDO A:_\n`;
+            msg += `*Domicilio de Envío:* ${address}\n`;
+            msg += `*Características del domicilio:* ${addressDetails}`;
+
+            window.open(`https://wa.me/${PHONE_PUBLICO}?text=${encodeURIComponent(msg)}`, '_blank');
+
+        } else {
+            const clientName = document.getElementById('client-name').value.trim();
+            const address = document.getElementById('client-address').value.trim();
+            const sellerName = document.getElementById('seller-select').value;
+
+            if (!clientName || !address) {
+                alert("Por favor completa los campos obligatorios (*)");
+                return;
+            }
+
+            let itemsFormatted = Object.keys(cart).map(id => {
+                const item = cart[id];
+                const itemSub = item.product.priceNormal * item.qty;
+                subtotal += itemSub;
+
+                return `🛒 _${item.product.title}_ (Subcategoría: ${item.product.subCategory})\nUnidades Totales: ${item.qty}\nPrecio Unitario= $${item.product.priceNormal.toLocaleString('es-AR', {minimumFractionDigits:2})}\nSubtotal= $${itemSub.toLocaleString('es-AR', {minimumFractionDigits:2})}`;
+            }).join('\n \n');
+
+            let msg = `¡Hola *Distribuidora Los MAYORGA*!, soy *${clientName}*, y he realizado el siguiente Pedido de Productos:\n\n`;
+            msg += `** (de la Distribuidora)\n`;
+            msg += `${itemsFormatted}\n \n\n `;
+            msg += `-----------------------------------------------\n`;
+            msg += `*Total a PAGAR* : $${subtotal.toLocaleString('es-AR', {minimumFractionDigits:2})}\n`;
+            msg += `*Nombre del Vendedor*: ${sellerName}\n`;
+            msg += `----------------------------------------------\n`;
+            msg += `🚚 _ENVIAR PEDIDO A:_\n`;
+            msg += `*Domicilio de Envío:* ${address}`;
+
+            window.open(`https://wa.me/${PHONE_PREVENTA}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+    }
+
+    function switchTabNav(tab, el) {
+        document.querySelectorAll('.bottom-nav .nav-item').forEach(n => n.classList.remove('active'));
+        el.classList.add('active');
+        if (tab === 'inicio') window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function focusSearchInput() {
+        const input = document.getElementById('search-input');
+        input.focus();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openAboutModal() { document.getElementById('about-modal').classList.add('active'); }
+    function closeAboutModal() { document.getElementById('about-modal').classList.remove('active'); }
+    function shareApp() {
+        if (navigator.share) navigator.share({ title: 'Distribuidora Los Mayorga', url: window.location.href });
+        else alert('Enlace copiado para compartir: ' + window.location.href);
+    }
+</script>
+</body>
+</html>
