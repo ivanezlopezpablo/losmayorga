@@ -927,38 +927,67 @@
             border-bottom: 1px solid var(--border); margin-bottom: 12px;
         }
         .mode-preventa .marcas-tab-bar { border-color: #334155; }
+
+        /* Buscador de marcas (reemplaza al viejo "Todos los Productos") */
+        .marcas-search-box {
+            position: relative; margin-bottom: 12px;
+        }
+        .marcas-search-box i {
+            position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+            color: var(--text-muted); font-size: 0.85rem;
+        }
+        .marcas-search-box input {
+            width: 100%; padding: 10px 14px 10px 36px;
+            border-radius: 12px; border: 1.5px solid var(--border);
+            font-size: 0.85rem; outline: none; background: white; color: var(--text-dark);
+        }
+        .marcas-search-box input:focus { border-color: var(--primary-light); }
+        .mode-preventa .marcas-search-box input { background: #1e293b; border-color: #334155; color: #f8fafc; }
+
         .marcas-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         @media (min-width: 640px) { .marcas-grid { grid-template-columns: repeat(3, 1fr); } }
-        .marcas-todos {
-            grid-column: 1 / -1;
-            display: flex; flex-direction: row; align-items: center; justify-content: center;
-            gap: 8px; padding: 14px; border-radius: 14px; cursor: pointer;
-            background: linear-gradient(135deg, #fce7f3, #fbcfe8);
-            color: #9d174d; font-weight: 900; font-size: 0.82rem;
-            transition: all 0.2s ease;
-        }
-        .marcas-todos:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
-        .marcas-todos i { font-size: 1.2rem; }
+
         .marcas-card {
             background: #f8fafb; border: 1.5px solid var(--border); border-radius: 14px;
-            padding: 8px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+            padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 8px;
             cursor: pointer; transition: all 0.2s ease;
         }
         .mode-preventa .marcas-card { background: #1e293b; border-color: #334155; }
         .marcas-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); border-color: var(--primary-light); }
+
+        /* Caja de imagen tipo "producto": imagen contenida y centrada, sin recortar */
         .marcas-card-img-box {
-            width: 100%; height: 78px; border-radius: 10px; overflow: hidden;
-            background: white; position: relative;
+            width: 100%; height: 92px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #f8fafb, #eef2f7);
         }
+        .mode-preventa .marcas-card-img-box { background: linear-gradient(135deg, #ffffff, #f1f5f9); }
         .marcas-card-img-box img {
-            width: 100%; height: 100%;
-            object-fit: cover; object-position: center;
-            transform: scale(1.12);
+            max-width: 85%; max-height: 85%;
+            object-fit: contain;
             transition: transform 0.25s ease;
         }
-        .marcas-card:hover .marcas-card-img-box img { transform: scale(1.22); }
-        .marcas-card-name { font-size: 0.7rem; font-weight: 800; text-align: center; color: var(--text-dark); }
+        .marcas-card:hover .marcas-card-img-box img { transform: scale(1.06); }
+        .marcas-card-name {
+            font-size: 0.7rem; font-weight: 800; text-align: center; color: var(--text-dark);
+            display: flex; align-items: center; gap: 4px; justify-content: center;
+        }
+        .marcas-card-name i { opacity: 0.55; font-size: 0.62rem; }
         .mode-preventa .marcas-card-name { color: #f8fafc; }
+
+        /* Vista de productos de una marca (nivel 2), con botón de volver */
+        .marcas-back-btn {
+            display: flex; align-items: center; gap: 8px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white; border: none; padding: 10px 16px; border-radius: 12px;
+            font-size: 0.8rem; font-weight: 800; cursor: pointer; margin-bottom: 12px;
+        }
+        .mode-preventa .marcas-back-btn { background: linear-gradient(135deg, #FF6F00, #FF8C00); }
+        .marcas-brand-heading {
+            font-size: 1rem; font-weight: 900; color: var(--text-dark); margin-bottom: 12px;
+        }
+        .mode-preventa .marcas-brand-heading { color: #f8fafc; }
+        .marcas-brand-count { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); }
 
         .vencimientos-modal-card { max-width: 640px; }
         .venc-row {
@@ -1105,8 +1134,7 @@
     <!-- PANEL INLINE "BUSCAR POR MARCA" - se despliega debajo de los filtros, sin modal -->
     <div class="marcas-inline-section" id="marcas-inline-section" style="display:none;">
         <div class="marcas-inline-header"><i class="fas fa-tags"></i> Modo App Vieja - Buscar por Marca</div>
-        <div class="marcas-tab-bar" id="marcas-tab-bar"></div>
-        <div class="marcas-grid" id="marcas-grid"></div>
+        <div id="marcas-body"></div>
     </div>
 
     <!-- CATEGORÍAS -->
@@ -2304,9 +2332,10 @@
     }
 
     // ==========================================================
-    //  BUSCAR POR MARCA (VISUAL) - solo preventistas logueados
-    //  Panel inline (no modal): se abre/cierra debajo de los filtros, como
-    //  otra forma de búsqueda alternativa, sin tapar el resto de la pantalla.
+    //  BUSCAR POR MARCA (VISUAL) - "Modo App Vieja", solo preventistas logueados
+    //  Panel inline (no modal), con 2 niveles de navegación:
+    //    Nivel 1: pestañas de sección (Almacén/Refrigerados/Limpieza) + buscador de marca + logos
+    //    Nivel 2: productos de la marca elegida, con botón "Volver a marcas" (sin salir del modo)
     // ==========================================================
     const MARCAS_TABS = [
         { bucket: 'Almacen', label: 'Almacén' },
@@ -2315,6 +2344,8 @@
     ];
 
     let marcasInlineOpen = false;
+    let marcasSelectedBrand = null; // null = viendo la grilla de marcas; string = viendo productos de esa marca
+    let marcasSearchQuery = '';
 
     function refreshMarcasChipVisibility() {
         const chip = document.getElementById('tag-chip-marcas');
@@ -2336,8 +2367,9 @@
         if (marcasInlineOpen) {
             // Entra en "Modo App Vieja": se oculta el catálogo de la app nueva (categorías,
             // ofertas destacadas y grilla) y solo se muestra la búsqueda visual por marca.
-            renderMarcasTabs();
-            renderMarcasGrid();
+            marcasSelectedBrand = null;
+            marcasSearchQuery = '';
+            renderMarcasBrandsLevel();
             section.style.display = 'block';
             if (chip) chip.classList.add('active');
             if (catBar) catBar.style.display = 'none';
@@ -2355,6 +2387,8 @@
 
     function closeMarcasInline() {
         marcasInlineOpen = false;
+        marcasSelectedBrand = null;
+        marcasSearchQuery = '';
         const section = document.getElementById('marcas-inline-section');
         const chip = document.getElementById('tag-chip-marcas');
         const catBar = document.getElementById('main-categories-bar');
@@ -2365,8 +2399,27 @@
         if (catalogSection) catalogSection.style.display = '';
     }
 
-    function renderMarcasTabs() {
+    // ---------- NIVEL 1: grilla de marcas ----------
+
+    function renderMarcasBrandsLevel() {
+        const body = document.getElementById('marcas-body');
+        body.innerHTML = `
+            <div class="marcas-tab-bar" id="marcas-tab-bar"></div>
+            <div class="marcas-search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="marcas-search-input" placeholder="Buscar marca..." oninput="onMarcasSearchInput()">
+            </div>
+            <div class="marcas-grid" id="marcas-grid"></div>
+        `;
+        renderMarcasTabsOnly();
+        updateMarcasGridOnly();
+        const input = document.getElementById('marcas-search-input');
+        if (input) input.value = marcasSearchQuery;
+    }
+
+    function renderMarcasTabsOnly() {
         const container = document.getElementById('marcas-tab-bar');
+        if (!container) return;
         container.innerHTML = MARCAS_TABS.map(t => `
             <div class="cat-tab ${t.bucket === selectedMarcasTab ? 'active' : ''}" onclick="selectMarcasTab('${t.bucket}')"><span>${t.label}</span></div>
         `).join('');
@@ -2374,85 +2427,79 @@
 
     function selectMarcasTab(bucket) {
         selectedMarcasTab = bucket;
-        renderMarcasTabs();
-        renderMarcasGrid();
+        marcasSearchQuery = '';
+        renderMarcasBrandsLevel();
     }
 
-    function renderMarcasGrid() {
+    // Actualiza SOLO la grilla (sin recrear el input) para no perder el foco mientras se escribe
+    function updateMarcasGridOnly() {
         const container = document.getElementById('marcas-grid');
-        const brands = BRAND_LOGOS.filter(b => b.bucket === selectedMarcasTab);
+        if (!container) return;
 
-        let html = `
-            <div class="marcas-todos" onclick="filterByBucket('${selectedMarcasTab}')">
-                <i class="fas fa-th-large"></i>
-                <span>Todos los Productos</span>
-            </div>
-        `;
+        const query = marcasSearchQuery.trim().toLowerCase();
+        const brands = BRAND_LOGOS.filter(b => b.bucket === selectedMarcasTab && (!query || b.name.toLowerCase().includes(query)));
 
         if (brands.length === 0) {
-            html += `<p style="grid-column:1/-1; text-align:center; color:#999; padding:16px 0; font-size:0.82rem;">Sin marcas cargadas en esta sección todavía.</p>`;
-        } else {
-            html += brands.map(b => `
-                <div class="marcas-card" onclick="selectBrandFromVisual('${b.name.replace(/'/g, "\\'")}')">
-                    <div class="marcas-card-img-box">
-                        <img src="${b.image}" alt="${b.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/150x90?text=${encodeURIComponent(b.name)}'">
-                    </div>
-                    <div class="marcas-card-name">${b.name}</div>
+            container.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:#999; padding:16px 0; font-size:0.82rem;">${query ? 'No se encontraron marcas con ese nombre.' : 'Sin marcas cargadas en esta sección todavía.'}</p>`;
+            return;
+        }
+
+        container.innerHTML = brands.map(b => `
+            <div class="marcas-card" onclick="selectBrandFromVisual('${b.name.replace(/'/g, "\\'")}')">
+                <div class="marcas-card-img-box">
+                    <img src="${b.image}" alt="${b.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/150x90?text=${encodeURIComponent(b.name)}'">
                 </div>
-            `).join('');
+                <div class="marcas-card-name"><i class="fas fa-tag"></i>${b.name}</div>
+            </div>
+        `).join('');
+    }
+
+    function onMarcasSearchInput() {
+        const input = document.getElementById('marcas-search-input');
+        marcasSearchQuery = input ? input.value : '';
+        updateMarcasGridOnly();
+    }
+
+    // ---------- NIVEL 2: productos de la marca elegida ----------
+
+    function getProductsForMarcaBrand(brandName) {
+        const lower = brandName.toLowerCase();
+        let matches = ALL_PRODUCTS.filter(p => p.brand && p.brand.trim().toLowerCase() === lower);
+        if (matches.length === 0) {
+            // La marca del logo no coincide exactamente con la "Marca" cargada en algún producto:
+            // se intenta una coincidencia parcial para no dejar al usuario sin resultados.
+            matches = ALL_PRODUCTS.filter(p => p.brand && p.brand.toLowerCase().includes(lower));
         }
-
-        container.innerHTML = html;
+        return matches;
     }
 
-    function scrollToCatalog() {
-        const el = document.getElementById('main-categories-bar');
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    function resetToTodosTag() {
-        selectedTagFilter = 'TODOS';
-        document.querySelectorAll('.tag-chip').forEach(c => c.classList.remove('active'));
-        const todosChip = document.querySelector('.tag-chip.todos');
-        if (todosChip) todosChip.classList.add('active');
-    }
-
-    // "Todos los Productos" dentro de una sección (Almacén/Refrigerados/Limpieza)
-    function filterByBucket(bucket) {
-        closeMarcasInline();
-        selectedMainCat = 'TODOS';
-        selectedCategoryBucket = bucket;
-        resetToTodosTag();
-        document.getElementById('brand-select').value = 'TODOS';
-        document.getElementById('search-input').value = '';
-        toggleSearchClearBtn();
-        filterProducts();
-        scrollToCatalog();
-    }
-
-    // Click sobre el logo de una marca puntual
+    // Click sobre el logo de una marca: entra a ver sus productos SIN salir del Modo App Vieja
     function selectBrandFromVisual(brandName) {
-        closeMarcasInline();
-        selectedMainCat = 'TODOS';
-        selectedCategoryBucket = null;
-        resetToTodosTag();
+        marcasSelectedBrand = brandName;
+        renderMarcasProductsLevel();
+    }
 
-        const select = document.getElementById('brand-select');
-        const options = Array.from(select.options).map(o => o.value);
-        const exactMatch = options.find(v => v.toLowerCase() === brandName.toLowerCase());
+    function renderMarcasProductsLevel() {
+        const body = document.getElementById('marcas-body');
+        const products = getProductsForMarcaBrand(marcasSelectedBrand);
 
-        if (exactMatch) {
-            select.value = exactMatch;
-            document.getElementById('search-input').value = '';
-        } else {
-            // La marca del logo no coincide exactamente con ninguna marca cargada en productos:
-            // se usa como texto de búsqueda para no dejar al usuario sin resultados.
-            select.value = 'TODOS';
-            document.getElementById('search-input').value = brandName;
-        }
-        toggleSearchClearBtn();
-        filterProducts();
-        scrollToCatalog();
+        const productsHtml = products.length > 0
+            ? products.map(p => renderProductCard(p, cart[p.id] ? cart[p.id].qty : 0)).join('')
+            : `<p style="grid-column:1/-1; text-align:center; color:#999; padding:20px 0;">Todavía no hay productos cargados para "${marcasSelectedBrand}".</p>`;
+
+        body.innerHTML = `
+            <button type="button" class="marcas-back-btn" onclick="marcasGoBackToBrands()">
+                <i class="fas fa-arrow-left"></i> Volver a marcas
+            </button>
+            <div class="marcas-brand-heading">${marcasSelectedBrand} <span class="marcas-brand-count">(${products.length} producto${products.length === 1 ? '' : 's'})</span></div>
+            <div class="product-grid">${productsHtml}</div>
+        `;
+    }
+
+    // Vuelve a la grilla de marcas SIN salir del Modo App Vieja (no hace falta tocar el chip de nuevo)
+    function marcasGoBackToBrands() {
+        marcasSelectedBrand = null;
+        renderMarcasBrandsLevel();
     }
 
     let cartListExpanded = false;
