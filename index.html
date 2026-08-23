@@ -584,6 +584,42 @@
 
         .loader-box { text-align: center; padding: 50px 20px; }
         .spinner { width: 44px; height: 44px; border: 3px solid var(--border); border-top: 3px solid var(--primary); border-radius: 50%; animation: spin-slow 1s linear infinite; margin: 0 auto 15px; }
+
+        /* POPUP DE OFERTAS AL CARGAR */
+        .promo-popup-card {
+            max-width: 480px;
+            background: linear-gradient(160deg, #fff7ed 0%, #ffffff 60%);
+            border: 2px solid #fbbf24;
+            box-shadow: 0 20px 60px rgba(245, 158, 11, 0.35);
+        }
+        .promo-popup-header { text-align: center; margin-bottom: 16px; }
+        .promo-popup-icon { font-size: 2.6rem; display: inline-block; animation: bounce 1.1s ease-in-out infinite; }
+        .promo-popup-header h2 { color: #92400e; font-size: 1.25rem; font-weight: 900; margin: 6px 0 4px; }
+        .promo-popup-header p { font-size: 0.83rem; color: #78350f; font-weight: 600; }
+        .promo-popup-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .promo-popup-item {
+            background: white; border: 1.5px solid #fbbf24; border-radius: 14px;
+            padding: 10px; text-align: center; cursor: pointer; transition: all 0.25s ease;
+        }
+        .promo-popup-item:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(245,158,11,0.28); }
+        .promo-popup-item img { width: 100%; height: 68px; object-fit: contain; margin-bottom: 6px; }
+        .promo-popup-item-name { font-size: 0.72rem; font-weight: 700; color: var(--text-dark); height: 30px; overflow: hidden; margin-bottom: 4px; }
+        .promo-popup-item-price { font-size: 0.88rem; font-weight: 900; color: #ef4444; }
+        .promo-popup-add-hint { font-size: 0.62rem; color: #0284c7; font-weight: 800; margin-top: 4px; }
+        .promo-popup-footer { text-align: center; margin-top: 14px; font-size: 0.68rem; color: #a16207; }
+
+        /* SUGERENCIAS DENTRO DEL CARRITO */
+        .cart-suggest-title { font-size: 0.85rem; font-weight: 800; margin: 4px 0 10px; color: var(--text-dark); display: flex; align-items: center; gap: 6px; }
+        .cart-suggest-row { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 6px; }
+        .cart-suggest-card {
+            flex: 0 0 108px; background: #f8fafb; border: 1.5px solid var(--border);
+            border-radius: 12px; padding: 8px; text-align: center; cursor: pointer; transition: all 0.2s ease;
+        }
+        .cart-suggest-card:hover { border-color: var(--primary-light); transform: translateY(-3px); box-shadow: var(--shadow-sm); }
+        .cart-suggest-card img { width: 100%; height: 52px; object-fit: contain; margin-bottom: 4px; }
+        .cart-suggest-name { font-size: 0.64rem; font-weight: 700; height: 26px; overflow: hidden; margin-bottom: 2px; color: var(--text-dark); }
+        .cart-suggest-price { font-size: 0.74rem; font-weight: 900; color: var(--primary); }
+        .cart-suggest-add { font-size: 0.6rem; color: var(--wa-green); font-weight: 800; margin-top: 2px; }
     </style>
 </head>
 <body>
@@ -713,7 +749,24 @@
                 <button class="btn-close" onclick="toggleCartModal(false)">✕</button>
             </div>
             <div id="cart-summary-items" style="margin-bottom:16px;"></div>
+            <div id="cart-suggestions" style="margin-bottom:12px;"></div>
             <div id="cart-checkout-form" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP DE OFERTAS -->
+    <div class="modal-overlay" id="promo-popup-modal">
+        <div class="modal-card promo-popup-card">
+            <div style="display:flex; justify-content:flex-end;">
+                <button class="btn-close" onclick="closePromoPopup()">✕</button>
+            </div>
+            <div class="promo-popup-header">
+                <div class="promo-popup-icon">🔥</div>
+                <h2>¡Ofertas de Hoy!</h2>
+                <p>No te pierdas estos precios especiales</p>
+            </div>
+            <div class="promo-popup-grid" id="promo-popup-grid"></div>
+            <div class="promo-popup-footer">Tocá un producto para agregarlo directo al carrito</div>
         </div>
     </div>
 
@@ -864,6 +917,7 @@
             document.getElementById('loader').style.display = 'none';
             document.getElementById('product-grid').style.display = 'grid';
             filterProducts();
+            setTimeout(maybeShowPromoPopup, 900);
         }
     }
 
@@ -1178,6 +1232,115 @@
         if (mainCartBadge) mainCartBadge.innerText = totalItems;
     }
 
+    // ==========================================================
+    //  POPUP DE OFERTAS AL CARGAR (una vez por sesión de navegador)
+    // ==========================================================
+    const PROMO_POPUP_MAX_ITEMS = 4;
+    let promoPopupAutoCloseTimer = null;
+
+    function maybeShowPromoPopup() {
+        try {
+            if (sessionStorage.getItem('mayorgaPromoPopupShown')) return;
+        } catch (e) { /* sessionStorage no disponible: seguimos igual */ }
+
+        const promoItems = ALL_PRODUCTS.filter(p => p.isPromo && !p.isOutOfStock);
+        if (promoItems.length === 0) return;
+
+        const selected = promoItems.slice(0, PROMO_POPUP_MAX_ITEMS);
+        renderPromoPopup(selected);
+        document.getElementById('promo-popup-modal').classList.add('active');
+
+        try { sessionStorage.setItem('mayorgaPromoPopupShown', '1'); } catch (e) {}
+
+        clearTimeout(promoPopupAutoCloseTimer);
+        promoPopupAutoCloseTimer = setTimeout(closePromoPopup, 10000);
+    }
+
+    function renderPromoPopup(items) {
+        const grid = document.getElementById('promo-popup-grid');
+        grid.innerHTML = items.map(p => `
+            <div class="promo-popup-item" onclick="addFromPromoPopup('${p.id}')">
+                <img src="${p.image}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/100?text=Sin+Foto'">
+                <div class="promo-popup-item-name">${p.title}</div>
+                <div class="promo-popup-item-price">$${p.finalPrice.toLocaleString('es-AR', {minimumFractionDigits:2})}</div>
+                <div class="promo-popup-add-hint"><i class="fas fa-plus-circle"></i> Agregar</div>
+            </div>
+        `).join('');
+    }
+
+    function addFromPromoPopup(id) {
+        updateQty(id, 1);
+        const cartBtn = document.getElementById('cart-float-main');
+        if (cartBtn) {
+            cartBtn.style.transform = 'scale(1.15)';
+            setTimeout(() => { cartBtn.style.transform = ''; }, 250);
+        }
+    }
+
+    function closePromoPopup() {
+        document.getElementById('promo-popup-modal').classList.remove('active');
+        clearTimeout(promoPopupAutoCloseTimer);
+        promoPopupAutoCloseTimer = null;
+    }
+
+    // ==========================================================
+    //  SUGERENCIAS DENTRO DEL CARRITO ("También te puede interesar")
+    // ==========================================================
+    function getCartSuggestions(maxItems = 6) {
+        const cartIds = new Set(Object.keys(cart));
+        const cartCategories = new Set(Object.values(cart).map(item => item.product.mainCategory));
+
+        const candidates = ALL_PRODUCTS.filter(p => !cartIds.has(p.id) && !p.isOutOfStock);
+        const sameCategory = candidates.filter(p => cartCategories.has(p.mainCategory));
+        const promoOthers = candidates.filter(p => p.isPromo && !cartCategories.has(p.mainCategory));
+
+        const combined = [...sameCategory, ...promoOthers];
+        const seen = new Set();
+        const result = [];
+        for (const p of combined) {
+            if (seen.has(p.id)) continue;
+            seen.add(p.id);
+            result.push(p);
+            if (result.length >= maxItems) break;
+        }
+        return result;
+    }
+
+    function renderCartSuggestions() {
+        const container = document.getElementById('cart-suggestions');
+        if (!container) return;
+
+        if (Object.keys(cart).length === 0) {
+            container.innerHTML = '';
+            return;
+        }
+
+        const suggestions = getCartSuggestions(6);
+        if (suggestions.length === 0) {
+            container.innerHTML = '';
+            return;
+        }
+
+        container.innerHTML = `
+            <div class="cart-suggest-title"><i class="fas fa-lightbulb" style="color:#f59e0b;"></i> También te puede interesar</div>
+            <div class="cart-suggest-row">
+                ${suggestions.map(p => `
+                    <div class="cart-suggest-card" onclick="addFromCartSuggestion('${p.id}')">
+                        <img src="${p.image}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/100?text=Sin+Foto'">
+                        <div class="cart-suggest-name">${p.title}</div>
+                        <div class="cart-suggest-price">$${p.finalPrice.toLocaleString('es-AR', {minimumFractionDigits:2})}</div>
+                        <div class="cart-suggest-add"><i class="fas fa-plus-circle"></i> Agregar</div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    function addFromCartSuggestion(id) {
+        updateQty(id, 1);
+        renderCartSummary();
+    }
+
     function openLoginModal() {
         document.getElementById('pass-input').value = "";
         document.getElementById('login-error').style.display = 'none';
@@ -1245,6 +1408,7 @@
         if (itemIds.length === 0) {
             container.innerHTML = `<p style="text-align:center; padding:20px; color:#999;">El carrito está vacío</p>`;
             form.style.display = 'none';
+            renderCartSuggestions();
             return;
         }
 
@@ -1276,6 +1440,7 @@
             <input type="text" id="client-address" class="form-control" placeholder="Dirección *" required>
             <button class="btn-whatsapp-send" onclick="sendWhatsAppOrder()">Enviar por WhatsApp</button>
         `;
+        renderCartSuggestions();
     }
 
     function sendWhatsAppOrder() {
