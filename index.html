@@ -331,6 +331,9 @@
         .tag-chip.sintacc { background: linear-gradient(135deg, #fecaca, #fca5a5); color: #991b1b; border-color: #f87171; }
         .sin-gluten-logo { height: 18px; width: 18px; object-fit: contain; }
 
+        .tag-chip.nuevo { background: linear-gradient(135deg, #d1fae5, #6ee7b7); color: #065f46; border-color: #34d399; font-weight: 800; }
+        .tag-chip.nuevo::before { content: "✨"; font-size: 0.9rem; margin-right: 2px; }
+
         .tag-chip.active { 
             background: linear-gradient(135deg, var(--primary), var(--primary-light));
             color: white;
@@ -509,6 +512,32 @@
 
         .mode-preventa .cart-float-main { background: linear-gradient(135deg, #FF6F00, #FF8C00); }
 
+        /* BOTÓN FLOTANTE "SUBIR ARRIBA" - se ubica justo encima del carrito */
+        .scroll-top-btn {
+            position: fixed;
+            right: 20px;
+            bottom: 100px;
+            width: 52px; height: 52px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; z-index: 1499; border: none;
+            color: white; font-size: 1.15rem;
+            box-shadow: 0 6px 24px rgba(0, 31, 84, 0.3);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(12px) scale(0.9);
+            transition: opacity 0.35s ease, transform 0.35s ease, visibility 0.35s;
+        }
+
+        .scroll-top-btn.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        .mode-preventa .scroll-top-btn { background: linear-gradient(135deg, #FF6F00, #FF8C00); }
+
         .cart-icon-container { font-size: 2rem; color: white; position: relative; }
         .cart-badge {
             position: absolute; top: -12px; right: -12px;
@@ -593,6 +622,10 @@
     </div>
 
     <!-- CARRITO FLOTANTE -->
+    <button class="scroll-top-btn" id="scroll-top-btn" onclick="scrollToTop()" aria-label="Subir arriba">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
     <div class="cart-float-main" id="cart-float-main" onclick="toggleCartModal(true)">
         <div class="cart-icon-container">
             <i class="fas fa-shopping-cart"></i>
@@ -641,6 +674,7 @@
         <div class="tag-chip todos active" onclick="selectTagFilter('TODOS', this)"><i class="fas fa-th-large"></i><span>Ver Todo</span></div>
         <div class="tag-chip promo" onclick="selectTagFilter('PROMO', this)"><span>Ofertas</span></div>
         <div class="tag-chip sintacc" onclick="selectTagFilter('SINTACC', this)"><img src="https://www.argentina.gob.ar/sites/default/files/sin_gluten_legal-01.png" alt="Sin Gluten" class="sin-gluten-logo"><span>Sin Gluten</span></div>
+        <div class="tag-chip nuevo" onclick="selectTagFilter('NUEVOS', this)"><span>Nuevos</span></div>
     </div>
 
     <!-- CATEGORÍAS -->
@@ -658,7 +692,7 @@
 
         <div id="catalog-section">
             <div class="section-header">
-                <span><i class="fas fa-box"></i> Catálogo Completo</span>
+                <span id="catalog-section-title"><i class="fas fa-box"></i> Catálogo Completo</span>
                 <span id="product-count" style="font-size:0.75rem; color:#778;"></span>
             </div>
 
@@ -764,7 +798,35 @@
     window.addEventListener('DOMContentLoaded', () => {
         loadProductsFromSheets();
         startHeroAutoSlide();
+        initScrollTopButton();
     });
+
+    // Botón flotante "subir arriba": aparece progresivamente cuando el usuario
+    // baja buscando más productos, y al tocarlo lleva de nuevo al inicio de la página.
+    const SCROLL_TOP_THRESHOLD = 400;
+    let scrollTopTicking = false;
+
+    function initScrollTopButton() {
+        window.addEventListener('scroll', onWindowScrollForTopButton, { passive: true });
+        onWindowScrollForTopButton();
+    }
+
+    function onWindowScrollForTopButton() {
+        if (scrollTopTicking) return;
+        scrollTopTicking = true;
+        requestAnimationFrame(() => {
+            const btn = document.getElementById('scroll-top-btn');
+            if (btn) {
+                if (window.scrollY > SCROLL_TOP_THRESHOLD) btn.classList.add('visible');
+                else btn.classList.remove('visible');
+            }
+            scrollTopTicking = false;
+        });
+    }
+
+    function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
     function startHeroAutoSlide() {
         setInterval(() => {
@@ -793,6 +855,8 @@
 
             PRODUCTS_PUBLICO = csvPublico ? parseCSV(csvPublico, 'publico') : [];
             PRODUCTS_PREVENTA_EXTRA = csvPreventa ? parseCSV(csvPreventa, 'preventa') : [];
+            markNewProducts(PRODUCTS_PUBLICO);
+            markNewProducts(PRODUCTS_PREVENTA_EXTRA);
         } catch (error) {
             console.error("Error al cargar datos:", error);
         } finally {
@@ -902,10 +966,25 @@
                 packInfo, caracteristicasBulto: packInfo,
                 priceNormal: finalPrice, pricePromoVal: 0,
                 finalPrice, isPromo, isSinTacc, image: normalImage,
-                isOutOfStock, expiration, source: sheetType
+                isOutOfStock, expiration, source: sheetType, isNew: false
             });
         }
         return products;
+    }
+
+    // NOTA: los Sheets no tienen una columna real de "Fecha de Carga", así que no hay forma
+    // 100% confiable de saber qué producto se agregó más recientemente. Como heurística,
+    // se asume que los productos nuevos se cargan al final de cada hoja y se marcan como
+    // "Nuevos" los últimos productos según su posición (fila) dentro de cada hoja de origen.
+    // Para una detección exacta, habría que agregar una columna de fecha de carga al Sheet.
+    function markNewProducts(products) {
+        if (!products.length) return;
+        const total = products.length;
+        const count = Math.min(40, Math.max(8, Math.round(total * 0.05)));
+        const startIdx = Math.max(0, total - count);
+        for (let i = startIdx; i < total; i++) {
+            products[i].isNew = true;
+        }
     }
 
     function renderBrandsSelector() {
@@ -942,6 +1021,14 @@
         filterProducts();
     }
 
+    // Textos/íconos del encabezado del catálogo según el filtro activo
+    const CATALOG_TITLES = {
+        TODOS: '<i class="fas fa-box"></i> Catálogo Completo',
+        PROMO: '<i class="fas fa-fire" style="color:#ef4444;"></i> Ofertas',
+        SINTACC: '<i class="fas fa-wheat-awn"></i> Sin Gluten',
+        NUEVOS: '<i class="fas fa-star"></i> Recién Llegados'
+    };
+
     function filterProducts() {
         const query = document.getElementById('search-input').value.toLowerCase().trim();
         const selectedBrand = document.getElementById('brand-select').value;
@@ -953,6 +1040,7 @@
 
             if (selectedTagFilter === 'PROMO') matchesTag = p.isPromo;
             else if (selectedTagFilter === 'SINTACC') matchesTag = p.isSinTacc;
+            else if (selectedTagFilter === 'NUEVOS') matchesTag = p.isNew;
 
             let matchesQuery = p.title.toLowerCase().includes(query) || p.sku.toLowerCase().includes(query) || p.brand.toLowerCase().includes(query);
             return matchesCat && matchesBrand && matchesTag && matchesQuery;
@@ -960,12 +1048,22 @@
 
         document.getElementById('product-count').innerText = `${FILTERED_PRODUCTS.length} artículos`;
 
-        const featuredProducts = FILTERED_PRODUCTS.filter(p => p.isPromo);
-        if (featuredProducts.length > 0) {
-            document.getElementById('featured-section').style.display = 'block';
-            document.getElementById('featured-count').innerText = `${featuredProducts.length} ofertas`;
-            renderFeaturedProducts(featuredProducts);
+        const catalogTitleEl = document.getElementById('catalog-section-title');
+        catalogTitleEl.innerHTML = CATALOG_TITLES[selectedTagFilter] || CATALOG_TITLES.TODOS;
+
+        if (selectedTagFilter === 'TODOS') {
+            // Solo en "Ver Todo" se muestra la franja de Ofertas Destacadas arriba del catálogo completo
+            const featuredProducts = FILTERED_PRODUCTS.filter(p => p.isPromo);
+            if (featuredProducts.length > 0) {
+                document.getElementById('featured-section').style.display = 'block';
+                document.getElementById('featured-count').innerText = `${featuredProducts.length} ofertas`;
+                renderFeaturedProducts(featuredProducts);
+            } else {
+                document.getElementById('featured-section').style.display = 'none';
+            }
         } else {
+            // Con un filtro específico (Ofertas / Sin Gluten / Nuevos) no se duplica el catálogo completo:
+            // solo se muestra la selección, en la grilla principal.
             document.getElementById('featured-section').style.display = 'none';
         }
 
