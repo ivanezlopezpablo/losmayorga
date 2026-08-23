@@ -31,7 +31,12 @@
             --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
             --shadow-md: 0 8px 24px rgba(0,0,0,0.12);
             --shadow-lg: 0 12px 40px rgba(0,0,0,0.16);
-            --safe-area-inset-bottom: 0px;
+            --safe-area-inset-top: env(safe-area-inset-top, 0px);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom, 20px);
+            --safe-area-inset-left: env(safe-area-inset-left, 0px);
+            --safe-area-inset-right: env(safe-area-inset-right, 0px);
+            --safe-area-inset-left: env(safe-area-inset-left, 0px);
+            --safe-area-inset-right: env(safe-area-inset-right, 0px);
         }
 
         * {
@@ -89,6 +94,298 @@
         body.mode-preventa {
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             color: #f8fafc;
+        }
+
+        /* HEADER CON MENÚ */
+        .app-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            z-index: 1000;
+            box-shadow: var(--shadow-md);
+            padding-top: var(--safe-area-inset-top);
+            display: flex;
+            align-items: center;
+            padding-left: var(--safe-area-inset-left);
+            padding-right: var(--safe-area-inset-right);
+        }
+
+        .header-content {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 16px;
+        }
+
+        .header-logo {
+            font-size: 1.3rem;
+            font-weight: 900;
+            margin: 0;
+            letter-spacing: -1px;
+        }
+
+        .menu-toggle {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .menu-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .menu-toggle:active {
+            transform: scale(0.95);
+        }
+
+        /* MENÚ DE NAVEGACIÓN LATERAL */
+        .nav-menu {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 999;
+            display: none;
+        }
+
+        .nav-menu.active {
+            display: flex;
+        }
+
+        .nav-menu-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .nav-menu-content {
+            position: relative;
+            width: 280px;
+            height: 100%;
+            background: white;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+            padding-top: var(--safe-area-inset-top);
+            padding-left: var(--safe-area-inset-left);
+            padding-bottom: var(--safe-area-inset-bottom);
+            z-index: 1001;
+            animation: slideInLeft 0.3s ease;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                transform: translateX(-100%);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        .nav-menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-menu-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+
+        .nav-menu-close {
+            background: transparent;
+            border: none;
+            color: var(--text-dark);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .nav-menu-close:hover {
+            color: var(--primary);
+        }
+
+        .nav-menu-items {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 8px 0;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 600;
+            border-left: 4px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-light);
+            border-left-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .nav-item i {
+            width: 24px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .nav-menu-footer {
+            padding: 16px;
+            border-top: 1px solid var(--border);
+            background: var(--bg-light);
+            text-align: center;
+        }
+
+        .nav-menu-version {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin: 4px 0;
+        }
+
+        .nav-menu-company {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 8px 0 0 0;
+        }
+
+        /* AJUSTE DEL CONTENIDO PRINCIPAL */
+        .main-container {
+            margin-top: calc(60px + var(--safe-area-inset-top));
+        }
+
+        /* MODALES DE INFORMACIÓN */
+        .info-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            backdrop-filter: blur(4px);
+        }
+
+        .info-modal.active {
+            display: flex;
+        }
+
+        .info-modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+            box-shadow: var(--shadow-lg);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .info-modal-header {
+            padding: 20px;
+            border-bottom: 2px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .info-modal-header h2 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 1.3rem;
+        }
+
+        .info-modal-close {
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .info-modal-close:hover {
+            color: var(--primary);
+            transform: rotate(90deg);
+        }
+
+        .info-modal-body {
+            padding: 20px;
+            line-height: 1.6;
+            color: var(--text-dark);
+        }
+
+        .info-modal-body p {
+            margin: 12px 0;
+        }
+
+        .info-modal-body strong {
+            color: var(--primary);
+        }
+
+        .info-modal-body a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .info-modal-body a:hover {
+            text-decoration: underline;
         }
 
         /* DETECCIÓN RESPONSIVE */
@@ -474,7 +771,7 @@
         .app-header {
             background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
             color: white;
-            padding: 16px 20px;
+            padding: calc(16px + var(--safe-area-inset-top)) 20px 16px 20px;
             position: sticky;
             top: 0;
             z-index: 500;
@@ -485,7 +782,7 @@
 
         @media (min-width: 769px) {
             .app-header {
-                padding: 20px 40px;
+                padding: calc(20px + var(--safe-area-inset-top)) 40px 20px 40px;
             }
         }
 
@@ -561,7 +858,259 @@
             animation: bounce 0.4s ease;
         }
 
-        /* BUSCADOR */
+        .btn-menu {
+            background: rgba(255,255,255,0.18);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        .btn-menu:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        @media (max-width: 768px) {
+            .btn-menu {
+                display: block;
+            }
+            
+            .btn-share {
+                display: none;
+            }
+        }
+
+        /* MENÚ LATERAL */
+        .main-menu-modal {
+            position: fixed;
+            right: -320px;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 12px rgba(0,0,0,0.15);
+            z-index: 2000;
+            transition: right 0.3s ease;
+            padding-top: var(--safe-area-inset-top);
+            overflow-y: auto;
+        }
+
+        .main-menu-modal.active {
+            right: 0;
+        }
+
+        .main-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1999;
+            display: none;
+        }
+
+        .main-menu-overlay.active {
+            display: block;
+        }
+
+        .menu-header {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .menu-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .menu-items {
+            padding: 10px 0;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 14px 18px;
+            border: none;
+            background: none;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+            color: var(--text-dark);
+        }
+
+        .menu-item:hover {
+            background: var(--bg-light);
+            padding-left: 24px;
+        }
+
+        .menu-item i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+            color: var(--primary);
+        }
+
+        .menu-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 8px 0;
+        }
+
+        /* MODAL ACERCA DE */
+        .about-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 2100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .about-modal.active {
+            display: flex;
+        }
+
+        .about-modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .about-modal-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .about-modal-header h2 {
+            color: var(--primary);
+            margin: 10px 0 5px 0;
+            font-size: 1.8rem;
+        }
+
+        .about-modal-header p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .about-modal-section {
+            margin-bottom: 20px;
+        }
+
+        .about-modal-section h3 {
+            color: var(--primary);
+            font-size: 1rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .about-modal-section p, .about-modal-section ul {
+            color: var(--text-dark);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .about-modal-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .about-modal-section li {
+            padding: 6px 0;
+            padding-left: 24px;
+            position: relative;
+        }
+
+        .about-modal-section li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .about-modal-contact {
+            background: var(--bg-light);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .about-modal-contact a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 8px 0;
+        }
+
+        .about-modal-contact a:hover {
+            text-decoration: underline;
+        }
+
+        .about-modal-close {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .about-modal-close button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .about-modal-close button:first-child {
+            background: var(--primary);
+            color: white;
+        }
+
+        .about-modal-close button:first-child:hover {
+            background: var(--primary-dark);
+        }
         .search-container {
             display: flex;
             gap: 10px;
@@ -598,6 +1147,35 @@
             font-size: 1.1rem;
             color: var(--text-muted);
             animation: pulse 2s ease-in-out infinite;
+        }
+
+        .search-clear-btn {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            display: none;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+
+        .search-clear-btn:hover {
+            color: var(--primary);
+            transform: translateY(-50%) scale(1.2);
+        }
+
+        .search-clear-btn:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+
+        .search-clear-btn.visible {
+            display: block;
         }
 
         .brand-select-header {
@@ -777,6 +1355,17 @@
         }
 
         .tag-chip:hover i {
+            transform: scale(1.2);
+        }
+
+        .tag-logo-sin-gluten {
+            height: 20px;
+            width: auto;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .tag-chip:hover .tag-logo-sin-gluten {
             transform: scale(1.2);
         }
 
@@ -1046,6 +1635,35 @@
 
         .product-card:hover .product-img-box img.main-img {
             transform: scale(1.08);
+        }
+
+        .product-sin-gluten-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: white;
+            border-radius: 12px;
+            padding: 4px 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            animation: slideInRight 0.4s ease;
+            border: 2px solid #00a650;
+        }
+
+        .product-sin-gluten-badge img {
+            height: 32px;
+            width: auto;
+            display: block;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
         .product-brand { 
@@ -2036,6 +2654,25 @@
             transform: translateY(-2px);
         }
 
+        .ai-product-image {
+            width: 70px;
+            height: 70px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: var(--bg-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+
+        .ai-product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
         .ai-product-emoji {
             font-size: 2rem;
             margin-bottom: 4px;
@@ -2139,6 +2776,65 @@
 </head>
 <body>
 
+    <!-- HEADER CON MENÚ HAMBURGUESA -->
+    <header class="app-header" id="app-header">
+        <div class="header-content">
+            <h1 class="header-logo">🛒 Mayorga</h1>
+            <button class="menu-toggle" onclick="toggleNavMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- MENÚ DE NAVEGACIÓN LATERAL -->
+    <div class="nav-menu" id="nav-menu">
+        <div class="nav-menu-content">
+            <div class="nav-menu-header">
+                <h2>Menú</h2>
+                <button class="nav-menu-close" onclick="toggleNavMenu()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <nav class="nav-menu-items">
+                <a href="#" onclick="goToTodos(); toggleNavMenu();" class="nav-item">
+                    <i class="fas fa-store"></i>
+                    <span>Catálogo</span>
+                </a>
+                <a href="#" onclick="toggleCartModal(true); toggleNavMenu();" class="nav-item">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Mi Carrito</span>
+                </a>
+                <a href="#" onclick="openModal('about-modal'); toggleNavMenu();" class="nav-item">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Acerca de</span>
+                </a>
+                <a href="#" onclick="openModal('contact-modal'); toggleNavMenu();" class="nav-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>Contacto</span>
+                </a>
+                <a href="#" onclick="openModal('settings-modal'); toggleNavMenu();" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Configuración</span>
+                </a>
+                <a href="#" onclick="openModal('help-modal'); toggleNavMenu();" class="nav-item">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Ayuda</span>
+                </a>
+                <a href="#" id="nav-logout-btn" style="display:none;" onclick="logoutPreventa(); toggleNavMenu();" class="nav-item" style="border-top: 1px solid var(--border); margin-top: 12px; padding-top: 12px; color: var(--danger);">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Cerrar Sesión</span>
+                </a>
+            </nav>
+
+            <div class="nav-menu-footer">
+                <p class="nav-menu-version">v2.0 - PWA</p>
+                <p class="nav-menu-company">Distribuidora Los Mayorga</p>
+            </div>
+        </div>
+        <div class="nav-menu-overlay" onclick="toggleNavMenu()"></div>
+    </div>
+
     <!-- POPUP OFERTAS -->
     <div class="popup-overlay" id="popup-ofertas">
         <div class="popup-content">
@@ -2204,6 +2900,9 @@
                 <button class="btn-login" id="auth-btn" onclick="openLoginModal()" title="Acceso Preventista">
                     <i class="fas fa-lock" style="margin-right:4px;"></i> Acceso
                 </button>
+                <button class="btn-menu" id="menu-btn" onclick="toggleMainMenu()" title="Menú">
+                    <i class="fas fa-bars"></i>
+                </button>
             </div>
         </div>
 
@@ -2211,6 +2910,9 @@
             <div class="search-box">
                 <input type="text" class="search-input" id="search-input" placeholder="🔍 Buscar producto, SKU, marca..." oninput="debounceSearch()">
                 <span class="search-icon"><i class="fas fa-search"></i></span>
+                <button class="search-clear-btn" id="search-clear-btn" onclick="clearSearch()" title="Limpiar búsqueda">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <select class="brand-select-header" id="brand-select" onchange="onBrandChange()">
                 <option value="TODOS">Todas las Marcas</option>
@@ -2264,8 +2966,9 @@
         <div class="tag-chip promo" onclick="selectTagFilter('PROMO', this)" title="¡Ofertas y descuentos especiales!">
             <span>Ofertas</span>
         </div>
-        <div class="tag-chip sintacc" onclick="selectTagFilter('SINTACC', this)">
-            <i class="fas fa-leaf"></i><span>Sin Gluten</span>
+        <div class="tag-chip sintacc" onclick="selectTagFilter('SINTACC', this)" title="Productos certificados sin gluten">
+            <img src="https://www.argentina.gob.ar/sites/default/files/sin_gluten_legal-01.png" alt="Sin Gluten" class="tag-logo-sin-gluten">
+            <span>Sin Gluten</span>
         </div>
         <div class="tag-chip masvendido" onclick="selectTagFilter('MASVENDIDO', this)">
             <i class="fas fa-heart"></i><span>Favoritos</span>
@@ -2494,6 +3197,111 @@
         </div>
     </div>
 
+    <!-- MENÚ LATERAL -->
+    <div class="main-menu-overlay" id="menu-overlay" onclick="toggleMainMenu()"></div>
+    <div class="main-menu-modal" id="main-menu-modal">
+        <div class="menu-header">
+            <h3>Menú</h3>
+            <button class="menu-close" onclick="toggleMainMenu()">✕</button>
+        </div>
+        <div class="menu-items">
+            <button class="menu-item" onclick="openAboutModal()">
+                <i class="fas fa-info-circle"></i>
+                <span>Acerca de</span>
+            </button>
+            <button class="menu-item" onclick="openContactModal()">
+                <i class="fas fa-phone"></i>
+                <span>Contacto</span>
+            </button>
+            <button class="menu-item" onclick="openSettingsModal()">
+                <i class="fas fa-cog"></i>
+                <span>Configuración</span>
+            </button>
+            <div class="menu-divider"></div>
+            <button class="menu-item" onclick="openTermsModal()">
+                <i class="fas fa-file-alt"></i>
+                <span>Términos y Condiciones</span>
+            </button>
+            <button class="menu-item" onclick="openPrivacyModal()">
+                <i class="fas fa-shield-alt"></i>
+                <span>Privacidad</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL ACERCA DE -->
+    <div class="about-modal" id="about-modal">
+        <div class="about-modal-content">
+            <div class="about-modal-header">
+                <div style="font-size:3rem;">🛒</div>
+                <h2>Los Mayorga</h2>
+                <p>Distribuidora Mayorista</p>
+            </div>
+
+            <div class="about-modal-section">
+                <h3><i class="fas fa-building"></i> Sobre Nosotros</h3>
+                <p>
+                    Somos una distribuidora mayorista comprometida con brindar productos de calidad 
+                    a los mejores precios. Operamos desde Rincón de los Sauces, Neuquén, Argentina 
+                    desde febrero de 2017.
+                </p>
+            </div>
+
+            <div class="about-modal-section">
+                <h3><i class="fas fa-star"></i> Nuestros Servicios</h3>
+                <ul>
+                    <li>Catálogo en línea actualizado</li>
+                    <li>Compras mayoristas</li>
+                    <li>Envíos express locales</li>
+                    <li>Productos sin gluten</li>
+                    <li>Ofertas semanales</li>
+                    <li>Atención personalizada</li>
+                </ul>
+            </div>
+
+            <div class="about-modal-section">
+                <h3><i class="fas fa-map-marker-alt"></i> Ubicación</h3>
+                <p>
+                    Rincón de los Sauces<br>
+                    Neuquén, Argentina
+                </p>
+                <div class="about-modal-contact">
+                    <a href="https://maps.app.goo.gl/WGJXXxBmqDqdjMu56" target="_blank">
+                        <i class="fas fa-external-link-alt"></i> Ver en Google Maps
+                    </a>
+                </div>
+            </div>
+
+            <div class="about-modal-section">
+                <h3><i class="fas fa-share-alt"></i> Síguenos</h3>
+                <div class="about-modal-contact">
+                    <a href="https://www.facebook.com/losmayorgadistribuidora" target="_blank">
+                        <i class="fab fa-facebook"></i> Facebook
+                    </a>
+                    <a href="https://www.instagram.com/distribuidora_losmayorga" target="_blank">
+                        <i class="fab fa-instagram"></i> Instagram
+                    </a>
+                    <a href="https://wa.me/5492994051600" target="_blank">
+                        <i class="fab fa-whatsapp"></i> WhatsApp
+                    </a>
+                </div>
+            </div>
+
+            <div class="about-modal-section">
+                <h3><i class="fas fa-mobile-alt"></i> App Info</h3>
+                <p>
+                    Versión 2.0 - Catálogo PWA<br>
+                    Última actualización: Agosto 2026<br>
+                    © 2017 - 2026 Distribuidora Los Mayorga
+                </p>
+            </div>
+
+            <div class="about-modal-close">
+                <button onclick="closeAboutModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 <script>
     // Detectar si es mobile o desktop
@@ -2550,12 +3358,56 @@
 
     function debounceSearch() {
         clearTimeout(searchTimeout);
+        updateSearchClearButton(); // Actualizar visibilidad del botón X
         searchTimeout = setTimeout(() => {
             filterProducts();
         }, 500); // Aumentado a 500ms para mejor rendimiento en móvil
     }
 
+    function updateSearchClearButton() {
+        const searchInput = document.getElementById('search-input');
+        const clearBtn = document.getElementById('search-clear-btn');
+        
+        if (searchInput.value.trim().length > 0) {
+            clearBtn.classList.add('visible');
+        } else {
+            clearBtn.classList.remove('visible');
+        }
+    }
+
+    function clearSearch() {
+        const searchInput = document.getElementById('search-input');
+        const clearBtn = document.getElementById('search-clear-btn');
+        
+        // Limpiar input
+        searchInput.value = '';
+        
+        // Ocultar botón X
+        clearBtn.classList.remove('visible');
+        
+        // Resetear filtros
+        filterProducts();
+        
+        // Enfocar en el input
+        searchInput.focus();
+    }
+
+    // Inicializar botón X al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('search-input');
+        if (searchInput) {
+            // Actualizar estado inicial del botón
+            updateSearchClearButton();
+            
+            // Actualizar cuando el usuario borra/pega texto
+            searchInput.addEventListener('input', updateSearchClearButton);
+        }
+    });
+
     window.addEventListener('DOMContentLoaded', () => {
+        // Verificar sesión de preventa al cargar
+        checkPreventaSession();
+        
         loadProductsFromSheets();
         startHeroAutoSlide();
         initDraggableButtons(); // Inicializar botones draggables
@@ -2986,6 +3838,11 @@
                 <div>
                     <div class="product-img-box">
                         <img class="main-img" src="${p.image}" alt="${p.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/180?text=Sin+Foto'">
+                        ${p.isSinTacc ? `
+                            <div class="product-sin-gluten-badge">
+                                <img src="https://www.argentina.gob.ar/sites/default/files/sin_gluten_legal-01.png" alt="Sin Gluten" title="Certificado sin gluten">
+                            </div>
+                        ` : ''}
                     </div>
                     ${p.sku ? `<div style="font-size:0.6rem; color:#888;"><i class="fas fa-barcode" style="margin-right:2px;"></i> ${p.sku}</div>` : ''}
                     <div class="product-brand">${p.brand}</div>
@@ -3228,6 +4085,20 @@
             btn.innerHTML = '<i class="fas fa-sign-out-alt" style="margin-right:4px;"></i> Salir';
             btn.onclick = logoutPreventa;
 
+            // Mostrar botón logout en menú
+            const navLogoutBtn = document.getElementById('nav-logout-btn');
+            if (navLogoutBtn) {
+                navLogoutBtn.style.display = 'flex';
+            }
+
+            // GUARDAR SESIÓN EN LOCALSTORAGE
+            localStorage.setItem('mayorga-preventa-session', JSON.stringify({
+                role: 'PREVENTA',
+                key: key,
+                preventista: activePreventista,
+                timestamp: Date.now()
+            }));
+
             closeLoginModal();
             
             // Mostrar popups nuevamente para preventistas
@@ -3255,8 +4126,65 @@
         btn.innerHTML = '<i class="fas fa-lock" style="margin-right:4px;"></i> Acceso';
         btn.onclick = openLoginModal;
 
+        // Ocultar botón logout en menú
+        const navLogoutBtn = document.getElementById('nav-logout-btn');
+        if (navLogoutBtn) {
+            navLogoutBtn.style.display = 'none';
+        }
+
+        // LIMPIAR SESIÓN DE LOCALSTORAGE
+        localStorage.removeItem('mayorga-preventa-session');
+
         filterProducts();
         updateCartFloatBar();
+    }
+
+    // VERIFICAR SESIÓN AL CARGAR LA APP
+    function checkPreventaSession() {
+        const savedSession = localStorage.getItem('mayorga-preventa-session');
+        
+        if (savedSession) {
+            try {
+                const session = JSON.parse(savedSession);
+                const isValidKey = PREVENTA_KEYS[session.key];
+                
+                // Verificar que la clave sea válida (por si borraron keys)
+                if (isValidKey && isValidKey === session.preventista) {
+                    // Auto-login
+                    currentRole = "PREVENTA";
+                    activePreventista = session.preventista;
+                    document.body.classList.add('mode-preventa');
+                    document.getElementById('preventa-banner').style.display = 'block';
+                    document.getElementById('app-subtitle').innerText = `Preventa - ${activePreventista}`;
+                    
+                    const btn = document.getElementById('auth-btn');
+                    if (btn) {
+                        btn.innerHTML = '<i class="fas fa-sign-out-alt" style="margin-right:4px;"></i> Salir';
+                        btn.onclick = logoutPreventa;
+                    }
+
+                    // Mostrar botón logout en menú
+                    const navLogoutBtn = document.getElementById('nav-logout-btn');
+                    if (navLogoutBtn) {
+                        navLogoutBtn.style.display = 'flex';
+                    }
+                    
+                    console.log(`✓ Sesión automática: Logueado como ${activePreventista}`);
+                    return true;
+                } else {
+                    // Sesión inválida, limpiar
+                    localStorage.removeItem('mayorga-preventa-session');
+                    console.log('✗ Sesión inválida, se limpió');
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error al restaurar sesión:', error);
+                localStorage.removeItem('mayorga-preventa-session');
+                return false;
+            }
+        }
+        
+        return false;
     }
 
     function toggleCartModal(show) {
@@ -3732,7 +4660,9 @@
                 };
                 
                 productItem.innerHTML = `
-                    <div class="ai-product-emoji">${product.emoji}</div>
+                    <div class="ai-product-image">
+                        <img src="${product.image}" alt="${product.title}" onerror="this.src='https://via.placeholder.com/80?text=Producto'" loading="lazy">
+                    </div>
                     <div class="ai-product-name">${product.title}</div>
                     <div class="ai-product-price">$${product.priceNormal.toLocaleString('es-AR', {minimumFractionDigits:2})}</div>
                 `;
@@ -3880,6 +4810,261 @@
         if (aiDraggable) aiDraggable.reset();
         alert('Posiciones de botones restablecidas a su lugar original');
     }
-</script>
+
+    // FUNCIONES DEL MENÚ DE NAVEGACIÓN
+    function toggleNavMenu() {
+        const navMenu = document.getElementById('nav-menu');
+        navMenu.classList.toggle('active');
+    }
+
+    function closeNavMenu() {
+        const navMenu = document.getElementById('nav-menu');
+        navMenu.classList.remove('active');
+    }
+
+    // FUNCIONES DE MODALES DE INFORMACIÓN
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('active');
+            // Cierra el menú si está abierto
+            closeNavMenu();
+        }
+    }
+
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('active');
+        }
+    }
+
+    // Cerrar modales al clickear el overlay
+    document.addEventListener('click', function(event) {
+        if (event.target.classList.contains('info-modal')) {
+            event.target.classList.remove('active');
+        }
+    });
+
+    // Cerrar modales con ESC
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            document.querySelectorAll('.info-modal.active').forEach(modal => {
+                modal.classList.remove('active');
+            });
+            closeNavMenu();
+        }
+    });
+
+    // FUNCIÓN PARA LIMPIAR CACHÉ
+    function clearProductCache() {
+        localStorage.removeItem('mayorga-products-cache');
+        localStorage.removeItem('mayorga-cache-time');
+        alert('Caché limpiado. Recargando productos...');
+        location.reload();
+    }
+
+    // FUNCIONES DEL MENÚ ANTERIOR
+    function toggleMainMenu() {
+        const modal = document.getElementById('main-menu-modal');
+        const overlay = document.getElementById('menu-overlay');
+        if (modal && overlay) {
+            modal.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+    }
+
+    function closeMainMenu() {
+        const modal = document.getElementById('main-menu-modal');
+        const overlay = document.getElementById('menu-overlay');
+        if (modal && overlay) {
+            modal.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+    }
+
+    // MODAL ACERCA DE
+    function openAboutModal() {
+        closeMainMenu();
+        document.getElementById('about-modal').classList.add('active');
+    }
+
+    function closeAboutModal() {
+        document.getElementById('about-modal').classList.remove('active');
+    }
+
+    // MODAL CONTACTO
+    function openContactModal() {
+        closeMainMenu();
+        alert('📞 CONTACTO - Los Mayorga\n\n' +
+            '📱 WhatsApp: +54 9 299 4051600\n' +
+            '📧 Facebook: losmayorgadistribuidora\n' +
+            '📍 Ubicación: Rincón de los Sauces, Neuquén\n\n' +
+            'Horario de atención: Lunes a Sábado\n' +
+            '08:00 - 18:00');
+    }
+
+    // MODAL CONFIGURACIÓN
+    function openSettingsModal() {
+        closeMainMenu();
+        const settingsOptions = `
+CONFIGURACIÓN
+
+1. Limpiar Cache
+   ¿Deseas limpiar el caché de productos?
+   Esto forzará una descarga fresca desde Google.
+   
+2. Mostrar FPS Counter
+   Ayuda a detectar problemas de rendimiento.
+   
+3. Notificaciones
+   Activa alertas de nuevas ofertas.
+        `;
+        alert(settingsOptions);
+    }
+
+    // MODAL TÉRMINOS
+    function openTermsModal() {
+        closeMainMenu();
+        alert('TÉRMINOS Y CONDICIONES\n\n' +
+            '• Esta es una plataforma de catálogo mayorista\n' +
+            '• Los precios pueden cambiar sin previo aviso\n' +
+            '• Mínimos de compra según producto\n' +
+            '• Envíos locales en Rincón de los Sauces\n' +
+            '• Consulta nuestros términos completos en nuestras redes');
+    }
+
+    // MODAL PRIVACIDAD
+    function openPrivacyModal() {
+        closeMainMenu();
+        alert('POLÍTICA DE PRIVACIDAD\n\n' +
+            '• Tus datos se utilizan solo para procesar pedidos\n' +
+            '• No compartimos información con terceros\n' +
+            '• Los datos se almacenan localmente en tu dispositivo\n' +
+            '• Puedes solicitar la eliminación de tus datos en cualquier momento');
+    }
+
+    // Cerrar menú al clickear afuera
+    document.addEventListener('click', function(event) {
+        const modal = document.getElementById('main-menu-modal');
+        const menuBtn = document.getElementById('menu-btn');
+        const aboutModal = document.getElementById('about-modal');
+        
+        if (modal && modal.classList.contains('active') && 
+            !modal.contains(event.target) && 
+            event.target !== menuBtn && 
+            !menuBtn.contains(event.target)) {
+            closeMainMenu();
+        }
+    });
+
+    // Cerrar modales al presionar Esc
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeMainMenu();
+            closeAboutModal();
+        }
+    });
+    <!-- MODAL ACERCA DE -->
+    <div class="info-modal" id="about-modal">
+        <div class="info-modal-content">
+            <div class="info-modal-header">
+                <h2>Acerca de</h2>
+                <button class="info-modal-close" onclick="closeModal('about-modal')">✕</button>
+            </div>
+            <div class="info-modal-body">
+                <p><strong>Distribuidora Los Mayorga</strong></p>
+                <p><strong>Versión:</strong> 2.0 PWA</p>
+                <p><strong>Ubicación:</strong> Rincón de los Sauces, Neuquén, Argentina</p>
+                <p><strong>Desde:</strong> 16 de febrero de 2017</p>
+                <p>Tu catálogo digital de productos mayoristas. Accede desde cualquier dispositivo, busca rápido y realiza tus pedidos fácilmente.</p>
+                <p><strong>Características:</strong></p>
+                <p>✓ Búsqueda rápida de productos<br>
+                ✓ Carrito inteligente<br>
+                ✓ Paginación de resultados<br>
+                ✓ Chat con IA<br>
+                ✓ Modo offline<br>
+                ✓ PWA instalable</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONTACTO -->
+    <div class="info-modal" id="contact-modal">
+        <div class="info-modal-content">
+            <div class="info-modal-header">
+                <h2>Contacto</h2>
+                <button class="info-modal-close" onclick="closeModal('contact-modal')">✕</button>
+            </div>
+            <div class="info-modal-body">
+                <p><strong>Distribuidora Los Mayorga</strong></p>
+                <p><strong>📍 Ubicación:</strong><br>
+                Rincón de los Sauces, Neuquén, Argentina</p>
+                <p><strong>📱 WhatsApp:</strong><br>
+                <a href="https://wa.me/5492994051600" target="_blank">+54 9 2994 051600</a></p>
+                <p><strong>📧 Redes Sociales:</strong><br>
+                <a href="https://www.facebook.com/losmayorgadistribuidora" target="_blank">Facebook</a> | 
+                <a href="https://www.instagram.com/distribuidora_losmayorga" target="_blank">Instagram</a></p>
+                <p><strong>🗺️ Google Maps:</strong><br>
+                <a href="https://maps.app.goo.gl/WGJXXxBmqDqdjMu56" target="_blank">Ver en Google Maps</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIGURACIÓN -->
+    <div class="info-modal" id="settings-modal">
+        <div class="info-modal-content">
+            <div class="info-modal-header">
+                <h2>Configuración</h2>
+                <button class="info-modal-close" onclick="closeModal('settings-modal')">✕</button>
+            </div>
+            <div class="info-modal-body">
+                <p><strong>⚙️ Opciones de Configuración</strong></p>
+                <p><strong>Caché de Productos:</strong></p>
+                <button onclick="clearProductCache()" style="width:100%; padding:10px; background:#001f54; color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer; margin:8px 0;">
+                    Limpiar Caché
+                </button>
+                <p style="font-size:0.9rem; color:#999;">Esto eliminará los datos guardados y forzará recargar desde Google Sheets.</p>
+                
+                <p><strong style="margin-top:16px; display:block;">Botones Flotantes:</strong></p>
+                <button onclick="resetButtonPositions()" style="width:100%; padding:10px; background:#001f54; color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer; margin:8px 0;">
+                    Resetear Posiciones
+                </button>
+                <p style="font-size:0.9rem; color:#999;">Restaura los botones a su posición original.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL AYUDA -->
+    <div class="info-modal" id="help-modal">
+        <div class="info-modal-content">
+            <div class="info-modal-header">
+                <h2>Ayuda</h2>
+                <button class="info-modal-close" onclick="closeModal('help-modal')">✕</button>
+            </div>
+            <div class="info-modal-body">
+                <p><strong>❓ Preguntas Frecuentes</strong></p>
+                
+                <p><strong>¿Cómo busco productos?</strong><br>
+                Usa el buscador en la parte superior. Escribe el nombre del producto, marca o SKU.</p>
+                
+                <p><strong>¿Cómo agrego productos al carrito?</strong><br>
+                Clickea el botón "Agregar" en cada producto. Luego usa + y - para ajustar cantidades.</p>
+                
+                <p><strong>¿Cómo envío mi pedido?</strong><br>
+                Haz click en "Ver Carrito", completa tus datos y clickea "Enviar por WhatsApp".</p>
+                
+                <p><strong>¿Puedo usar la app sin internet?</strong><br>
+                Sí, una vez cargada la app, funciona offline con los productos almacenados.</p>
+                
+                <p><strong>¿Cómo instalo como app?</strong><br>
+                En Chrome/Safari, busca la opción "Agregar a pantalla de inicio" o "Instalar app".</p>
+                
+                <p><strong>¿Puedo mover los botones?</strong><br>
+                Sí, arrastra el botón del carrito o el de IA a donde quieras. Se guardará la posición.</p>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
