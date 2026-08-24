@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Distribuidora Los Mayorga - Catálogo Mayorista Premium</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Elfsight AI Chatbot | Untitled AI Chatbot -->
+    <script src="https://elfsightcdn.com/platform.js" async></script>
     
     <style>
         :root {
@@ -736,6 +738,19 @@
         }
         .history-modal-item:hover { background: #eef2f7; }
 
+        /* CHAT IA FLOTANTE: widget de Elfsight embebido, ver div/script cerca de </body>.
+           El widget suele inyectar sus propios elementos con posición fija a la derecha,
+           por eso se fuerza acá (y también vía JS, ver forceElfsightChatLeft) a la izquierda. */
+        .elfsight-chat-slot {
+            position: fixed; left: 20px; bottom: 20px; z-index: 1498;
+        }
+        .elfsight-app-bf1c4884-25b3-4b62-afee-0a387e12d0c5,
+        [class*="eapps-widget-toolbar"],
+        [class*="eapps-chat-launcher"] {
+            right: auto !important;
+            left: 20px !important;
+        }
+
         /* POPUP DE OFERTAS AL CARGAR */
         .promo-popup-card {
             max-width: 480px;
@@ -954,6 +969,42 @@
         .mode-preventa .marcas-brand-heading { color: #f8fafc; }
         .marcas-brand-count { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); }
 
+        /* "MODO APP VIEJA" PÚBLICO: tarjetas de Menú (casi cuadradas) y Submenú (rectangulares),
+           con imagen + nombre debajo, replicando la app anterior de clientes */
+        .oldapp-card {
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            background: white;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s ease;
+        }
+        .oldapp-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+        .oldapp-card img {
+            width: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+        .oldapp-card:hover img { transform: scale(1.05); }
+        .oldapp-card.menu img { aspect-ratio: 1 / 1; }       /* Menú: casi cuadrada */
+        .oldapp-card.submenu img { aspect-ratio: 16 / 10; }  /* Submenú: más rectangular */
+        .oldapp-card-caption {
+            padding: 8px 10px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: var(--text-dark);
+        }
+        .oldapp-todos-tile-visual {
+            width: 100%;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            font-size: 1.7rem;
+        }
+        .oldapp-card.menu .oldapp-todos-tile-visual { aspect-ratio: 1 / 1; }
+        .oldapp-card.submenu .oldapp-todos-tile-visual { aspect-ratio: 16 / 10; }
+
         .vencimientos-modal-card { max-width: 640px; }
         .venc-row {
             display: flex; align-items: center; justify-content: space-between; gap: 10px;
@@ -1098,7 +1149,7 @@
 
     <!-- PANEL INLINE "BUSCAR POR MARCA" - se despliega debajo de los filtros, sin modal -->
     <div class="marcas-inline-section" id="marcas-inline-section" style="display:none;">
-        <div class="marcas-inline-header"><i class="fas fa-tags"></i> Modo App Vieja - Buscar por Marca</div>
+        <div class="marcas-inline-header"><i class="fas fa-tags"></i> <span id="marcas-inline-header-text">Modo App Vieja</span></div>
         <div id="marcas-body"></div>
     </div>
 
@@ -1256,7 +1307,11 @@
         </div>
     </div>
 
-    <!-- Chat personalizado Los Mayorga integrado abajo -->
+    <!-- CHAT IA: widget Elfsight, en el mismo lugar donde estaba el botón de chat anterior -->
+    <div class="elfsight-chat-slot">
+        <!-- Elfsight AI Chatbot | Untitled AI Chatbot -->
+        <div class="elfsight-app-bf1c4884-25b3-4b62-afee-0a387e12d0c5" data-elfsight-app-lazy></div>
+    </div>
 
 <script>
     // ==========================================================
@@ -1266,10 +1321,14 @@
     //    (en este sheet el precio final de cada producto =
     //     Precio Individual x Unidades por Bulto)
     //  - CSV_URL_MARCAS: logos de marca para la búsqueda visual (solo preventistas)
+    //  - CSV_URL_MENU / CSV_URL_SUBMENU: categorías/subcategorías con imagen para
+    //    "Modo App Vieja" en Público (réplica de la app anterior de clientes)
     // ==========================================================
     const CSV_URL_PUBLICO = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTtIs8b6w2l3XSTbkTw0bnqh2SXfTebJjITShgpPJ-jxImqOpnY1rjVHHYNRFqqQBypLxeCKFPrK-C/pub?gid=957503224&single=true&output=csv';
     const CSV_URL_PREVENTA = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTtIs8b6w2l3XSTbkTw0bnqh2SXfTebJjITShgpPJ-jxImqOpnY1rjVHHYNRFqqQBypLxeCKFPrK-C/pub?gid=15522074&single=true&output=csv';
     const CSV_URL_MARCAS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTtIs8b6w2l3XSTbkTw0bnqh2SXfTebJjITShgpPJ-jxImqOpnY1rjVHHYNRFqqQBypLxeCKFPrK-C/pub?gid=65938486&single=true&output=csv';
+    const CSV_URL_MENU = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTtIs8b6w2l3XSTbkTw0bnqh2SXfTebJjITShgpPJ-jxImqOpnY1rjVHHYNRFqqQBypLxeCKFPrK-C/pub?gid=0&single=true&output=csv';
+    const CSV_URL_SUBMENU = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTtIs8b6w2l3XSTbkTw0bnqh2SXfTebJjITShgpPJ-jxImqOpnY1rjVHHYNRFqqQBypLxeCKFPrK-C/pub?gid=1089605745&single=true&output=csv';
 
     const PHONE_PUBLICO = "5492994051600";
     const PHONE_PREVENTA = "5492994836067";
@@ -1285,6 +1344,8 @@
     let PRODUCTS_PUBLICO = [];
     let PRODUCTS_PREVENTA_EXTRA = [];
     let BRAND_LOGOS = []; // logos de marca (búsqueda visual, solo preventistas)
+    let MENU_ITEMS = [];   // categorías con imagen (Modo App Vieja, público)
+    let SUBMENU_ITEMS = []; // subcategorías con imagen + categoría padre (Modo App Vieja, público)
 
     // Catálogo activo según el rol actual (público, o público + preventa)
     let ALL_PRODUCTS = [];
@@ -1294,6 +1355,15 @@
     let selectedTagFilter = 'TODOS';
     let selectedCategoryBucket = null; // usado por "Buscar por Marca" > "Todos los Productos"
     let selectedMarcasTab = 'Almacen';
+
+    // Estado de "Modo App Vieja" para el rol Público (navegación Menú -> Submenú -> Productos)
+    let oldAppLevel = 'menu'; // 'menu' | 'submenu' | 'products'
+    let oldAppSelectedMenu = null;
+    let oldAppSelectedSubmenu = null; // string | '__ALL__' | '__ALL_IN_MENU__'
+    let oldAppMenuFilterQuery = '';
+    let oldAppSubmenuFilterQuery = '';
+    let oldAppProductFilterQuery = '';
+    let oldAppGlobalSearchQuery = '';
     let currentRole = "PUBLICO";
     let activePreventista = "";
     let activePreventaKey = "";
@@ -1421,7 +1491,39 @@
         loadProductsFromSheets();
         startHeroAutoSlide();
         initScrollTopButton();
+        initElfsightChatPosition();
     });
+
+    // ==========================================================
+    //  CHAT IA (widget de Elfsight): forzar posición a la izquierda.
+    //  El widget suele inyectar su propio botón flotante con position:fixed
+    //  y "right" en línea, a veces directo en <body> (no dentro de nuestro
+    //  contenedor), así que además del CSS con !important, se observa el DOM
+    //  y se corrige apenas aparece el botón, y cada vez que Elfsight lo re-renderiza.
+    // ==========================================================
+    function forceElfsightChatLeft() {
+        document.querySelectorAll('[class*="eapps"], [class*="elfsight"]').forEach(el => {
+            const cs = window.getComputedStyle(el);
+            if (cs.position === 'fixed' && cs.right !== 'auto' && cs.right !== '') {
+                el.style.setProperty('right', 'auto', 'important');
+                el.style.setProperty('left', '20px', 'important');
+            }
+        });
+    }
+
+    function initElfsightChatPosition() {
+        // El script de Elfsight carga async, así que se reintenta por unos segundos al inicio...
+        let attempts = 0;
+        const pollInterval = setInterval(() => {
+            forceElfsightChatLeft();
+            attempts++;
+            if (attempts >= 30) clearInterval(pollInterval); // ~15s
+        }, 500);
+
+        // ...y además se queda observando el DOM por si el widget se vuelve a renderizar más tarde.
+        const observer = new MutationObserver(() => forceElfsightChatLeft());
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
 
     // Botón flotante "subir arriba": aparece progresivamente cuando el usuario
     // baja buscando más productos, y al tocarlo lleva de nuevo al inicio de la página.
@@ -1464,22 +1566,28 @@
         document.querySelectorAll('.hero-dot').forEach((dot, i) => dot.classList.toggle('active', i === index));
     }
 
-    // Carga ambas hojas en paralelo y arma los catálogos crudos
+    // Carga todas las hojas en paralelo y arma los catálogos crudos
     async function loadProductsFromSheets() {
         try {
-            const [respPublico, respPreventa, respMarcas] = await Promise.all([
+            const [respPublico, respPreventa, respMarcas, respMenu, respSubmenu] = await Promise.all([
                 fetch(CSV_URL_PUBLICO),
                 fetch(CSV_URL_PREVENTA),
-                fetch(CSV_URL_MARCAS)
+                fetch(CSV_URL_MARCAS),
+                fetch(CSV_URL_MENU),
+                fetch(CSV_URL_SUBMENU)
             ]);
 
             const csvPublico = respPublico.ok ? await respPublico.text() : '';
             const csvPreventa = respPreventa.ok ? await respPreventa.text() : '';
             const csvMarcas = respMarcas.ok ? await respMarcas.text() : '';
+            const csvMenu = respMenu.ok ? await respMenu.text() : '';
+            const csvSubmenu = respSubmenu.ok ? await respSubmenu.text() : '';
 
             PRODUCTS_PUBLICO = csvPublico ? parseCSV(csvPublico, 'publico') : [];
             PRODUCTS_PREVENTA_EXTRA = csvPreventa ? parseCSV(csvPreventa, 'preventa') : [];
             BRAND_LOGOS = csvMarcas ? parseBrandLogosCSV(csvMarcas) : [];
+            MENU_ITEMS = csvMenu ? parseMenuCSV(csvMenu) : [];
+            SUBMENU_ITEMS = csvSubmenu ? parseSubmenuCSV(csvSubmenu) : [];
             markNewProducts(PRODUCTS_PUBLICO);
             markNewProducts(PRODUCTS_PREVENTA_EXTRA);
         } catch (error) {
@@ -1542,6 +1650,59 @@
     function getCategoryBucket(mainCategory) {
         if (!mainCategory) return null;
         return CATEGORY_BUCKET_MAP[mainCategory.trim().toLowerCase()] || null;
+    }
+
+    // ---------- Hojas de Menú / Submenú (Modo App Vieja, rol Público) ----------
+    // No pude confirmar en vivo el orden exacto de columnas de estas 2 hojas nuevas
+    // (mi herramienta de lectura web quedó bloqueada momentáneamente), así que el parser
+    // es flexible: no asume una posición fija para la imagen, busca la primera columna
+    // (después del nombre) que tenga forma de URL (http/https). Si algo no calza bien
+    // al probarlo, es un ajuste rápido de una línea.
+
+    function splitCsvLine(line) {
+        return line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.trim().replace(/^"|"$/g, ''));
+    }
+
+    function findImageColumn(cols, fromIndex) {
+        for (let i = fromIndex; i < cols.length; i++) {
+            if (/^https?:\/\//i.test(cols[i])) return cols[i];
+        }
+        return cols[fromIndex] || '';
+    }
+
+    // Hoja Menú: se asume Columna 0 = nombre de la categoría, y en algún lugar de las
+    // columnas siguientes está la URL de la imagen (casi cuadrada).
+    function parseMenuCSV(csvText) {
+        const lines = csvText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        if (lines.length < 2) return [];
+        const result = [];
+        for (let i = 1; i < lines.length; i++) {
+            const cols = splitCsvLine(lines[i]);
+            const name = cols[0] || '';
+            if (!name) continue;
+            const imageRaw = findImageColumn(cols, 1);
+            result.push({ name, image: formatDriveUrl(imageRaw) });
+        }
+        return result;
+    }
+
+    // Hoja Submenú: se asume Columna 0 = nombre de la subcategoría, Columna 1 = categoría
+    // padre (el Menú al que pertenece), y en algún lugar de ahí en más la URL de la imagen
+    // (más rectangular). La subcategoría debe coincidir con la "Subcategoría" real cargada
+    // en los productos para que el filtrado funcione.
+    function parseSubmenuCSV(csvText) {
+        const lines = csvText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        if (lines.length < 2) return [];
+        const result = [];
+        for (let i = 1; i < lines.length; i++) {
+            const cols = splitCsvLine(lines[i]);
+            const name = cols[0] || '';
+            if (!name) continue;
+            const parentMenu = cols[1] || '';
+            const imageRaw = findImageColumn(cols, 2);
+            result.push({ name, parentMenu, image: formatDriveUrl(imageRaw) });
+        }
+        return result;
     }
 
     // Arma el catálogo ALL_PRODUCTS según el rol actual y refresca filtros/marcas/categorías
@@ -2306,26 +2467,40 @@
     function refreshMarcasChipVisibility() {
         const chip = document.getElementById('tag-chip-marcas');
         const divider = document.getElementById('tag-chip-marcas-divider');
-        const visible = currentRole === "PREVENTA";
-        if (chip) chip.style.display = visible ? 'flex' : 'none';
-        if (divider) divider.style.display = visible ? 'flex' : 'none';
-        if (!visible) closeMarcasInline();
+        // "Modo App Vieja" ahora está disponible tanto en Público (categorías/subcategorías)
+        // como en Preventista (marcas) - cada rol ve un contenido distinto dentro del mismo botón.
+        if (chip) chip.style.display = 'flex';
+        if (divider) divider.style.display = 'flex';
     }
 
     function toggleMarcasInline() {
         marcasInlineOpen = !marcasInlineOpen;
         const section = document.getElementById('marcas-inline-section');
         const chip = document.getElementById('tag-chip-marcas');
+        const headerText = document.getElementById('marcas-inline-header-text');
         const catBar = document.getElementById('main-categories-bar');
         const catalogSection = document.getElementById('catalog-section');
         const featuredSection = document.getElementById('featured-section');
 
         if (marcasInlineOpen) {
             // Entra en "Modo App Vieja": se oculta el catálogo de la app nueva (categorías,
-            // ofertas destacadas y grilla) y solo se muestra la búsqueda visual por marca.
-            marcasSelectedBrand = null;
-            marcasSearchQuery = '';
-            renderMarcasBrandsLevel();
+            // ofertas destacadas y grilla) y solo se muestra la navegación de la app anterior.
+            if (currentRole === "PREVENTA") {
+                marcasSelectedBrand = null;
+                marcasSearchQuery = '';
+                if (headerText) headerText.textContent = 'Modo App Vieja - Buscar por Marca';
+                renderMarcasBrandsLevel();
+            } else {
+                oldAppLevel = 'menu';
+                oldAppSelectedMenu = null;
+                oldAppSelectedSubmenu = null;
+                oldAppMenuFilterQuery = '';
+                oldAppSubmenuFilterQuery = '';
+                oldAppProductFilterQuery = '';
+                oldAppGlobalSearchQuery = '';
+                if (headerText) headerText.textContent = 'Modo App Vieja - Categorías';
+                renderOldAppPanel();
+            }
             section.style.display = 'block';
             if (chip) chip.classList.add('active');
             if (catBar) catBar.style.display = 'none';
@@ -2345,6 +2520,13 @@
         marcasInlineOpen = false;
         marcasSelectedBrand = null;
         marcasSearchQuery = '';
+        oldAppLevel = 'menu';
+        oldAppSelectedMenu = null;
+        oldAppSelectedSubmenu = null;
+        oldAppMenuFilterQuery = '';
+        oldAppSubmenuFilterQuery = '';
+        oldAppProductFilterQuery = '';
+        oldAppGlobalSearchQuery = '';
         const section = document.getElementById('marcas-inline-section');
         const chip = document.getElementById('tag-chip-marcas');
         const catBar = document.getElementById('main-categories-bar');
@@ -2489,6 +2671,294 @@
     function marcasGoBackToBrands() {
         marcasSelectedBrand = null;
         renderMarcasBrandsLevel();
+    }
+
+    // ==========================================================
+    //  "MODO APP VIEJA" PARA PÚBLICO - navegación Menú -> Submenú -> Productos
+    //  (réplica de la app anterior de clientes), con buscador global siempre
+    //  presente arriba, más un buscador propio dentro de cada nivel.
+    // ==========================================================
+
+    // Contenedor raíz: dibuja el buscador global (persistente) + el contenido del nivel actual
+    function renderOldAppPanel() {
+        const body = document.getElementById('marcas-body');
+        body.innerHTML = `
+            <div class="marcas-search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="oldapp-global-search-input" placeholder="Buscar en todo el catálogo..." oninput="onOldAppGlobalSearchInput()">
+            </div>
+            <div id="oldapp-content"></div>
+        `;
+        const input = document.getElementById('oldapp-global-search-input');
+        if (input) input.value = oldAppGlobalSearchQuery;
+
+        if (oldAppGlobalSearchQuery.trim()) {
+            renderOldAppGlobalResults();
+        } else {
+            renderOldAppContentByLevel();
+        }
+    }
+
+    function onOldAppGlobalSearchInput() {
+        const input = document.getElementById('oldapp-global-search-input');
+        oldAppGlobalSearchQuery = input ? input.value : '';
+        if (oldAppGlobalSearchQuery.trim()) {
+            renderOldAppGlobalResults();
+        } else {
+            renderOldAppContentByLevel();
+        }
+    }
+
+    // Búsqueda global: resultados planos de TODO el catálogo, sin importar el nivel en el que estabas
+    function renderOldAppGlobalResults() {
+        const content = document.getElementById('oldapp-content');
+        if (!content) return;
+        const query = oldAppGlobalSearchQuery.trim().toLowerCase();
+        const results = ALL_PRODUCTS.filter(p =>
+            p.title.toLowerCase().includes(query) ||
+            (p.sku && p.sku.toLowerCase().includes(query)) ||
+            p.brand.toLowerCase().includes(query)
+        );
+        const resultsHtml = results.length > 0
+            ? results.map(p => renderProductCard(p, cart[p.id] ? cart[p.id].qty : 0)).join('')
+            : `<p style="grid-column:1/-1; text-align:center; color:#999; padding:20px 0;">Sin resultados para "${oldAppGlobalSearchQuery}".</p>`;
+
+        content.innerHTML = `
+            <div class="marcas-brand-heading">Resultados de "${oldAppGlobalSearchQuery}" <span class="marcas-brand-count">(${results.length})</span></div>
+            <div class="product-grid">${resultsHtml}</div>
+        `;
+    }
+
+    function renderOldAppContentByLevel() {
+        if (oldAppLevel === 'submenu') renderOldAppSubmenuLevel();
+        else if (oldAppLevel === 'products') renderOldAppProductsLevel();
+        else renderOldAppMenuLevel();
+    }
+
+    // ---------- NIVEL 1: grilla de categorías (Menú) ----------
+
+    function renderOldAppMenuLevel() {
+        oldAppLevel = 'menu';
+        const content = document.getElementById('oldapp-content');
+        content.innerHTML = `
+            <div class="marcas-search-box">
+                <i class="fas fa-filter"></i>
+                <input type="text" id="oldapp-menu-filter-input" placeholder="Buscar categoría..." oninput="onOldAppMenuFilterInput()">
+            </div>
+            <div class="marcas-grid" id="oldapp-menu-grid"></div>
+        `;
+        updateOldAppMenuGridOnly();
+        const input = document.getElementById('oldapp-menu-filter-input');
+        if (input) input.value = oldAppMenuFilterQuery;
+    }
+
+    function updateOldAppMenuGridOnly() {
+        const grid = document.getElementById('oldapp-menu-grid');
+        if (!grid) return;
+        const query = oldAppMenuFilterQuery.trim().toLowerCase();
+        const items = MENU_ITEMS.filter(m => !query || m.name.toLowerCase().includes(query));
+
+        let html = `
+            <div class="oldapp-card menu oldapp-todos-card" onclick="selectOldAppTodos()">
+                <div class="oldapp-todos-tile-visual"><i class="fas fa-shopping-basket"></i></div>
+                <div class="oldapp-card-caption">Todos Los Productos</div>
+            </div>
+        `;
+
+        if (items.length === 0) {
+            html += `<p style="grid-column:1/-1; text-align:center; color:#999; padding:16px 0; font-size:0.82rem;">${query ? 'No se encontraron categorías con ese nombre.' : 'Sin categorías cargadas todavía.'}</p>`;
+        } else {
+            html += items.map(m => `
+                <div class="oldapp-card menu" onclick="selectOldAppMenu('${m.name.replace(/'/g, "\\'")}')">
+                    <img src="${m.image}" alt="${m.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x300?text=${encodeURIComponent(m.name)}'">
+                    <div class="oldapp-card-caption">${m.name}</div>
+                </div>
+            `).join('');
+        }
+        grid.innerHTML = html;
+    }
+
+    function onOldAppMenuFilterInput() {
+        const input = document.getElementById('oldapp-menu-filter-input');
+        oldAppMenuFilterQuery = input ? input.value : '';
+        updateOldAppMenuGridOnly();
+    }
+
+    // "Todos Los Productos" desde el nivel 1: salta directo a ver TODO el catálogo
+    function selectOldAppTodos() {
+        oldAppSelectedMenu = null;
+        oldAppSelectedSubmenu = '__ALL__';
+        oldAppProductFilterQuery = '';
+        oldAppLevel = 'products';
+        renderOldAppProductsLevel();
+    }
+
+    // ---------- NIVEL 2: grilla de subcategorías (Submenú) de la categoría elegida ----------
+
+    function selectOldAppMenu(menuName) {
+        oldAppSelectedMenu = menuName;
+        oldAppSubmenuFilterQuery = '';
+        oldAppLevel = 'submenu';
+        renderOldAppSubmenuLevel();
+    }
+
+    function renderOldAppSubmenuLevel() {
+        const content = document.getElementById('oldapp-content');
+        content.innerHTML = `
+            <button type="button" class="marcas-back-btn" onclick="oldAppGoBackToMenu()">
+                <i class="fas fa-arrow-left"></i> Volver a categorías
+            </button>
+            <div class="marcas-brand-heading">${oldAppSelectedMenu}</div>
+            <div class="marcas-search-box">
+                <i class="fas fa-filter"></i>
+                <input type="text" id="oldapp-submenu-filter-input" placeholder="Buscar subcategoría..." oninput="onOldAppSubmenuFilterInput()">
+            </div>
+            <div class="marcas-grid" id="oldapp-submenu-grid"></div>
+        `;
+        updateOldAppSubmenuGridOnly();
+        const input = document.getElementById('oldapp-submenu-filter-input');
+        if (input) input.value = oldAppSubmenuFilterQuery;
+    }
+
+    function getSubmenusForCurrentMenu() {
+        const menuLower = (oldAppSelectedMenu || '').trim().toLowerCase();
+        return SUBMENU_ITEMS.filter(s => (s.parentMenu || '').trim().toLowerCase() === menuLower);
+    }
+
+    function updateOldAppSubmenuGridOnly() {
+        const grid = document.getElementById('oldapp-submenu-grid');
+        if (!grid) return;
+        const query = oldAppSubmenuFilterQuery.trim().toLowerCase();
+        const submenus = getSubmenusForCurrentMenu().filter(s => !query || s.name.toLowerCase().includes(query));
+
+        let html = `
+            <div class="oldapp-card submenu oldapp-todos-card" onclick="selectOldAppTodosDeCategoria()">
+                <div class="oldapp-todos-tile-visual"><i class="fas fa-shopping-basket"></i></div>
+                <div class="oldapp-card-caption">Todos - ${oldAppSelectedMenu}</div>
+            </div>
+        `;
+
+        if (submenus.length === 0) {
+            html += `<p style="grid-column:1/-1; text-align:center; color:#999; padding:16px 0; font-size:0.82rem;">${query ? 'No se encontraron subcategorías con ese nombre.' : 'Sin subcategorías cargadas para esta categoría todavía.'}</p>`;
+        } else {
+            html += submenus.map(s => `
+                <div class="oldapp-card submenu" onclick="selectOldAppSubmenu('${s.name.replace(/'/g, "\\'")}')">
+                    <img src="${s.image}" alt="${s.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/400x225?text=${encodeURIComponent(s.name)}'">
+                    <div class="oldapp-card-caption">${s.name}</div>
+                </div>
+            `).join('');
+        }
+        grid.innerHTML = html;
+    }
+
+    function onOldAppSubmenuFilterInput() {
+        const input = document.getElementById('oldapp-submenu-filter-input');
+        oldAppSubmenuFilterQuery = input ? input.value : '';
+        updateOldAppSubmenuGridOnly();
+    }
+
+    function oldAppGoBackToMenu() {
+        oldAppSelectedMenu = null;
+        oldAppSelectedSubmenu = null;
+        oldAppLevel = 'menu';
+        renderOldAppMenuLevel();
+    }
+
+    // "Todos - [Categoría]": todos los productos de todas las subcategorías de esa categoría
+    function selectOldAppTodosDeCategoria() {
+        oldAppSelectedSubmenu = '__ALL_IN_MENU__';
+        oldAppProductFilterQuery = '';
+        oldAppLevel = 'products';
+        renderOldAppProductsLevel();
+    }
+
+    // ---------- NIVEL 3: productos de la subcategoría / categoría / catálogo completo ----------
+
+    function selectOldAppSubmenu(submenuName) {
+        oldAppSelectedSubmenu = submenuName;
+        oldAppProductFilterQuery = '';
+        oldAppLevel = 'products';
+        renderOldAppProductsLevel();
+    }
+
+    function getOldAppProductsForCurrentSelection() {
+        if (oldAppSelectedSubmenu === '__ALL__') {
+            return ALL_PRODUCTS;
+        }
+        if (oldAppSelectedSubmenu === '__ALL_IN_MENU__') {
+            const submenuNames = getSubmenusForCurrentMenu().map(s => s.name.trim().toLowerCase());
+            return ALL_PRODUCTS.filter(p => submenuNames.includes((p.mainCategory || '').trim().toLowerCase()));
+        }
+        // Coincidencia con la "Subcategoría" real cargada en el producto
+        const lower = (oldAppSelectedSubmenu || '').trim().toLowerCase();
+        let matches = ALL_PRODUCTS.filter(p => (p.mainCategory || '').trim().toLowerCase() === lower);
+        if (matches.length === 0) {
+            matches = ALL_PRODUCTS.filter(p => (p.mainCategory || '').toLowerCase().includes(lower));
+        }
+        return matches;
+    }
+
+    function getOldAppProductsHeadingLabel() {
+        if (oldAppSelectedSubmenu === '__ALL__') return 'Todos los productos';
+        if (oldAppSelectedSubmenu === '__ALL_IN_MENU__') return `Todos - ${oldAppSelectedMenu}`;
+        return oldAppSelectedSubmenu;
+    }
+
+    function renderOldAppProductsLevel() {
+        const content = document.getElementById('oldapp-content');
+        const backFn = oldAppSelectedMenu ? 'oldAppGoBackToSubmenuList()' : 'oldAppGoBackToMenu()';
+
+        content.innerHTML = `
+            <button type="button" class="marcas-back-btn" onclick="${backFn}">
+                <i class="fas fa-arrow-left"></i> Volver
+            </button>
+            <div class="marcas-brand-heading" id="oldapp-products-heading"></div>
+            <div class="marcas-product-search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="oldapp-product-filter-input" placeholder="Buscar producto..." oninput="onOldAppProductFilterInput()">
+            </div>
+            <div class="product-grid" id="oldapp-products-grid"></div>
+        `;
+        updateOldAppProductsGridOnly();
+        const input = document.getElementById('oldapp-product-filter-input');
+        if (input) input.value = oldAppProductFilterQuery;
+    }
+
+    function updateOldAppProductsGridOnly() {
+        const allProducts = getOldAppProductsForCurrentSelection();
+        const query = oldAppProductFilterQuery.trim().toLowerCase();
+        const products = query
+            ? allProducts.filter(p => p.title.toLowerCase().includes(query) || (p.sku && p.sku.toLowerCase().includes(query)))
+            : allProducts;
+
+        const heading = document.getElementById('oldapp-products-heading');
+        if (heading) {
+            heading.innerHTML = `${getOldAppProductsHeadingLabel()} <span class="marcas-brand-count">(${products.length} de ${allProducts.length})</span>`;
+        }
+
+        const grid = document.getElementById('oldapp-products-grid');
+        if (!grid) return;
+
+        if (allProducts.length === 0) {
+            grid.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:#999; padding:20px 0;">Todavía no hay productos cargados en esta sección.</p>`;
+        } else if (products.length === 0) {
+            grid.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:#999; padding:20px 0;">Sin resultados para "${oldAppProductFilterQuery}" en esta sección.</p>`;
+        } else {
+            grid.innerHTML = products.map(p => renderProductCard(p, cart[p.id] ? cart[p.id].qty : 0)).join('');
+        }
+    }
+
+    function onOldAppProductFilterInput() {
+        const input = document.getElementById('oldapp-product-filter-input');
+        oldAppProductFilterQuery = input ? input.value : '';
+        updateOldAppProductsGridOnly();
+    }
+
+    // Vuelve a la lista de subcategorías de la categoría actual (sin perderla)
+    function oldAppGoBackToSubmenuList() {
+        oldAppSelectedSubmenu = null;
+        oldAppLevel = 'submenu';
+        renderOldAppSubmenuLevel();
     }
 
     let cartListExpanded = false;
@@ -2680,464 +3150,6 @@
     function closeContactModal() {
         document.getElementById('contact-modal').classList.remove('active');
     }
-
-    // ========================================
-    // CHAT AVANZADO LOS MAYORGA - INTEGRADO
-    // ========================================
-    
-    let chatCurrentMode = 'menu';
-
-    const chatFAQData = [
-        { question: '¿Cuál es el horario de atención?', answer: 'Lunes a Viernes: 9am-1pm y 4:30pm-9pm<br>Sábado: 9am-1pm y 4:30pm-9pm<br>Domingo: Cerrado' },
-        { question: '¿Cómo hago un pedido?', answer: '3 formas:<br>1️⃣ Por esta App<br>2️⃣ WhatsApp: 0299 405-1600<br>3️⃣ Visitando nuestro local' },
-        { question: '¿Hacen envío a domicilio?', answer: '¡Sí! Distribuimos en el norte de Neuquén.<br>📞 Consultá: 0299 405-1600' },
-        { question: '¿Qué métodos de pago aceptan?', answer: '💳 Débito<br>💳 Crédito<br>📱 Mercado Pago<br>💵 Efectivo' },
-        { question: 'Soy comerciante, ¿precios especiales?', answer: '¡Sí! 📞 Llamá: 0299 405-1600<br>Te conectamos con nuestro preventista' }
-    ];
-
-    const chatProductsData = [
-        { name: 'Lácteos', icon: '🥛', category: 'lacteos' },
-        { name: 'Bebidas', icon: '🥤', category: 'bebidas' },
-        { name: 'Almacén', icon: '🍝', category: 'almacen' },
-        { name: 'Congelados', icon: '❄️', category: 'congelados' },
-        { name: 'Carnes', icon: '🥩', category: 'carnes' },
-        { name: 'Frutas/Verduras', icon: '🥬', category: 'frutas' },
-        { name: 'Snacks', icon: '🍪', category: 'snacks' },
-        { name: 'Ofertas', icon: '🔥', category: 'ofertas' }
-    ];
-
-    const chatProductResponses = {
-        lacteos: '🥛 Leche, Yogurt, Quesos, Manteca y más.<br>Navega nuestro catálogo o llama: 0299 405-1600',
-        bebidas: '🥤 Todas las marcas disponibles.<br>Juices, Gaseosas, Aguas, Energizantes',
-        almacen: '🍝 Aceite, harinas, pastas, arroz, azúcar, legumbres<br>Busca en nuestro catálogo',
-        congelados: '❄️ Verduras congeladas, pizzas, empanadas<br>Consultá: 0299 405-1600',
-        carnes: '🥩 Carnes frescas de calidad<br>Consultá disponibilidad: 0299 405-1600',
-        frutas: '🥬 Frutas y verduras frescas diarias<br>Llama: 0299 405-1600',
-        snacks: '🍪 Galletitas, chocolates, golosinas<br>Busca en el catálogo',
-        ofertas: '🔥 ¡Ofertas especiales esta semana!<br>Llama: 0299 405-1600'
-    };
-
-    const chatKeywordResponses = {
-        'precio': 'Los precios varían. Navega el catálogo o llama: <strong>0299 405-1600</strong>',
-        'entrega': 'Realizamos entregas. ¿Tu localidad? WhatsApp: <strong>0299 405-1600</strong>',
-        'disponibilidad': 'Amplio stock. ¿Qué buscas? WhatsApp: <strong>0299 405-1600</strong>',
-        'catalogo': 'Navega nuestro catálogo completo en esta app',
-        'whatsapp': 'WhatsApp: <strong>0299 405-1600</strong> ¡Estamos online!'
-    };
-
-    function getChatElements() {
-        return {
-            widget: document.getElementById('chatWidget'),
-            content: document.getElementById('chatContent'),
-            menu: document.getElementById('chatMenu'),
-            inputArea: document.getElementById('chatInputArea'),
-            input: document.getElementById('chatInput')
-        };
-    }
-
-    function toggleChat() {
-        const el = getChatElements();
-        if (!el.widget) return;
-        el.widget.classList.toggle('hidden');
-        if (!el.widget.classList.contains('hidden')) {
-            if (el.input) el.input.focus();
-            scrollChatToBottom();
-        }
-    }
-
-    function scrollChatToBottom() {
-        const el = getChatElements();
-        setTimeout(() => { 
-            if (el.content) el.content.scrollTop = el.content.scrollHeight; 
-        }, 100);
-    }
-
-    function addChatMessage(text, isUser = false, isHTML = false) {
-        const el = getChatElements();
-        if (!el.content) return;
-        
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `chat-message ${isUser ? 'chat-message-user' : 'chat-message-bot'}`;
-        if (isUser) {
-            messageDiv.textContent = text;
-        } else {
-            const nameSpan = document.createElement('div');
-            nameSpan.className = 'chat-message-bot-name';
-            nameSpan.textContent = 'Los Mayorga';
-            const contentSpan = document.createElement('div');
-            if (isHTML) contentSpan.innerHTML = text;
-            else contentSpan.textContent = text;
-            messageDiv.appendChild(nameSpan);
-            messageDiv.appendChild(contentSpan);
-        }
-        el.content.appendChild(messageDiv);
-        scrollChatToBottom();
-    }
-
-    function showChatTyping() {
-        const el = getChatElements();
-        if (!el.content) return;
-        
-        const typingDiv = document.createElement('div');
-        typingDiv.className = 'chat-typing';
-        typingDiv.id = 'typing-indicator';
-        typingDiv.innerHTML = 'escribiendo<span id="chat-dots">.</span>';
-        el.content.appendChild(typingDiv);
-        let dotCount = 1;
-        const dotsInterval = setInterval(() => {
-            dotCount = (dotCount % 3) + 1;
-            const dotsEl = document.getElementById('chat-dots');
-            if (dotsEl) dotsEl.textContent = '.'.repeat(dotCount);
-        }, 400);
-        typingDiv.dotsInterval = dotsInterval;
-        scrollChatToBottom();
-    }
-
-    function removeChatTyping() {
-        const typing = document.getElementById('typing-indicator');
-        if (typing) {
-            if (typing.dotsInterval) clearInterval(typing.dotsInterval);
-            typing.remove();
-        }
-    }
-
-    function showChatFAQ() {
-        mostrarCategorias();
-    }
-
-    function respondChatFAQ(index) {
-        const faq = chatFAQData[index];
-        addChatMessage(faq.question, true);
-        showChatTyping();
-        setTimeout(() => {
-            removeChatTyping();
-            addChatMessage(faq.answer, false, true);
-            chatGoBack();
-        }, 2000);
-    }
-
-    function showChatProducts() {
-        const el = getChatElements();
-        if (!el.menu) return;
-        
-        chatCurrentMode = 'products';
-        el.menu.innerHTML = '';
-        const productsContainer = document.createElement('div');
-        productsContainer.className = 'chat-products';
-        chatProductsData.forEach(product => {
-            const card = document.createElement('div');
-            card.className = 'chat-product-card';
-            card.onclick = () => respondChatProduct(product);
-            card.innerHTML = `<div class="chat-product-icon">${product.icon}</div><div class="chat-product-name">${product.name}</div>`;
-            productsContainer.appendChild(card);
-        });
-        el.menu.appendChild(productsContainer);
-        const backBtn = document.createElement('button');
-        backBtn.className = 'chat-menu-btn';
-        backBtn.style.marginTop = '12px';
-        backBtn.onclick = chatGoBack;
-        backBtn.innerHTML = '<span class="chat-menu-btn-icon">⬅️</span> Volver';
-        el.menu.appendChild(backBtn);
-    }
-
-    function respondChatProduct(product) {
-        addChatMessage(`${product.icon} ${product.name}`, true);
-        showChatTyping();
-        setTimeout(() => {
-            removeChatTyping();
-            addChatMessage(chatProductResponses[product.category], false, true);
-            chatGoBack();
-        }, 2000);
-    }
-
-    function showChatInputMode() {
-        const el = getChatElements();
-        if (!el.menu || !el.input) return;
-        
-        chatCurrentMode = 'input';
-        el.menu.classList.add('hidden');
-        el.inputArea.classList.remove('hidden');
-        el.input.value = '';
-        el.input.focus();
-        addChatMessage('Escribí tu pregunta y te responderé. 😊');
-    }
-
-    function sendChatCustomQuestion() {
-        const el = getChatElements();
-        if (!el.input) return;
-        
-        const question = el.input.value.trim();
-        if (!question) return;
-        addChatMessage(question, true);
-        el.input.value = '';
-        showChatTyping();
-        setTimeout(() => {
-            removeChatTyping();
-            const response = getSmartChatResponse(question);
-            addChatMessage(response, false, true);
-        }, 2000);
-    }
-
-    // ==========================================
-    // INTEGRACIÓN CON GOOGLE SHEETS
-    // ==========================================
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbye0AbrRz1VJgi7PzHXASwOQQjz8V5FW21DBEqEFlYtIZREUbDbqD-2uKwjxXRZxAuq/exec";
-    let faqPublico = [];
-    let faqEmpresa = [];
-
-    // Datos de respaldo
-    const faqPublicoLocal = [
-        { question: '⏰ ¿Cuál es el horario?', answer: '📅 <strong>Lunes a Viernes</strong> | 9:00 - 13:00 hrs<br>🌙 16:30 - 21:00 hrs<br><br>📅 <strong>Sábados</strong> | 9:00 - 13:00 hrs<br>🌙 16:30 - 21:00 hrs<br><br>❌ Domingos: Cerrado' },
-        { question: '🛒 ¿Cómo compro?', answer: '3️⃣ <strong>Opciones disponibles:</strong><br><br>1️⃣ <strong>App</strong> → Catálogo en línea<br>2️⃣ <strong>WhatsApp</strong> → 0299 405-1600<br>3️⃣ <strong>Presencial</strong> → Visítanos' },
-        { question: '🚚 ¿Hacen envío?', answer: '✅ <strong>Entregas en zona:</strong><br>📍 Norte de Neuquén<br><br>💬 Consulta por WhatsApp:<br>📲 0299 405-1600' },
-        { question: '💳 ¿Métodos de pago?', answer: '🔐 <strong>Todos disponibles:</strong><br>💳 Débito<br>💳 Crédito<br>📱 Mercado Pago<br>💵 Efectivo' }
-    ];
-
-    const faqEmpresaLocal = [
-        { question: '🏢 ¿Qué es el programa mayorista?', answer: '🎯 <strong>Ofrecemos precios especiales</strong><br>para comercios y empresas' },
-        { question: '📞 ¿Cómo contacto al preventista?', answer: '📱 <strong>Llamá:</strong> 0299 405-1600<br>📲 <strong>WhatsApp:</strong> 0299 405-1600' },
-        { question: '💰 ¿Monto mínimo?', answer: '✅ <strong>Trabajamos desde pequeñas cantidades</strong><br>Consultá sin compromiso' },
-        { question: '📦 ¿Modalidad de compra?', answer: '✓ Presencial<br>✓ WhatsApp<br>✓ Llamada<br>✓ Factura' }
-    ];
-
-    async function cargarDatosChat() {
-        try {
-            console.log('🔄 Cargando datos desde Google Sheets...');
-            const response = await fetch(APPS_SCRIPT_URL + "?action=all");
-            const datos = await response.json();
-
-            if (datos.faqPublico && datos.faqPublico.length > 0) {
-                faqPublico = datos.faqPublico;
-                console.log('✅ FAQ Público cargadas');
-            } else {
-                faqPublico = faqPublicoLocal;
-            }
-
-            if (datos.faqEmpresa && datos.faqEmpresa.length > 0) {
-                faqEmpresa = datos.faqEmpresa;
-                console.log('✅ FAQ Empresa cargadas');
-            } else {
-                faqEmpresa = faqEmpresaLocal;
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            faqPublico = faqPublicoLocal;
-            faqEmpresa = faqEmpresaLocal;
-        }
-    }
-
-    function mostrarCategorias() {
-        addChatMessage('¿Cuál es tu tipo de cliente?', true);
-        const el = getChatElements();
-        el.menu.innerHTML = `
-            <button class="chat-menu-btn" onclick="mostrarFAQChat('publico')">
-                <span class="chat-menu-btn-icon">👤</span> Público Final
-            </button>
-            <button class="chat-menu-btn" onclick="mostrarFAQChat('empresa')">
-                <span class="chat-menu-btn-icon">🏢</span> Dueño de Negocio/Empresa
-            </button>
-        `;
-    }
-
-    function mostrarFAQChat(tipo) {
-        const isPublico = tipo === 'publico';
-        const faqData = isPublico ? faqPublico : faqEmpresa;
-        const label = isPublico ? 'Público Final' : 'Dueño de Negocio/Empresa';
-
-        addChatMessage(`${isPublico ? '👤' : '🏢'} ${label}`, true);
-
-        const el = getChatElements();
-        el.menu.innerHTML = '';
-
-        faqData.forEach((faq) => {
-            const btn = document.createElement('button');
-            btn.className = 'chat-menu-btn';
-            btn.onclick = () => mostrarRespuestaChat(faq, isPublico);
-            btn.innerHTML = `<span class="chat-menu-btn-icon">❓</span> ${faq.question}`;
-            el.menu.appendChild(btn);
-        });
-
-        const backBtn = document.createElement('button');
-        backBtn.className = 'chat-menu-btn';
-        backBtn.style.marginTop = '8px';
-        backBtn.onclick = volverAlMenuChat;
-        backBtn.innerHTML = '<span class="chat-menu-btn-icon">⬅️</span> Atrás';
-        el.menu.appendChild(backBtn);
-    }
-
-    function mostrarRespuestaChat(faq, isPublico) {
-        addChatMessage(faq.question, true);
-        showChatTyping();
-
-        setTimeout(() => {
-            removeChatTyping();
-            addChatMessage(faq.answer, false, true);
-            setTimeout(() => {
-                const el = getChatElements();
-                el.menu.innerHTML = `
-                    <button class="chat-menu-btn" onclick="mostrarFAQChat('${isPublico ? 'publico' : 'empresa'}')">
-                        <span class="chat-menu-btn-icon">↩️</span> Otra Pregunta
-                    </button>
-                    <button class="chat-menu-btn" onclick="mostrarCategorias()" style="margin-top: 8px;">
-                        <span class="chat-menu-btn-icon">⬅️</span> Cambiar Categoría
-                    </button>
-                `;
-            }, 500);
-        }, 2000);
-    }
-
-    function volverAlMenuChat() {
-        const el = getChatElements();
-        el.menu.innerHTML = `
-            <button class="chat-menu-btn" onclick="mostrarCategorias()">
-                <span class="chat-menu-btn-icon">❓</span> Preguntas Frecuentes
-            </button>
-        `;
-        getChatContent().innerHTML = '';
-        addChatMessage('¡Hola! 👋 ¿Qué necesitás?', false, true);
-    }
-
-    function getSmartChatResponse(question) {
-        return 'Gracias por tu pregunta. WhatsApp: <strong>0299 405-1600</strong> ¡Te atenderemos!';
-    }
-
-    function showChatContact() {
-        addChatMessage('¿Contacto?', true);
-        showChatTyping();
-        setTimeout(() => {
-            removeChatTyping();
-            addChatMessage('📞 Llamá: 0299 405-1600<br>📱 WhatsApp: 0299 405-1600<br>📍 Rincón de los Sauces, Neuquén', false, true);
-            chatGoBack();
-        }, 2000);
-    }
-
-    function chatGoBack() {
-        const el = getChatElements();
-        if (!el.menu) return;
-        
-        chatCurrentMode = 'menu';
-        el.menu.innerHTML = '';
-        el.menu.classList.remove('hidden');
-        el.inputArea.classList.add('hidden');
-        const buttons = [
-            { label: 'Preguntas Frecuentes', icon: '❓', fn: mostrarCategorias },
-            { label: 'Ver Productos', icon: '🛒', fn: showChatProducts },
-            { label: 'Hacer Pregunta', icon: '💬', fn: showChatInputMode },
-            { label: 'Contactar', icon: '📱', fn: showChatContact }
-        ];
-        buttons.forEach(btn => {
-            const button = document.createElement('button');
-            button.className = 'chat-menu-btn';
-            button.onclick = btn.fn;
-            button.innerHTML = `<span class="chat-menu-btn-icon">${btn.icon}</span> ${btn.label}`;
-            el.menu.appendChild(button);
-        });
-    }
-
-    function handleChatEnter(event) {
-        if (event.key === 'Enter') sendChatCustomQuestion();
-    }
-
-    // Cargar datos al iniciar
-    document.addEventListener('DOMContentLoaded', cargarDatosChat);
-</script>
-
-<style>
-    /* CHAT STYLES */
-    @keyframes chatSlideInUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    @keyframes chatScaleIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-    @keyframes chatBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-    @keyframes chatFadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-    .chat-button { position: fixed; left: 20px; bottom: 20px; z-index: 9998; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #001f54 0%, #003d7a 100%); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.12); transition: all 0.2s ease; opacity: 0; transform: scale(0); animation: chatScaleIn 0.4s ease forwards; animation-delay: 2s; }
-    .chat-button:hover { transform: scale(1.1); box-shadow: 0 8px 28px rgba(0, 31, 84, 0.4); }
-    .chat-button:active { transform: scale(0.95); }
-    .chat-button-icon { font-size: 28px; color: white; }
-    .chat-button-badge { position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; animation: chatBounce 2s ease infinite; }
-
-    .chat-widget { position: fixed; left: 20px; bottom: 90px; z-index: 9999; width: 100%; max-width: 380px; max-height: 700px; display: flex; flex-direction: column; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.12); animation: chatSlideInUp 0.35s ease; transform-origin: bottom left; }
-    .chat-widget.hidden { display: none; }
-
-    .chat-header { background: linear-gradient(135deg, #001f54 0%, #003d7a 100%); color: white; padding: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0; }
-    .chat-header-info { display: flex; align-items: center; gap: 12px; flex: 1; }
-    .chat-header-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: white; padding: 2px; }
-    .chat-header-text h3 { font-size: 0.95rem; font-weight: 700; margin: 0; }
-    .chat-header-text p { font-size: 0.65rem; opacity: 0.95; margin: 0; }
-    .chat-close-btn { background: rgba(255,255,255,0.2); border: none; color: white; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; }
-    .chat-close-btn:hover { background: rgba(255,255,255,0.3); }
-
-    .chat-content { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; background: white; }
-    .chat-message { padding: 12px 14px; border-radius: 12px; font-size: 0.85rem; line-height: 1.45; max-width: 90%; animation: chatFadeIn 0.3s ease; }
-    .chat-message-bot { background: #f5f5f5; color: #1a202c; align-self: flex-start; }
-    .chat-message-bot-name { font-size: 0.65rem; color: #718096; font-weight: 700; margin-bottom: 4px; }
-    .chat-message-user { background: #001f54; color: white; align-self: flex-end; }
-    .chat-typing { background: #f5f5f5; padding: 12px 14px; font-size: 0.8rem; color: #718096; letter-spacing: 2px; align-self: flex-start; border-radius: 12px; }
-    .chat-content::-webkit-scrollbar { width: 6px; }
-    .chat-content::-webkit-scrollbar-track { background: #f5f5f5; }
-    .chat-content::-webkit-scrollbar-thumb { background: #003d7a; border-radius: 3px; }
-
-    .chat-menu { display: flex; flex-direction: column; gap: 8px; width: 100%; padding: 12px; border-top: 1px solid rgba(0, 31, 84, 0.1); background: white; flex-shrink: 0; max-height: 300px; overflow-y: auto; }
-    .chat-menu-btn { background: white; border: 1.5px solid #003d7a; color: #001f54; padding: 11px 12px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; text-align: left; font-weight: 700; transition: all 0.2s ease; text-transform: uppercase; letter-spacing: 0.3px; white-space: normal; }
-    .chat-menu-btn:hover { background: #f0f4f8; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 31, 84, 0.15); }
-    .chat-menu-btn:active { transform: translateY(0); }
-    .chat-menu-btn-icon { margin-right: 8px; font-size: 1rem; }
-
-    .chat-input-area { display: flex; gap: 8px; padding: 12px; border-top: 1px solid rgba(0, 31, 84, 0.1); background: white; flex-shrink: 0; }
-    .chat-input-area.hidden { display: none; }
-    .chat-input { flex: 1; border: 1.5px solid #003d7a; border-radius: 8px; padding: 10px 12px; font-size: 0.8rem; font-family: inherit; transition: all 0.2s ease; }
-    .chat-input:focus { outline: none; border-color: #001f54; box-shadow: 0 0 0 3px rgba(0, 31, 84, 0.1); }
-    .chat-input::placeholder { color: #718096; }
-    .chat-send-btn { background: linear-gradient(135deg, #001f54 0%, #003d7a 100%); border: none; color: white; width: 40px; height: 40px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; font-size: 1.2rem; }
-    .chat-send-btn:hover { transform: scale(1.05); }
-    .chat-send-btn:active { transform: scale(0.95); }
-
-    .chat-products { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
-    .chat-product-card { background: #f9f9f9; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; transition: all 0.2s ease; font-size: 0.7rem; }
-    .chat-product-card:hover { border-color: #003d7a; box-shadow: 0 2px 8px rgba(0, 31, 84, 0.15); transform: translateY(-2px); }
-    .chat-product-icon { font-size: 1.8rem; margin-bottom: 4px; }
-    .chat-product-name { font-weight: 700; color: #1a202c; }
-
-    @media (max-width: 420px) {
-        .chat-widget { left: 10px; bottom: 70px; max-width: calc(100% - 20px); }
-        .chat-button { left: 10px; bottom: 10px; }
-        .chat-menu-btn { font-size: 0.75rem; padding: 9px 10px; }
-    }
-</style>
-
-<button class="chat-button" id="chatButton" onclick="toggleChat()" title="Abrir chat">
-    <span class="chat-button-icon">💬</span>
-    <div class="chat-button-badge">1</div>
-</button>
-
-<div class="chat-widget hidden" id="chatWidget">
-    <div class="chat-header">
-        <div class="chat-header-info">
-            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23001f54'/%3E%3Ctext x='50' y='60' font-size='60' font-weight='bold' fill='white' text-anchor='middle'%3ELM%3C/text%3E%3C/svg%3E" alt="Los Mayorga" class="chat-header-img" loading="lazy">
-            <div class="chat-header-text">
-                <h3>Chat Los Mayorga</h3>
-                <p>Online • Responde en 2s</p>
-            </div>
-        </div>
-        <button class="chat-close-btn" onclick="toggleChat()" title="Cerrar">✕</button>
-    </div>
-    <div class="chat-content" id="chatContent">
-        <div class="chat-message chat-message-bot">
-            <div class="chat-message-bot-name">Los Mayorga</div>
-            <div>¡Hola! 👋 Bienvenido a Los Mayorga.<br><br>¿En qué le podemos ayudar?</div>
-        </div>
-    </div>
-    <div class="chat-menu" id="chatMenu">
-        <button class="chat-menu-btn" onclick="showChatFAQ()"><span class="chat-menu-btn-icon">❓</span> Preguntas Frecuentes</button>
-        <button class="chat-menu-btn" onclick="showChatProducts()"><span class="chat-menu-btn-icon">🛒</span> Ver Productos</button>
-        <button class="chat-menu-btn" onclick="showChatInputMode()"><span class="chat-menu-btn-icon">💬</span> Hacer Pregunta</button>
-        <button class="chat-menu-btn" onclick="showChatContact()"><span class="chat-menu-btn-icon">📱</span> Contactar</button>
-    </div>
-    <div class="chat-input-area hidden" id="chatInputArea">
-        <input type="text" class="chat-input" id="chatInput" placeholder="Escribe tu pregunta..." onkeypress="handleChatEnter(event)">
-        <button class="chat-send-btn" onclick="sendChatCustomQuestion()">➤</button>
-    </div>
-</div>
-
 </script>
 </body>
 </html>
