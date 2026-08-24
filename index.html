@@ -1397,7 +1397,7 @@
 
         <div class="search-container">
             <div class="search-box">
-                <input type="text" class="search-input" id="search-input" placeholder="🔍 Buscar producto, SKU, marca..." oninput="debounceSearch()" onfocus="showSearchHistoryDropdown()" onblur="hideSearchHistoryDropdownDelayed()">
+                <input type="text" class="search-input" id="search-input" placeholder="Buscar producto, SKU, marca..." oninput="debounceSearch()" onfocus="showSearchHistoryDropdown()" onblur="hideSearchHistoryDropdownDelayed()">
                 <button type="button" class="search-clear-btn" id="search-clear-btn" onclick="clearSearchInput()" aria-label="Limpiar búsqueda" style="display:none;">✕</button>
                 <span class="search-icon"><i class="fas fa-search"></i></span>
                 <div class="search-history-dropdown" id="search-history-dropdown"></div>
@@ -2178,17 +2178,18 @@
             refreshMarcasChipVisibility();
 
             // Al primer usuario que entra nunca vio la app le mostramos el Recorrido Guiado
-            // en vez del popup de ofertas (mostrar los dos juntos satura). Si ya lo vio antes,
-            // sigue el comportamiento normal del popup de ofertas.
+            // en vez del popup de ofertas de una. El popup de ofertas queda "en cola": recién
+            // se muestra cuando el usuario cierra o termina el recorrido (nunca en simultáneo).
             let yaVioElTour = true;
             try { yaVioElTour = !!localStorage.getItem('mayorgaTourSeen'); } catch (e) {}
             if (!yaVioElTour) {
+                pendingPromoPopupAfterTour = true;
                 setTimeout(startGuidedTour, 1300);
             } else {
                 setTimeout(maybeShowPromoPopup, 900);
             }
 
-            // La pantalla de carga se muestra siempre un mínimo de 4 segundos (mientras el
+            // La pantalla de carga se muestra siempre un mínimo de 3 segundos (mientras el
             // carrusel de medios de pago / envíos completa sus 4 slides), y se oculta con un
             // fundido suave recién después de eso, aunque los datos ya hayan terminado de cargar.
             const elapsed = Date.now() - splashStartTime;
@@ -2207,9 +2208,9 @@
 
     // ==========================================================
     //  CARRUSEL DE LA PANTALLA DE CARGA: rota entre medios de pago y el aviso
-    //  de envíos a domicilio mientras se cargan los datos. 4 slides x 1s = 4s.
+    //  de envíos a domicilio mientras se cargan los datos. 4 slides x 0.75s = 3s.
     // ==========================================================
-    const SPLASH_MIN_DURATION = 4000;
+    const SPLASH_MIN_DURATION = 3000;
     const SPLASH_SLIDES = [
         {
             icons: [{ img: 'https://cdn.worldvectorlogo.com/logos/cd4804d4-fa18-4481-8595-e4fff80e6ce8/mercado-pago-1.svg', alt: 'Mercado Pago' }],
@@ -2263,7 +2264,7 @@
         splashCarouselInterval = setInterval(() => {
             splashSlideIndex = (splashSlideIndex + 1) % SPLASH_SLIDES.length;
             renderSplashSlide(splashSlideIndex);
-        }, 1000);
+        }, 750);
     }
 
     function stopSplashCarousel() {
@@ -2686,6 +2687,26 @@
         return sorted;
     }
 
+    // Búsqueda de producto reutilizada en toda la app (catálogo normal, Modo App Vieja,
+    // búsqueda global, búsqueda por marca): revisa nombre, SKU, marca y características/descripción,
+    // y además reconoce "sin tacc" / "sin gluten" como sinónimo de la bandera Sin Gluten/Sin TACC
+    // aunque esas palabras no estén escritas literalmente en el producto.
+    function productMatchesSearch(p, query) {
+        const q = (query || '').toLowerCase().trim();
+        if (!q) return true;
+
+        let matches = p.title.toLowerCase().includes(q)
+            || (p.sku && p.sku.toLowerCase().includes(q))
+            || (p.brand && p.brand.toLowerCase().includes(q))
+            || (p.caracteristicasBulto && p.caracteristicasBulto.toLowerCase().includes(q));
+
+        if (!matches && p.isSinTacc) {
+            const buscaSinTacc = q.includes('sin tacc') || q.includes('sin gluten') || q === 'tacc' || q === 'gluten';
+            if (buscaSinTacc) matches = true;
+        }
+        return matches;
+    }
+
     function filterProducts() {
         const query = document.getElementById('search-input').value.toLowerCase().trim();
         const selectedBrand = document.getElementById('brand-select').value;
@@ -2707,7 +2728,8 @@
             else if (selectedTagFilter === 'SINTACC') matchesTag = p.isSinTacc;
             else if (selectedTagFilter === 'NUEVOS') matchesTag = p.isNew;
 
-            let matchesQuery = p.title.toLowerCase().includes(query) || p.sku.toLowerCase().includes(query) || p.brand.toLowerCase().includes(query);
+            let matchesQuery = productMatchesSearch(p, query);
+
             return matchesCat && matchesBrand && matchesTag && matchesQuery;
         });
 
@@ -3413,7 +3435,7 @@
         const allBrandProducts = getProductsForMarcaBrand(marcasSelectedBrand);
         const query = marcasProductSearchQuery.trim().toLowerCase();
         const products = query
-            ? allBrandProducts.filter(p => p.title.toLowerCase().includes(query) || (p.sku && p.sku.toLowerCase().includes(query)))
+            ? allBrandProducts.filter(p => productMatchesSearch(p, query))
             : allBrandProducts;
 
         const heading = document.getElementById('marcas-brand-heading');
@@ -3486,11 +3508,7 @@
         const content = document.getElementById('oldapp-content');
         if (!content) return;
         const query = oldAppGlobalSearchQuery.trim().toLowerCase();
-        const results = ALL_PRODUCTS.filter(p =>
-            p.title.toLowerCase().includes(query) ||
-            (p.sku && p.sku.toLowerCase().includes(query)) ||
-            p.brand.toLowerCase().includes(query)
-        );
+        const results = ALL_PRODUCTS.filter(p => productMatchesSearch(p, query));
         const resultsHtml = results.length > 0
             ? results.map(p => renderProductCard(p, cart[p.id] ? cart[p.id].qty : 0)).join('')
             : `<p style="grid-column:1/-1; text-align:center; color:#999; padding:20px 0;">Sin resultados para "${oldAppGlobalSearchQuery}".</p>`;
@@ -3701,7 +3719,7 @@
         const allProducts = getOldAppProductsForCurrentSelection();
         const query = oldAppProductFilterQuery.trim().toLowerCase();
         const products = query
-            ? allProducts.filter(p => p.title.toLowerCase().includes(query) || (p.sku && p.sku.toLowerCase().includes(query)))
+            ? allProducts.filter(p => productMatchesSearch(p, query))
             : allProducts;
 
         const heading = document.getElementById('oldapp-products-heading');
@@ -4008,6 +4026,9 @@
 
     let tourActiveSteps = [];
     let tourStepIndex = 0;
+    // Si es true, en cuanto el recorrido se cierre (saltado o terminado) se dispara el
+    // popup de ofertas justo después (nunca antes ni al mismo tiempo).
+    let pendingPromoPopupAfterTour = false;
 
     function isElementVisible(el) {
         if (!el) return false;
@@ -4114,6 +4135,12 @@
         document.body.style.overflow = '';
         window.removeEventListener('resize', repositionTourHighlight);
         try { localStorage.setItem('mayorgaTourSeen', '1'); } catch (e) {}
+
+        // Recién ahora (cerrado o terminado el recorrido) puede aparecer el popup de ofertas.
+        if (pendingPromoPopupAfterTour) {
+            pendingPromoPopupAfterTour = false;
+            setTimeout(maybeShowPromoPopup, 500);
+        }
     }
 
     function sideMenuGoHome() {
