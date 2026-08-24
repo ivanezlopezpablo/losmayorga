@@ -2685,11 +2685,6 @@
     // CHAT AVANZADO LOS MAYORGA - INTEGRADO
     // ========================================
     
-    const chatWidget = document.getElementById('chatWidget');
-    const chatContent = document.getElementById('chatContent');
-    const chatMenu = document.getElementById('chatMenu');
-    const chatInputArea = document.getElementById('chatInputArea');
-    const chatInput = document.getElementById('chatInput');
     let chatCurrentMode = 'menu';
 
     const chatFAQData = [
@@ -2730,19 +2725,37 @@
         'whatsapp': 'WhatsApp: <strong>0299 405-1600</strong> ¡Estamos online!'
     };
 
+    function getChatElements() {
+        return {
+            widget: document.getElementById('chatWidget'),
+            content: document.getElementById('chatContent'),
+            menu: document.getElementById('chatMenu'),
+            inputArea: document.getElementById('chatInputArea'),
+            input: document.getElementById('chatInput')
+        };
+    }
+
     function toggleChat() {
-        chatWidget.classList.toggle('hidden');
-        if (!chatWidget.classList.contains('hidden')) {
-            chatInput.focus();
+        const el = getChatElements();
+        if (!el.widget) return;
+        el.widget.classList.toggle('hidden');
+        if (!el.widget.classList.contains('hidden')) {
+            if (el.input) el.input.focus();
             scrollChatToBottom();
         }
     }
 
     function scrollChatToBottom() {
-        setTimeout(() => { chatContent.scrollTop = chatContent.scrollHeight; }, 100);
+        const el = getChatElements();
+        setTimeout(() => { 
+            if (el.content) el.content.scrollTop = el.content.scrollHeight; 
+        }, 100);
     }
 
     function addChatMessage(text, isUser = false, isHTML = false) {
+        const el = getChatElements();
+        if (!el.content) return;
+        
         const messageDiv = document.createElement('div');
         messageDiv.className = `chat-message ${isUser ? 'chat-message-user' : 'chat-message-bot'}`;
         if (isUser) {
@@ -2757,16 +2770,19 @@
             messageDiv.appendChild(nameSpan);
             messageDiv.appendChild(contentSpan);
         }
-        chatContent.appendChild(messageDiv);
+        el.content.appendChild(messageDiv);
         scrollChatToBottom();
     }
 
     function showChatTyping() {
+        const el = getChatElements();
+        if (!el.content) return;
+        
         const typingDiv = document.createElement('div');
         typingDiv.className = 'chat-typing';
         typingDiv.id = 'typing-indicator';
         typingDiv.innerHTML = 'escribiendo<span id="chat-dots">.</span>';
-        chatContent.appendChild(typingDiv);
+        el.content.appendChild(typingDiv);
         let dotCount = 1;
         const dotsInterval = setInterval(() => {
             dotCount = (dotCount % 3) + 1;
@@ -2786,21 +2802,24 @@
     }
 
     function showChatFAQ() {
+        const el = getChatElements();
+        if (!el.menu) return;
+        
         chatCurrentMode = 'faq';
-        chatMenu.innerHTML = '';
+        el.menu.innerHTML = '';
         chatFAQData.forEach((faq, index) => {
             const btn = document.createElement('button');
             btn.className = 'chat-menu-btn';
             btn.onclick = () => respondChatFAQ(index);
             btn.innerHTML = `<span class="chat-menu-btn-icon">❓</span> ${faq.question}`;
-            chatMenu.appendChild(btn);
+            el.menu.appendChild(btn);
         });
         const backBtn = document.createElement('button');
         backBtn.className = 'chat-menu-btn';
         backBtn.style.marginTop = '8px';
         backBtn.onclick = chatGoBack;
         backBtn.innerHTML = '<span class="chat-menu-btn-icon">⬅️</span> Volver';
-        chatMenu.appendChild(backBtn);
+        el.menu.appendChild(backBtn);
     }
 
     function respondChatFAQ(index) {
@@ -2815,8 +2834,11 @@
     }
 
     function showChatProducts() {
+        const el = getChatElements();
+        if (!el.menu) return;
+        
         chatCurrentMode = 'products';
-        chatMenu.innerHTML = '';
+        el.menu.innerHTML = '';
         const productsContainer = document.createElement('div');
         productsContainer.className = 'chat-products';
         chatProductsData.forEach(product => {
@@ -2826,13 +2848,13 @@
             card.innerHTML = `<div class="chat-product-icon">${product.icon}</div><div class="chat-product-name">${product.name}</div>`;
             productsContainer.appendChild(card);
         });
-        chatMenu.appendChild(productsContainer);
+        el.menu.appendChild(productsContainer);
         const backBtn = document.createElement('button');
         backBtn.className = 'chat-menu-btn';
         backBtn.style.marginTop = '12px';
         backBtn.onclick = chatGoBack;
         backBtn.innerHTML = '<span class="chat-menu-btn-icon">⬅️</span> Volver';
-        chatMenu.appendChild(backBtn);
+        el.menu.appendChild(backBtn);
     }
 
     function respondChatProduct(product) {
@@ -2846,19 +2868,25 @@
     }
 
     function showChatInputMode() {
+        const el = getChatElements();
+        if (!el.menu || !el.input) return;
+        
         chatCurrentMode = 'input';
-        chatMenu.classList.add('hidden');
-        chatInputArea.classList.remove('hidden');
-        chatInput.value = '';
-        chatInput.focus();
+        el.menu.classList.add('hidden');
+        el.inputArea.classList.remove('hidden');
+        el.input.value = '';
+        el.input.focus();
         addChatMessage('Escribí tu pregunta y te responderé. 😊');
     }
 
     function sendChatCustomQuestion() {
-        const question = chatInput.value.trim();
+        const el = getChatElements();
+        if (!el.input) return;
+        
+        const question = el.input.value.trim();
         if (!question) return;
         addChatMessage(question, true);
-        chatInput.value = '';
+        el.input.value = '';
         showChatTyping();
         setTimeout(() => {
             removeChatTyping();
@@ -2886,10 +2914,13 @@
     }
 
     function chatGoBack() {
+        const el = getChatElements();
+        if (!el.menu) return;
+        
         chatCurrentMode = 'menu';
-        chatMenu.innerHTML = '';
-        chatMenu.classList.remove('hidden');
-        chatInputArea.classList.add('hidden');
+        el.menu.innerHTML = '';
+        el.menu.classList.remove('hidden');
+        el.inputArea.classList.add('hidden');
         const buttons = [
             { label: 'Preguntas Frecuentes', icon: '❓', fn: showChatFAQ },
             { label: 'Ver Productos', icon: '🛒', fn: showChatProducts },
@@ -2901,7 +2932,7 @@
             button.className = 'chat-menu-btn';
             button.onclick = btn.fn;
             button.innerHTML = `<span class="chat-menu-btn-icon">${btn.icon}</span> ${btn.label}`;
-            chatMenu.appendChild(button);
+            el.menu.appendChild(button);
         });
     }
 
