@@ -1,0 +1,26 @@
+{
+  "name": "Los Mayorga - Distribuidora Mayorista",
+  "short_name": "Los Mayorga",
+  "description": "Catálogo mayorista de Distribuidora Los Mayorga - Rincón de los Sauces, Neuquén",
+  "start_url": "./App_Nueva_Los_Mayorga_-_Distribuidora.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#001f54",
+  "theme_color": "#001f54",
+  "lang": "es-AR",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
