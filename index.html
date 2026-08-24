@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Distribuidora Los Mayorga - Catálogo Mayorista Premium</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- PWA: manifest + ícono + theme-color. Convierte la app en instalable de verdad
+         (Android/Chrome/Edge con instalación nativa, iPhone con "Agregar a inicio" desde
+         Safari, PC con el ícono de instalar del navegador). manifest.json, icon.svg y sw.js
+         deben subirse a la MISMA carpeta que este HTML, y el sitio debe servirse por HTTPS. -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <meta name="theme-color" content="#001f54">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Los Mayorga">
     
     <style>
         :root {
@@ -770,6 +782,74 @@
         .btn-clear-cart:hover { background: #fef2f2; }
         .btn-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
 
+        /* BANNER "INSTALAR APP" (aparece una vez por sesión, tipo notificación) */
+        .install-banner {
+            position: fixed; left: 12px; right: 12px; bottom: 12px;
+            z-index: 1600;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+            padding: 14px 16px;
+            display: none;
+            align-items: center; gap: 12px;
+            animation: fadeInDown 0.4s ease;
+            max-width: 420px;
+            margin: 0 auto;
+        }
+        .install-banner.visible { display: flex; }
+        .mode-preventa .install-banner { background: #1e293b; }
+        .install-banner-icon {
+            width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 1.15rem;
+        }
+        .install-banner-text { flex: 1; min-width: 0; }
+        .install-banner-title { font-size: 0.8rem; font-weight: 800; color: var(--text-dark); }
+        .mode-preventa .install-banner-title { color: #f8fafc; }
+        .install-banner-subtitle { font-size: 0.68rem; color: var(--text-muted); margin-top: 1px; }
+        .install-banner-actions { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+        .install-banner-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white; border: none; padding: 7px 12px; border-radius: 10px;
+            font-size: 0.7rem; font-weight: 800; cursor: pointer; white-space: nowrap;
+        }
+        .install-banner-dismiss {
+            background: none; border: none; color: var(--text-muted); font-size: 0.65rem;
+            cursor: pointer; text-decoration: underline; padding: 2px;
+        }
+
+        /* MODAL DE INSTRUCCIONES DE INSTALACIÓN */
+        .install-steps-icon {
+            width: 64px; height: 64px; border-radius: 18px; margin: 0 auto 14px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 1.8rem;
+        }
+        .install-native-btn {
+            background: linear-gradient(135deg, var(--wa-green), #1da851);
+            color: white; border: none; padding: 13px; border-radius: 12px;
+            font-weight: 900; width: 100%; cursor: pointer; font-size: 0.9rem;
+            margin-bottom: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .install-step-item {
+            display: flex; gap: 12px; align-items: flex-start;
+            padding: 10px 0; border-bottom: 1px dashed var(--border);
+            text-align: left;
+        }
+        .install-step-item:last-child { border-bottom: none; }
+        .install-step-num {
+            width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white; font-size: 0.72rem; font-weight: 900;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .install-step-text { font-size: 0.82rem; color: var(--text-dark); line-height: 1.4; }
+        .install-note {
+            font-size: 0.72rem; color: var(--text-muted); background: #f8fafb;
+            border-radius: 10px; padding: 10px; margin-top: 14px; text-align: left;
+        }
+
         /* FILA DE PRODUCTO DENTRO DEL CARRITO */
         .cart-item-row {
             display: flex; align-items: flex-start; gap: 10px;
@@ -1235,6 +1315,7 @@
             <div class="side-menu-item" onclick="sideMenuConfiguracion()"><i class="fas fa-gear"></i> Configuración</div>
             <div class="side-menu-item" onclick="openContactModal()"><i class="fas fa-phone"></i> Contacto</div>
             <div class="side-menu-item" onclick="sideMenuAcercaDe()"><i class="fas fa-circle-info"></i> Acerca de</div>
+            <div class="side-menu-item" onclick="openInstallModal()"><i class="fas fa-mobile-screen-button"></i> Instalar App</div>
             <div class="side-menu-item" id="side-menu-logout" style="display:none;" onclick="sideMenuLogout()"><i class="fas fa-right-from-bracket"></i> Cerrar Sesión</div>
         </nav>
     </aside>
@@ -1470,6 +1551,39 @@
         </div>
     </div>
 
+    <!-- BANNER "INSTALAR APP" -->
+    <div class="install-banner" id="install-banner">
+        <div class="install-banner-icon" id="install-banner-icon"><i class="fas fa-mobile-screen-button"></i></div>
+        <div class="install-banner-text">
+            <div class="install-banner-title" id="install-banner-title">Instalá la app de Los Mayorga</div>
+            <div class="install-banner-subtitle" id="install-banner-subtitle">Acceso directo desde tu pantalla de inicio</div>
+        </div>
+        <div class="install-banner-actions">
+            <button class="install-banner-btn" onclick="openInstallModal()">Ver cómo</button>
+            <button class="install-banner-dismiss" onclick="dismissInstallBanner()">Ahora no</button>
+        </div>
+    </div>
+
+    <!-- MODAL INSTRUCCIONES DE INSTALACIÓN (según dispositivo detectado) -->
+    <div class="modal-overlay" id="install-modal">
+        <div class="modal-card" style="text-align:center;">
+            <div style="display:flex; justify-content:flex-end;"><button class="btn-close" onclick="closeInstallModal()">✕</button></div>
+            <div class="install-steps-icon" id="install-steps-icon"><i class="fas fa-mobile-screen-button"></i></div>
+            <h2 style="color:var(--primary); font-size:1.15rem; margin-bottom:6px;" id="install-steps-title">Instalar Los Mayorga</h2>
+            <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:14px;" id="install-steps-desc">Accedé más rápido, sin abrir el navegador cada vez.</p>
+
+            <button class="install-native-btn" id="install-native-btn" style="display:none;" onclick="triggerNativeInstall()">
+                <i class="fas fa-download"></i> Instalar ahora
+            </button>
+
+            <div id="install-steps-list"></div>
+
+            <div class="install-note" id="install-note" style="display:none;"></div>
+
+            <button onclick="closeInstallModal()" class="btn-login-enhanced" style="margin-top:14px;">Entendido</button>
+        </div>
+    </div>
+
 <script>
     // ==========================================================
     //  FUENTES DE DATOS (Google Sheets publicados como CSV)
@@ -1651,7 +1765,174 @@
         loadProductsFromSheets();
         startHeroAutoSlide();
         initScrollTopButton();
+        initInstallPrompt();
     });
+
+    // ==========================================================
+    //  INSTALAR APP (PWA) - detección de dispositivo + aviso + instrucciones.
+    //  IMPORTANTE: no existe una app nativa publicada en Google Play / App Store.
+    //  Lo que ofrece esta sección es instalar la propia web como app (PWA):
+    //  - Android/Chrome/Edge: instalación nativa de un toque (si el navegador la ofrece).
+    //  - iPhone/iPad: "Agregar a pantalla de inicio" desde Safari (paso manual, Apple no
+    //    permite que los sitios web disparen esto automáticamente).
+    //  - PC: ícono de instalar en la barra de direcciones de Chrome/Edge.
+    //  Para que esto funcione hace falta que manifest.json, icon.svg y sw.js estén
+    //  subidos junto a este HTML, y que el sitio se sirva por HTTPS.
+    // ==========================================================
+    let deferredInstallPrompt = null;
+    let detectedPlatform = 'desktop'; // 'android' | 'ios' | 'desktop'
+
+    function detectInstallPlatform() {
+        const ua = navigator.userAgent || '';
+        if (/iPhone|iPad|iPod/i.test(ua)) return 'ios';
+        if (/Android/i.test(ua)) return 'android';
+        return 'desktop';
+    }
+
+    function isRunningStandalone() {
+        return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    }
+
+    function initInstallPrompt() {
+        detectedPlatform = detectInstallPlatform();
+
+        // Registrar el service worker (requisito técnico para poder instalar en Android/Chrome/Edge)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(() => {
+                // Si falla (por ejemplo, si sw.js no se subió junto al HTML), no rompe el resto de la app.
+            });
+        }
+
+        // Chrome/Edge/Android avisan acá cuando el sitio cumple los requisitos para instalarse
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+        });
+
+        // Si ya está instalada y abierta como app, no tiene sentido ofrecer instalarla de nuevo
+        if (isRunningStandalone()) return;
+
+        let shown = false;
+        try { shown = sessionStorage.getItem('mayorgaInstallBannerShown') === '1'; } catch (e) {}
+        if (shown) return;
+
+        setTimeout(showInstallBanner, 4500);
+    }
+
+    function showInstallBanner() {
+        if (isRunningStandalone()) return;
+        const banner = document.getElementById('install-banner');
+        const icon = document.getElementById('install-banner-icon');
+        const title = document.getElementById('install-banner-title');
+        const subtitle = document.getElementById('install-banner-subtitle');
+        if (!banner) return;
+
+        if (detectedPlatform === 'ios') {
+            icon.innerHTML = '<i class="fab fa-apple"></i>';
+            title.textContent = 'Instalá la app en tu iPhone';
+            subtitle.textContent = 'Desde Safari, en 3 pasos';
+        } else if (detectedPlatform === 'android') {
+            icon.innerHTML = '<i class="fab fa-android"></i>';
+            title.textContent = 'Instalá la app en tu Android';
+            subtitle.textContent = 'Acceso directo, sin buscarla cada vez';
+        } else {
+            icon.innerHTML = '<i class="fas fa-desktop"></i>';
+            title.textContent = 'Instalá Los Mayorga en tu PC';
+            subtitle.textContent = 'Se abre como una app aparte, sin pestañas';
+        }
+
+        banner.classList.add('visible');
+        try { sessionStorage.setItem('mayorgaInstallBannerShown', '1'); } catch (e) {}
+    }
+
+    function dismissInstallBanner() {
+        const banner = document.getElementById('install-banner');
+        if (banner) banner.classList.remove('visible');
+    }
+
+    function openInstallModal() {
+        closeSideMenu();
+        dismissInstallBanner();
+
+        const icon = document.getElementById('install-steps-icon');
+        const title = document.getElementById('install-steps-title');
+        const desc = document.getElementById('install-steps-desc');
+        const nativeBtn = document.getElementById('install-native-btn');
+        const stepsList = document.getElementById('install-steps-list');
+        const note = document.getElementById('install-note');
+
+        let steps = [];
+        note.style.display = 'none';
+
+        if (detectedPlatform === 'ios') {
+            icon.innerHTML = '<i class="fab fa-apple"></i>';
+            title.textContent = 'Instalar en iPhone / iPad';
+            desc.textContent = 'Tiene que ser desde Safari (Apple no permite instalar desde otros navegadores en iOS).';
+            nativeBtn.style.display = 'none';
+            steps = [
+                'Tocá el ícono de <strong>Compartir</strong> (el cuadrado con la flecha hacia arriba) en la barra inferior de Safari.',
+                'Deslizá hacia abajo en el menú y tocá <strong>"Agregar a pantalla de inicio"</strong>.',
+                'Tocá <strong>"Agregar"</strong> arriba a la derecha. Listo, el ícono va a aparecer en tu pantalla de inicio.'
+            ];
+        } else if (detectedPlatform === 'android') {
+            icon.innerHTML = '<i class="fab fa-android"></i>';
+            title.textContent = 'Instalar en Android';
+            desc.textContent = 'Se instala como una app más, con su propio ícono.';
+            if (deferredInstallPrompt) {
+                nativeBtn.style.display = 'flex';
+                steps = ['Tocá el botón verde de arriba y confirmá la instalación.'];
+            } else {
+                nativeBtn.style.display = 'none';
+                steps = [
+                    'Tocá el menú <strong>⋮</strong> (los 3 puntos) arriba a la derecha del navegador.',
+                    'Elegí <strong>"Instalar aplicación"</strong> o <strong>"Agregar a pantalla de inicio"</strong>.',
+                    'Confirmá tocando <strong>"Instalar"</strong>.'
+                ];
+                note.style.display = 'block';
+                note.innerHTML = '<i class="fas fa-circle-info"></i> Si no ves esa opción, puede ser que el navegador todavía no detectó que la app es instalable, o que no sea Chrome. Probá recargando la página.';
+            }
+        } else {
+            icon.innerHTML = '<i class="fas fa-desktop"></i>';
+            title.textContent = 'Instalar en tu PC';
+            desc.textContent = 'Funciona en Chrome y Edge. Se abre como una ventana propia, sin las pestañas del navegador.';
+            if (deferredInstallPrompt) {
+                nativeBtn.style.display = 'flex';
+                steps = ['Hacé clic en el botón verde de arriba y confirmá la instalación.'];
+            } else {
+                nativeBtn.style.display = 'none';
+                steps = [
+                    'Buscá el ícono de <strong>instalar</strong> (una pantalla con una flecha ⊕) en la barra de direcciones, a la derecha.',
+                    'Si no lo ves, abrí el menú <strong>⋮</strong> del navegador y elegí <strong>"Instalar Los Mayorga..."</strong>.',
+                    'Confirmá tocando <strong>"Instalar"</strong>.'
+                ];
+                note.style.display = 'block';
+                note.innerHTML = '<i class="fas fa-circle-info"></i> En Firefox y Safari de escritorio todavía no está disponible instalar la web como app — se puede usar igual desde el navegador, o guardarla como marcador/acceso directo.';
+            }
+        }
+
+        stepsList.innerHTML = steps.map((text, i) => `
+            <div class="install-step-item">
+                <div class="install-step-num">${i + 1}</div>
+                <div class="install-step-text">${text}</div>
+            </div>
+        `).join('');
+
+        document.getElementById('install-modal').classList.add('active');
+    }
+
+    function closeInstallModal() {
+        document.getElementById('install-modal').classList.remove('active');
+    }
+
+    async function triggerNativeInstall() {
+        if (!deferredInstallPrompt) return;
+        deferredInstallPrompt.prompt();
+        try {
+            await deferredInstallPrompt.userChoice;
+        } catch (e) {}
+        deferredInstallPrompt = null;
+        closeInstallModal();
+    }
 
     // Botón flotante "subir arriba": aparece progresivamente cuando el usuario
     // baja buscando más productos, y al tocarlo lleva de nuevo al inicio de la página.
