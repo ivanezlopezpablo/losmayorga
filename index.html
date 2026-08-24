@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Distribuidora Los Mayorga - Catálogo Mayorista Premium</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Elfsight AI Chatbot | Untitled AI Chatbot -->
-    <script src="https://elfsightcdn.com/platform.js" async></script>
     
     <style>
         :root {
@@ -738,19 +736,6 @@
         }
         .history-modal-item:hover { background: #eef2f7; }
 
-        /* CHAT IA FLOTANTE: widget de Elfsight embebido, ver div/script cerca de </body>.
-           El widget suele inyectar sus propios elementos con posición fija a la derecha,
-           por eso se fuerza acá (y también vía JS, ver forceElfsightChatLeft) a la izquierda. */
-        .elfsight-chat-slot {
-            position: fixed; left: 20px; bottom: 20px; z-index: 1498;
-        }
-        .elfsight-app-bf1c4884-25b3-4b62-afee-0a387e12d0c5,
-        [class*="eapps-widget-toolbar"],
-        [class*="eapps-chat-launcher"] {
-            right: auto !important;
-            left: 20px !important;
-        }
-
         /* POPUP DE OFERTAS AL CARGAR */
         .promo-popup-card {
             max-width: 480px;
@@ -987,7 +972,7 @@
             transition: transform 0.3s ease;
         }
         .oldapp-card:hover img { transform: scale(1.05); }
-        .oldapp-card.menu img { aspect-ratio: 1 / 1; }       /* Menú: casi cuadrada */
+        .oldapp-card.menu img { aspect-ratio: 5 / 4; }        /* Menú: un poco rectangular */
         .oldapp-card.submenu img { aspect-ratio: 16 / 10; }  /* Submenú: más rectangular */
         .oldapp-card-caption {
             padding: 8px 10px;
@@ -1002,7 +987,7 @@
             color: white;
             font-size: 1.7rem;
         }
-        .oldapp-card.menu .oldapp-todos-tile-visual { aspect-ratio: 1 / 1; }
+        .oldapp-card.menu .oldapp-todos-tile-visual { aspect-ratio: 5 / 4; }
         .oldapp-card.submenu .oldapp-todos-tile-visual { aspect-ratio: 16 / 10; }
 
         .vencimientos-modal-card { max-width: 640px; }
@@ -1307,12 +1292,6 @@
         </div>
     </div>
 
-    <!-- CHAT IA: widget Elfsight, en el mismo lugar donde estaba el botón de chat anterior -->
-    <div class="elfsight-chat-slot">
-        <!-- Elfsight AI Chatbot | Untitled AI Chatbot -->
-        <div class="elfsight-app-bf1c4884-25b3-4b62-afee-0a387e12d0c5" data-elfsight-app-lazy></div>
-    </div>
-
 <script>
     // ==========================================================
     //  FUENTES DE DATOS (Google Sheets publicados como CSV)
@@ -1491,39 +1470,7 @@
         loadProductsFromSheets();
         startHeroAutoSlide();
         initScrollTopButton();
-        initElfsightChatPosition();
     });
-
-    // ==========================================================
-    //  CHAT IA (widget de Elfsight): forzar posición a la izquierda.
-    //  El widget suele inyectar su propio botón flotante con position:fixed
-    //  y "right" en línea, a veces directo en <body> (no dentro de nuestro
-    //  contenedor), así que además del CSS con !important, se observa el DOM
-    //  y se corrige apenas aparece el botón, y cada vez que Elfsight lo re-renderiza.
-    // ==========================================================
-    function forceElfsightChatLeft() {
-        document.querySelectorAll('[class*="eapps"], [class*="elfsight"]').forEach(el => {
-            const cs = window.getComputedStyle(el);
-            if (cs.position === 'fixed' && cs.right !== 'auto' && cs.right !== '') {
-                el.style.setProperty('right', 'auto', 'important');
-                el.style.setProperty('left', '20px', 'important');
-            }
-        });
-    }
-
-    function initElfsightChatPosition() {
-        // El script de Elfsight carga async, así que se reintenta por unos segundos al inicio...
-        let attempts = 0;
-        const pollInterval = setInterval(() => {
-            forceElfsightChatLeft();
-            attempts++;
-            if (attempts >= 30) clearInterval(pollInterval); // ~15s
-        }, 500);
-
-        // ...y además se queda observando el DOM por si el widget se vuelve a renderizar más tarde.
-        const observer = new MutationObserver(() => forceElfsightChatLeft());
-        observer.observe(document.body, { childList: true, subtree: true });
-    }
 
     // Botón flotante "subir arriba": aparece progresivamente cuando el usuario
     // baja buscando más productos, y al tocarlo lleva de nuevo al inicio de la página.
@@ -1672,6 +1619,8 @@
 
     // Hoja Menú: se asume Columna 0 = nombre de la categoría, y en algún lugar de las
     // columnas siguientes está la URL de la imagen (casi cuadrada).
+    // Hoja Menú: Columna A (0) = Categoría, Columna B (1) = Desactivar, Columna C (2) = Imagen
+    // (confirmado por el usuario). Si "Desactivar" tiene contenido, esa categoría no se muestra.
     function parseMenuCSV(csvText) {
         const lines = csvText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
         if (lines.length < 2) return [];
@@ -1680,16 +1629,19 @@
             const cols = splitCsvLine(lines[i]);
             const name = cols[0] || '';
             if (!name) continue;
-            const imageRaw = findImageColumn(cols, 1);
+
+            const disabledVal = (cols[1] || '').trim().toLowerCase();
+            if (['desactivar', '1', 'si', 'true'].includes(disabledVal)) continue;
+
+            const imageRaw = /^https?:\/\//i.test(cols[2]) ? cols[2] : findImageColumn(cols, 1);
             result.push({ name, image: formatDriveUrl(imageRaw) });
         }
         return result;
     }
 
-    // Hoja Submenú: se asume Columna 0 = nombre de la subcategoría, Columna 1 = categoría
-    // padre (el Menú al que pertenece), y en algún lugar de ahí en más la URL de la imagen
-    // (más rectangular). La subcategoría debe coincidir con la "Subcategoría" real cargada
-    // en los productos para que el filtrado funcione.
+    // Hoja Submenú: Columna A (0) = nombre de la subcategoría, Columna C (2) = "Categoría"
+    // (la categoría padre a la que pertenece, confirmado por el usuario). La imagen se busca
+    // entre las demás columnas (normalmente la B), tomando la primera que tenga forma de URL.
     function parseSubmenuCSV(csvText) {
         const lines = csvText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
         if (lines.length < 2) return [];
@@ -1698,8 +1650,8 @@
             const cols = splitCsvLine(lines[i]);
             const name = cols[0] || '';
             if (!name) continue;
-            const parentMenu = cols[1] || '';
-            const imageRaw = findImageColumn(cols, 2);
+            const parentMenu = (cols[2] || '').trim();
+            const imageRaw = /^https?:\/\//i.test(cols[1]) ? cols[1] : findImageColumn(cols, 1);
             result.push({ name, parentMenu, image: formatDriveUrl(imageRaw) });
         }
         return result;
@@ -2758,24 +2710,19 @@
         const query = oldAppMenuFilterQuery.trim().toLowerCase();
         const items = MENU_ITEMS.filter(m => !query || m.name.toLowerCase().includes(query));
 
-        let html = `
-            <div class="oldapp-card menu oldapp-todos-card" onclick="selectOldAppTodos()">
-                <div class="oldapp-todos-tile-visual"><i class="fas fa-shopping-basket"></i></div>
-                <div class="oldapp-card-caption">Todos Los Productos</div>
-            </div>
-        `;
-
         if (items.length === 0) {
-            html += `<p style="grid-column:1/-1; text-align:center; color:#999; padding:16px 0; font-size:0.82rem;">${query ? 'No se encontraron categorías con ese nombre.' : 'Sin categorías cargadas todavía.'}</p>`;
+            grid.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:#999; padding:16px 0; font-size:0.82rem;">${query ? 'No se encontraron categorías con ese nombre.' : 'Sin categorías cargadas todavía.'}</p>`;
         } else {
-            html += items.map(m => `
+            // "Todos Los Productos" ya viene como fila real de la hoja de Menú (con su propia
+            // imagen), no se inventa acá: selectOldAppMenu() la reconoce por nombre y salta
+            // directo a ver todo el catálogo en vez de buscarle subcategorías.
+            grid.innerHTML = items.map(m => `
                 <div class="oldapp-card menu" onclick="selectOldAppMenu('${m.name.replace(/'/g, "\\'")}')">
-                    <img src="${m.image}" alt="${m.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x300?text=${encodeURIComponent(m.name)}'">
+                    <img src="${m.image}" alt="${m.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x240?text=${encodeURIComponent(m.name)}'">
                     <div class="oldapp-card-caption">${m.name}</div>
                 </div>
             `).join('');
         }
-        grid.innerHTML = html;
     }
 
     function onOldAppMenuFilterInput() {
@@ -2796,6 +2743,12 @@
     // ---------- NIVEL 2: grilla de subcategorías (Submenú) de la categoría elegida ----------
 
     function selectOldAppMenu(menuName) {
+        // "Todos Los Productos" es una fila más de la hoja de Menú: en vez de buscarle
+        // subcategorías (no tiene), se trata como acceso directo a todo el catálogo.
+        if (menuName.trim().toLowerCase() === 'todos los productos') {
+            selectOldAppTodos();
+            return;
+        }
         oldAppSelectedMenu = menuName;
         oldAppSubmenuFilterQuery = '';
         oldAppLevel = 'submenu';
