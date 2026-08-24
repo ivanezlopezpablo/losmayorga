@@ -178,7 +178,7 @@
         .header-title p { font-size: 0.7rem; opacity: 0.9; font-weight: 500; }
         .header-actions { display: flex; gap: 8px; }
 
-        .btn-share, .btn-login {
+        .btn-share, .btn-login, .btn-comercios {
             background: rgba(255,255,255,0.18);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.2);
@@ -191,7 +191,7 @@
             transition: all 0.3s ease;
         }
 
-        .btn-share:hover, .btn-login:hover {
+        .btn-share:hover, .btn-login:hover, .btn-comercios:hover {
             background: rgba(255,255,255,0.25);
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
@@ -288,6 +288,10 @@
             display: none;
             animation: slideInRight 0.6s ease;
             box-shadow: var(--shadow-sm);
+        }
+
+        .comercios-status-banner {
+            background: linear-gradient(90deg, #0c4a6e, #0284c7) !important;
         }
 
         /* HERO BANNER */
@@ -716,6 +720,65 @@
         .loader-box { text-align: center; padding: 50px 20px; }
         .spinner { width: 44px; height: 44px; border: 3px solid var(--border); border-top: 3px solid var(--primary); border-radius: 50%; animation: spin-slow 1s linear infinite; margin: 0 auto 15px; }
 
+        /* PANTALLA DE CARGA INICIAL (splash) */
+        .app-splash {
+            position: fixed; inset: 0; z-index: 5000;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 55%, #0284c7 100%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 20px; padding: 30px 20px; text-align: center;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        .app-splash.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+        .app-splash-logo {
+            width: 84px; height: 84px;
+            background: linear-gradient(135deg, #ffffff, #f0f4f8);
+            border-radius: 22px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.4rem;
+            box-shadow: 0 14px 40px rgba(0,0,0,0.35);
+            animation: float 3s ease-in-out infinite;
+        }
+        .app-splash-title { color: white; font-size: 1.35rem; font-weight: 900; letter-spacing: -0.5px; }
+        .app-splash-subtitle { color: rgba(255,255,255,0.85); font-size: 0.82rem; font-weight: 600; margin-top: 4px; }
+        .app-splash-spinner {
+            width: 34px; height: 34px;
+            border: 3px solid rgba(255,255,255,0.3); border-top-color: white;
+            border-radius: 50%; animation: spin-slow 0.9s linear infinite;
+        }
+
+        .app-splash-payment-icon {
+            background: white; border-radius: 14px;
+            width: 60px; height: 44px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 8px 22px rgba(0,0,0,0.25);
+            padding: 6px;
+            animation: float 2.4s ease-in-out infinite;
+        }
+        .app-splash-payment-icon img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .app-splash-payment-icon i { font-size: 1.3rem; color: var(--primary); }
+
+        /* CARRUSEL de medios de pago / envíos, dentro del splash */
+        .app-splash-carousel {
+            min-height: 96px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .app-splash-carousel-slide {
+            display: flex; flex-direction: column; align-items: center; gap: 12px;
+            animation: fadeInDown 0.45s ease;
+        }
+        .app-splash-carousel-icons { display: flex; gap: 12px; }
+        .app-splash-carousel-icons .app-splash-payment-icon:nth-child(2) { animation-delay: 0.3s; }
+        .app-splash-carousel-text { color: white; font-weight: 800; font-size: 0.9rem; }
+
+        .app-splash-progress-dots { display: flex; gap: 7px; }
+        .app-splash-progress-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: rgba(255,255,255,0.35);
+            transition: all 0.3s ease;
+        }
+        .app-splash-progress-dot.active { background: white; width: 22px; border-radius: 4px; }
+
         /* CONTACTO */
         .contact-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
         .contact-item {
@@ -1010,6 +1073,19 @@
 </head>
 <body>
 
+    <!-- PANTALLA DE CARGA INICIAL -->
+    <div class="app-splash" id="app-splash">
+        <div class="app-splash-logo">🛒</div>
+        <div>
+            <div class="app-splash-title">Los Mayorga</div>
+            <div class="app-splash-subtitle">Cargando catálogo mayorista...</div>
+        </div>
+        <div class="app-splash-spinner"></div>
+
+        <div class="app-splash-carousel" id="app-splash-carousel"></div>
+        <div class="app-splash-progress-dots" id="app-splash-dots"></div>
+    </div>
+
     <!-- CABECERA PRINCIPAL -->
     <header class="app-header">
         <div class="header-top">
@@ -1023,6 +1099,7 @@
             </div>
             <div class="header-actions">
                 <button class="btn-share" onclick="shareApp()"><i class="fas fa-share-alt"></i> Compartir</button>
+                <button class="btn-comercios" id="comercios-btn" onclick="toggleComerciosMode()"><i class="fas fa-store"></i> Comercios</button>
                 <button class="btn-login" id="auth-btn" onclick="openLoginModal()"><i class="fas fa-lock"></i> Acceso</button>
             </div>
         </div>
@@ -1082,6 +1159,10 @@
 
     <div id="preventa-banner" class="preventa-status-banner">
         <i class="fas fa-user-tie"></i> MODO PREVENTA ACTIVO - Catálogo Exclusivo
+    </div>
+
+    <div id="comercios-banner" class="preventa-status-banner comercios-status-banner">
+        <i class="fas fa-store"></i> MODO COMERCIOS ACTIVO - Precios Especiales
     </div>
 
     <!-- BARRA INTERNA - solo visible para "Directo a la Distribuidora" -->
@@ -1295,16 +1376,16 @@
 <script>
     // ==========================================================
     //  FUENTES DE DATOS (Google Sheets publicados como CSV)
-    //  - CSV_URL_PUBLICO: catálogo que ve cualquier cliente
-    //  - CSV_URL_PREVENTA: catálogo adicional exclusivo de preventistas
-    //    (en este sheet el precio final de cada producto =
-    //     Precio Individual x Unidades por Bulto)
-    //  - CSV_URL_MARCAS: logos de marca para la búsqueda visual (solo preventistas)
+    //  - CSV_URL_PUBLICO: hoja ÚNICA de productos (reemplaza a las 2 anteriores).
+    //    Cada fila trae, en la columna "Público (Mayorista, Distribuidora o Ambos)",
+    //    a qué canal pertenece: si dice "Mayorista" o "Ambos" alimenta el catálogo
+    //    público (precio = columna L tal cual); si dice "Distribuidora" o "Ambos"
+    //    alimenta el catálogo de Preventista/Comercios (precio = columna M x columna N).
+    //  - CSV_URL_MARCAS: logos de marca para la búsqueda visual (Preventista/Comercios)
     //  - CSV_URL_MENU / CSV_URL_SUBMENU: categorías/subcategorías con imagen para
     //    "Modo App Vieja" en Público (réplica de la app anterior de clientes)
     // ==========================================================
     const CSV_URL_PUBLICO = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTtIs8b6w2l3XSTbkTw0bnqh2SXfTebJjITShgpPJ-jxImqOpnY1rjVHHYNRFqqQBypLxeCKFPrK-C/pub?gid=957503224&single=true&output=csv';
-    const CSV_URL_PREVENTA = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTtIs8b6w2l3XSTbkTw0bnqh2SXfTebJjITShgpPJ-jxImqOpnY1rjVHHYNRFqqQBypLxeCKFPrK-C/pub?gid=15522074&single=true&output=csv';
     const CSV_URL_MARCAS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTtIs8b6w2l3XSTbkTw0bnqh2SXfTebJjITShgpPJ-jxImqOpnY1rjVHHYNRFqqQBypLxeCKFPrK-C/pub?gid=65938486&single=true&output=csv';
     const CSV_URL_MENU = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTtIs8b6w2l3XSTbkTw0bnqh2SXfTebJjITShgpPJ-jxImqOpnY1rjVHHYNRFqqQBypLxeCKFPrK-C/pub?gid=0&single=true&output=csv';
     const CSV_URL_SUBMENU = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTtIs8b6w2l3XSTbkTw0bnqh2SXfTebJjITShgpPJ-jxImqOpnY1rjVHHYNRFqqQBypLxeCKFPrK-C/pub?gid=1089605745&single=true&output=csv';
@@ -1466,6 +1547,7 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+        startSplashCarousel();
         restoreSessionIfAny();
         loadProductsFromSheets();
         startHeroAutoSlide();
@@ -1515,23 +1597,28 @@
 
     // Carga todas las hojas en paralelo y arma los catálogos crudos
     async function loadProductsFromSheets() {
+        const splashStartTime = Date.now();
         try {
-            const [respPublico, respPreventa, respMarcas, respMenu, respSubmenu] = await Promise.all([
+            const [respPublico, respMarcas, respMenu, respSubmenu] = await Promise.all([
                 fetch(CSV_URL_PUBLICO),
-                fetch(CSV_URL_PREVENTA),
                 fetch(CSV_URL_MARCAS),
                 fetch(CSV_URL_MENU),
                 fetch(CSV_URL_SUBMENU)
             ]);
 
             const csvPublico = respPublico.ok ? await respPublico.text() : '';
-            const csvPreventa = respPreventa.ok ? await respPreventa.text() : '';
             const csvMarcas = respMarcas.ok ? await respMarcas.text() : '';
             const csvMenu = respMenu.ok ? await respMenu.text() : '';
             const csvSubmenu = respSubmenu.ok ? await respSubmenu.text() : '';
 
-            PRODUCTS_PUBLICO = csvPublico ? parseCSV(csvPublico, 'publico') : [];
-            PRODUCTS_PREVENTA_EXTRA = csvPreventa ? parseCSV(csvPreventa, 'preventa') : [];
+            if (csvPublico) {
+                const parsed = parseUnifiedCatalogCSV(csvPublico);
+                PRODUCTS_PUBLICO = parsed.publico;
+                PRODUCTS_PREVENTA_EXTRA = parsed.preventa;
+            } else {
+                PRODUCTS_PUBLICO = [];
+                PRODUCTS_PREVENTA_EXTRA = [];
+            }
             BRAND_LOGOS = csvMarcas ? parseBrandLogosCSV(csvMarcas) : [];
             MENU_ITEMS = csvMenu ? parseMenuCSV(csvMenu) : [];
             SUBMENU_ITEMS = csvSubmenu ? parseSubmenuCSV(csvSubmenu) : [];
@@ -1546,6 +1633,89 @@
             filterProducts();
             refreshMarcasChipVisibility();
             setTimeout(maybeShowPromoPopup, 900);
+
+            // La pantalla de carga se muestra siempre un mínimo de 4 segundos (mientras el
+            // carrusel de medios de pago / envíos completa sus 4 slides), y se oculta con un
+            // fundido suave recién después de eso, aunque los datos ya hayan terminado de cargar.
+            const elapsed = Date.now() - splashStartTime;
+            const remaining = Math.max(0, SPLASH_MIN_DURATION - elapsed);
+            setTimeout(hideAppSplash, remaining);
+        }
+    }
+
+    function hideAppSplash() {
+        stopSplashCarousel();
+        const splash = document.getElementById('app-splash');
+        if (!splash) return;
+        splash.classList.add('hidden');
+        setTimeout(() => { splash.style.display = 'none'; }, 550);
+    }
+
+    // ==========================================================
+    //  CARRUSEL DE LA PANTALLA DE CARGA: rota entre medios de pago y el aviso
+    //  de envíos a domicilio mientras se cargan los datos. 4 slides x 1s = 4s.
+    // ==========================================================
+    const SPLASH_MIN_DURATION = 4000;
+    const SPLASH_SLIDES = [
+        {
+            icons: [{ img: 'https://cdn.worldvectorlogo.com/logos/cd4804d4-fa18-4481-8595-e4fff80e6ce8/mercado-pago-1.svg', alt: 'Mercado Pago' }],
+            text: 'Aceptamos Mercado Pago'
+        },
+        {
+            icons: [
+                { img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7GBACNbzK0ObfoNZmCNT4HcDfsfuLp3OInkJiW0TBv7xt5qaBvC1xb24&s=10', alt: 'Visa' },
+                { img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/MasterCard_Logo.svg/1280px-MasterCard_Logo.svg.png', alt: 'Mastercard' }
+            ],
+            text: 'Tarjetas Visa y Mastercard'
+        },
+        {
+            icons: [{ icon: 'fa-money-bill-wave' }, { icon: 'fa-building-columns' }],
+            text: 'Efectivo y Transferencias'
+        },
+        {
+            icons: [{ icon: 'fa-truck' }],
+            text: 'Hacemos envíos a domicilio'
+        }
+    ];
+    let splashSlideIndex = 0;
+    let splashCarouselInterval = null;
+
+    function renderSplashSlide(index) {
+        const container = document.getElementById('app-splash-carousel');
+        const dots = document.getElementById('app-splash-dots');
+        if (!container) return;
+
+        const slide = SPLASH_SLIDES[index];
+        const iconsHtml = slide.icons.map(ic => ic.img
+            ? `<div class="app-splash-payment-icon"><img src="${ic.img}" alt="${ic.alt}"></div>`
+            : `<div class="app-splash-payment-icon"><i class="fas ${ic.icon}"></i></div>`
+        ).join('');
+
+        container.innerHTML = `
+            <div class="app-splash-carousel-slide">
+                <div class="app-splash-carousel-icons">${iconsHtml}</div>
+                <div class="app-splash-carousel-text">${slide.text}</div>
+            </div>
+        `;
+
+        if (dots) {
+            dots.innerHTML = SPLASH_SLIDES.map((_, i) => `<div class="app-splash-progress-dot ${i === index ? 'active' : ''}"></div>`).join('');
+        }
+    }
+
+    function startSplashCarousel() {
+        splashSlideIndex = 0;
+        renderSplashSlide(splashSlideIndex);
+        splashCarouselInterval = setInterval(() => {
+            splashSlideIndex = (splashSlideIndex + 1) % SPLASH_SLIDES.length;
+            renderSplashSlide(splashSlideIndex);
+        }, 1000);
+    }
+
+    function stopSplashCarousel() {
+        if (splashCarouselInterval) {
+            clearInterval(splashCarouselInterval);
+            splashCarouselInterval = null;
         }
     }
 
@@ -1657,11 +1827,12 @@
         return result;
     }
 
-    // Arma el catálogo ALL_PRODUCTS según el rol actual y refresca filtros/marcas/categorías
+    // Arma el catálogo ALL_PRODUCTS según el rol actual y refresca filtros/marcas/categorías.
+    // Ya no se concatena público + preventa: la hoja unificada ya declara explícitamente,
+    // fila por fila, en qué canal(es) debe aparecer cada producto (columna J).
     function rebuildActiveCatalog() {
-        if (currentRole === "PREVENTA") {
-            // Preventista: catálogo público + catálogo adicional de preventa
-            ALL_PRODUCTS = PRODUCTS_PUBLICO.concat(PRODUCTS_PREVENTA_EXTRA);
+        if (currentRole === "PREVENTA" || currentRole === "COMERCIOS") {
+            ALL_PRODUCTS = PRODUCTS_PREVENTA_EXTRA;
         } else {
             ALL_PRODUCTS = PRODUCTS_PUBLICO;
         }
@@ -1719,16 +1890,22 @@
         return new Date(year, month, day, 23, 59, 59);
     }
 
-    // sheetType: 'publico' -> hoja actual de clientes (Precio Individual ya es el precio final del bulto)
-    //            'preventa' -> hoja nueva (Precio Individual es precio unitario; el precio final
-    //                          del producto = Precio Individual x Unidades por Bulto)
-    function parseCSV(csvText, sheetType) {
+    // Hoja ÚNICA de productos (reemplaza a las 2 hojas anteriores). Cada fila declara en la
+    // columna "Público (Mayorista, Distribuidora o Ambos)" a qué canal pertenece. Un mismo
+    // producto puede tener 2 filas (una "Mayorista" y otra "Distribuidora") o una sola fila
+    // "Ambos" con los dos precios cargados juntos: en ambos casos, cada fila puede generar
+    // un producto para el catálogo público (precio = columna L) y/o uno para el catálogo de
+    // Preventista/Comercios (precio = columna M x columna N), según qué precio venga cargado.
+    function parseUnifiedCatalogCSV(csvText) {
         const lines = csvText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-        if (lines.length < 2) return [];
+        if (lines.length < 2) return { publico: [], preventa: [] };
 
-        const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
-        const products = [];
-        const idPrefix = sheetType === 'preventa' ? 'PV-' : 'PU-';
+        // La cabecera "Público (Mayorista, Distribuidora o Ambos)" trae una coma DENTRO de las
+        // comillas, así que la fila de encabezados también necesita el split que respeta comillas
+        // (si no, esa columna se partía en dos y se perdía el resto del mapeo).
+        const headers = splitCsvLine(lines[0]);
+        const publico = [];
+        const preventa = [];
 
         for (let i = 1; i < lines.length; i++) {
             const currentline = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
@@ -1740,51 +1917,67 @@
             }
 
             const disabledVal = (row['Desactivar'] || '').toString().trim().toLowerCase();
-            const sinStockVal = (row['Sin Stock'] || '').toString().trim().toLowerCase();
-
             if (['desactivar', '1', 'si', 'true'].includes(disabledVal)) continue;
 
+            const sinStockVal = (row['Sin Stock'] || '').toString().trim().toLowerCase();
             const isOutOfStock = ['sin stock', '1', 'si', 'true'].includes(sinStockVal);
+
             const sku = row['SKU'] || '';
             const title = row['Producto'] || 'Producto sin nombre';
-            const mainCategory = row['Subcategoría'] || row['Engloba en'] || row['Categoría'] || 'Almacén';
-            const subCategory = '';
+            const mainCategory = row['Subcategoría'] || 'Almacén';
             const brand = row['Marca'] || 'Otras';
+            const characteristics = row['Características del Producto'] || '';
 
-            const precioIndividual = cleanPrice(row['Precio Individual'] || row['Precio Comercios']);
-            if (precioIndividual <= 0) continue;
-
-            let finalPrice, packInfo;
-
-            if (sheetType === 'preventa') {
-                // Precio final = valor individual x unidades por bulto
-                const unidadesPorBulto = parseUnits(row['Unidades por Bulto']);
-                finalPrice = precioIndividual * unidadesPorBulto;
-                packInfo = unidadesPorBulto > 1 ? `Bulto x${unidadesPorBulto}` : 'Unidad';
-            } else {
-                // Hoja pública: el precio ya viene calculado por bulto
-                finalPrice = precioIndividual;
-                packInfo = row['Características'] || row['Otro Dato'] || 'Unidad';
-            }
-
-            const promoCol = (row['En Promo'] || row['Oferta'] || '').toString().trim().toUpperCase();
+            const promoCol = (row['En Promo'] || '').toString().trim().toUpperCase();
             const isPromo = promoCol.includes('PROMO') || promoCol.includes('OFERTA') || promoCol === 'SI' || promoCol === 'TRUE';
 
-            const isSinTacc = (row['SIN GLUTEN'] || row['SIN TACC'] || '').toUpperCase().includes('SI') || title.toLowerCase().includes('sin tacc') || title.toLowerCase().includes('sin gluten');
-            const normalImage = formatDriveUrl(row['Imagen del Producto']);
-            const expiration = row['Fecha Vencimiento'] || row['Vencimiento'] || row['Fecha Vto'] || '';
-            const expirationDate = parseSpanishDate(expiration);
-            const id = idPrefix + (sku ? sku : i);
+            const isSinTacc = (row['SIN GLUTEN'] || '').toUpperCase().includes('SI') || title.toLowerCase().includes('sin tacc') || title.toLowerCase().includes('sin gluten');
 
-            products.push({
-                id, sku, mainCategory, subCategory, title, brand,
-                packInfo, caracteristicasBulto: packInfo,
-                priceNormal: finalPrice, pricePromoVal: 0,
-                finalPrice, isPromo, isSinTacc, image: normalImage,
-                isOutOfStock, expiration, expirationDate, source: sheetType, isNew: false, rowOrder: i
-            });
+            const expiration = row['Fecha Vencimiento'] || '';
+            const expirationDate = parseSpanishDate(expiration);
+            const normalImage = formatDriveUrl(row['Imagen del Producto']);
+
+            const visibilidad = (row['Público (Mayorista, Distribuidora o Ambos)'] || '').trim().toLowerCase();
+            const permiteMayorista = visibilidad.includes('mayorista') || visibilidad.includes('ambos');
+            const permiteDistribuidora = visibilidad.includes('distribuidora') || visibilidad.includes('ambos');
+
+            const precioMayorista = cleanPrice(row['Precio Mayorista']);
+            const precioDistribuidora = cleanPrice(row['Precio Distribuidora']);
+            const unidades = parseUnits(row['Unidades']);
+
+            const baseFields = {
+                sku, mainCategory, subCategory: '', title, brand,
+                isPromo, isSinTacc, image: normalImage, isOutOfStock,
+                expiration, expirationDate, isNew: false, rowOrder: i
+            };
+
+            // Variante para el catálogo Público: precio = columna L, tal cual
+            if (permiteMayorista && precioMayorista > 0) {
+                publico.push({
+                    ...baseFields,
+                    id: 'PU-' + (sku ? sku : i),
+                    packInfo: characteristics || 'Unidad',
+                    caracteristicasBulto: characteristics || 'Unidad',
+                    priceNormal: precioMayorista, pricePromoVal: 0, finalPrice: precioMayorista,
+                    source: 'publico'
+                });
+            }
+
+            // Variante para Preventista/Comercios: precio = columna M x columna N
+            if (permiteDistribuidora && precioDistribuidora > 0) {
+                const finalPrice = precioDistribuidora * unidades;
+                const packInfo = unidades > 1 ? `Bulto x${unidades}` : 'Unidad';
+                preventa.push({
+                    ...baseFields,
+                    id: 'PV-' + (sku ? sku : i),
+                    packInfo, caracteristicasBulto: packInfo,
+                    priceNormal: finalPrice, pricePromoVal: 0, finalPrice,
+                    source: 'preventa'
+                });
+            }
         }
-        return products;
+
+        return { publico, preventa };
     }
 
     // NOTA: los Sheets no tienen una columna real de "Fecha de Carga", así que no hay forma
@@ -2210,6 +2403,9 @@
         if (currentRole === "PREVENTA") {
             if (subtitleEl) subtitleEl.textContent = `Preventa - ${activePreventista}`;
             if (logoutEl) logoutEl.style.display = 'flex';
+        } else if (currentRole === "COMERCIOS") {
+            if (subtitleEl) subtitleEl.textContent = 'Comercios - Precios Especiales';
+            if (logoutEl) logoutEl.style.display = 'none';
         } else {
             if (subtitleEl) subtitleEl.textContent = 'Distribuidora Mayorista';
             if (logoutEl) logoutEl.style.display = 'none';
@@ -2235,6 +2431,12 @@
     function loginPreventa() {
         const key = document.getElementById('pass-input').value.trim();
         if (PREVENTA_KEYS[key]) {
+            // Comercios y Preventista son modos excluyentes: si estaba en Comercios, se sale primero
+            if (currentRole === "COMERCIOS") {
+                document.getElementById('comercios-banner').style.display = 'none';
+                document.getElementById('comercios-btn').innerHTML = '<i class="fas fa-store"></i> Comercios';
+            }
+
             currentRole = "PREVENTA";
             activePreventaKey = key;
             activePreventista = PREVENTA_KEYS[key];
@@ -2247,7 +2449,7 @@
             } catch (e) { /* localStorage no disponible: la sesión no persiste al recargar, pero funciona igual */ }
 
             closeLoginModal();
-            // Ahora el catálogo activo incluye el público + los productos exclusivos de preventa
+            // El catálogo activo pasa a ser el de Distribuidora (precio = Precio Distribuidora x Unidades)
             rebuildActiveCatalog();
             selectedMainCat = 'TODOS';
             selectedTagFilter = 'TODOS';
@@ -2288,6 +2490,75 @@
         closeVencimientosPanel();
         closeMarcasInline();
         refreshDistribuidoraAlert();
+    }
+
+    // ==========================================================
+    //  MODO COMERCIOS - acceso público, sin clave, sin vencimientos.
+    //  Ve el mismo catálogo y precios que Preventista (Precio Distribuidora x Unidades).
+    // ==========================================================
+    function toggleComerciosMode() {
+        if (currentRole === "COMERCIOS") {
+            exitComerciosMode();
+        } else {
+            enterComerciosMode();
+        }
+    }
+
+    function enterComerciosMode() {
+        // Comercios y Preventista son modos excluyentes: si había una sesión de preventista
+        // activa, se cierra primero (sin tocar el resto de la UI dos veces).
+        if (currentRole === "PREVENTA") {
+            try { localStorage.removeItem(SESSION_STORAGE_KEY); } catch (e) {}
+            activePreventista = "";
+            activePreventaKey = "";
+            document.getElementById('preventa-banner').style.display = 'none';
+            const authBtn = document.getElementById('auth-btn');
+            authBtn.innerHTML = '<i class="fas fa-lock"></i> Acceso';
+            authBtn.onclick = openLoginModal;
+            closeVencimientosPanel();
+            refreshDistribuidoraAlert();
+        }
+
+        currentRole = "COMERCIOS";
+        document.body.classList.add('mode-preventa');
+        document.getElementById('comercios-banner').style.display = 'block';
+        document.getElementById('app-subtitle').innerText = "Comercios - Precios Especiales";
+
+        const comerciosBtn = document.getElementById('comercios-btn');
+        comerciosBtn.innerHTML = '<i class="fas fa-right-from-bracket"></i> Salir';
+
+        updateSideMenuAuthUI();
+        refreshMarcasChipVisibility();
+        selectedCategoryBucket = null;
+
+        rebuildActiveCatalog();
+        selectedMainCat = 'TODOS';
+        selectedTagFilter = 'TODOS';
+        document.querySelectorAll('.tag-chip').forEach(c => c.classList.remove('active'));
+        const todosChip = document.querySelector('.tag-chip.todos');
+        if (todosChip) todosChip.classList.add('active');
+        filterProducts();
+        updateCartFloatBar();
+    }
+
+    function exitComerciosMode() {
+        currentRole = "PUBLICO";
+        document.body.classList.remove('mode-preventa');
+        document.getElementById('comercios-banner').style.display = 'none';
+        document.getElementById('app-subtitle').innerText = "Distribuidora Mayorista - Rincón";
+
+        const comerciosBtn = document.getElementById('comercios-btn');
+        comerciosBtn.innerHTML = '<i class="fas fa-store"></i> Comercios';
+
+        updateSideMenuAuthUI();
+        refreshMarcasChipVisibility();
+        selectedCategoryBucket = null;
+        closeMarcasInline();
+
+        rebuildActiveCatalog();
+        selectedMainCat = 'TODOS';
+        filterProducts();
+        updateCartFloatBar();
     }
 
     // ==========================================================
@@ -2437,7 +2708,9 @@
         if (marcasInlineOpen) {
             // Entra en "Modo App Vieja": se oculta el catálogo de la app nueva (categorías,
             // ofertas destacadas y grilla) y solo se muestra la navegación de la app anterior.
-            if (currentRole === "PREVENTA") {
+            // Preventista y Comercios comparten el mismo catálogo (Distribuidora), así que
+            // ambos navegan por marca; Público navega por Categoría -> Subcategoría.
+            if (currentRole === "PREVENTA" || currentRole === "COMERCIOS") {
                 marcasSelectedBrand = null;
                 marcasSearchQuery = '';
                 if (headerText) headerText.textContent = 'Modo App Vieja - Buscar por Marca';
@@ -3024,7 +3297,9 @@
             const item = cart[id];
             const sub = item.product.finalPrice * item.qty;
             subtotal += sub;
-            return `• ${item.product.title}\n  ${item.qty} x $${item.product.finalPrice.toLocaleString('es-AR')} = $${sub.toLocaleString('es-AR')}`;
+            const marcaLinea = item.product.brand ? `\n  Marca: ${item.product.brand}` : '';
+            const skuLinea = item.product.sku ? ` | SKU: ${item.product.sku}` : '';
+            return `• ${item.product.title}${marcaLinea}${skuLinea}\n  ${item.qty} x $${item.product.finalPrice.toLocaleString('es-AR')} = $${sub.toLocaleString('es-AR')}`;
         }).join('\n');
 
         const shipping = currentRole === "PUBLICO" ? COSTO_ENVIO : 0;
@@ -3036,7 +3311,7 @@
         if (currentRole === "PUBLICO") msg += `Envío: $${shipping.toLocaleString('es-AR')}\n`;
         msg += `*Total: $${total.toLocaleString('es-AR')}*\n\nCliente: ${name}${clienteLabel}\nDirección: ${address}\nFecha: ${fecha}`;
 
-        let phone = currentRole === "PREVENTA" ? PHONE_PREVENTA : PHONE_PUBLICO;
+        let phone = (currentRole === "PREVENTA" || currentRole === "COMERCIOS") ? PHONE_PREVENTA : PHONE_PUBLICO;
         window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
 
         // Limpia el carrito automáticamente después de enviar el pedido
@@ -3093,7 +3368,7 @@
     // ==========================================================
     function openContactModal() {
         closeSideMenu();
-        const phone = currentRole === "PREVENTA" ? PHONE_PREVENTA : PHONE_PUBLICO;
+        const phone = (currentRole === "PREVENTA" || currentRole === "COMERCIOS") ? PHONE_PREVENTA : PHONE_PUBLICO;
         const link = document.getElementById('contact-whatsapp-link');
         const text = document.getElementById('contact-whatsapp-text');
         link.href = `https://wa.me/${phone}`;
