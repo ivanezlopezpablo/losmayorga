@@ -2802,24 +2802,7 @@
     }
 
     function showChatFAQ() {
-        const el = getChatElements();
-        if (!el.menu) return;
-        
-        chatCurrentMode = 'faq';
-        el.menu.innerHTML = '';
-        chatFAQData.forEach((faq, index) => {
-            const btn = document.createElement('button');
-            btn.className = 'chat-menu-btn';
-            btn.onclick = () => respondChatFAQ(index);
-            btn.innerHTML = `<span class="chat-menu-btn-icon">❓</span> ${faq.question}`;
-            el.menu.appendChild(btn);
-        });
-        const backBtn = document.createElement('button');
-        backBtn.className = 'chat-menu-btn';
-        backBtn.style.marginTop = '8px';
-        backBtn.onclick = chatGoBack;
-        backBtn.innerHTML = '<span class="chat-menu-btn-icon">⬅️</span> Volver';
-        el.menu.appendChild(backBtn);
+        mostrarCategorias();
     }
 
     function respondChatFAQ(index) {
@@ -2895,11 +2878,126 @@
         }, 2000);
     }
 
-    function getSmartChatResponse(question) {
-        const lowerQuestion = question.toLowerCase();
-        for (const [keyword, response] of Object.entries(chatKeywordResponses)) {
-            if (lowerQuestion.includes(keyword)) return response;
+    // ==========================================
+    // INTEGRACIÓN CON GOOGLE SHEETS
+    // ==========================================
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbye0AbrRz1VJgi7PzHXASwOQQjz8V5FW21DBEqEFlYtIZREUbDbqD-2uKwjxXRZxAuq/exec";
+    let faqPublico = [];
+    let faqEmpresa = [];
+
+    // Datos de respaldo
+    const faqPublicoLocal = [
+        { question: '⏰ ¿Cuál es el horario?', answer: '📅 <strong>Lunes a Viernes</strong> | 9:00 - 13:00 hrs<br>🌙 16:30 - 21:00 hrs<br><br>📅 <strong>Sábados</strong> | 9:00 - 13:00 hrs<br>🌙 16:30 - 21:00 hrs<br><br>❌ Domingos: Cerrado' },
+        { question: '🛒 ¿Cómo compro?', answer: '3️⃣ <strong>Opciones disponibles:</strong><br><br>1️⃣ <strong>App</strong> → Catálogo en línea<br>2️⃣ <strong>WhatsApp</strong> → 0299 405-1600<br>3️⃣ <strong>Presencial</strong> → Visítanos' },
+        { question: '🚚 ¿Hacen envío?', answer: '✅ <strong>Entregas en zona:</strong><br>📍 Norte de Neuquén<br><br>💬 Consulta por WhatsApp:<br>📲 0299 405-1600' },
+        { question: '💳 ¿Métodos de pago?', answer: '🔐 <strong>Todos disponibles:</strong><br>💳 Débito<br>💳 Crédito<br>📱 Mercado Pago<br>💵 Efectivo' }
+    ];
+
+    const faqEmpresaLocal = [
+        { question: '🏢 ¿Qué es el programa mayorista?', answer: '🎯 <strong>Ofrecemos precios especiales</strong><br>para comercios y empresas' },
+        { question: '📞 ¿Cómo contacto al preventista?', answer: '📱 <strong>Llamá:</strong> 0299 405-1600<br>📲 <strong>WhatsApp:</strong> 0299 405-1600' },
+        { question: '💰 ¿Monto mínimo?', answer: '✅ <strong>Trabajamos desde pequeñas cantidades</strong><br>Consultá sin compromiso' },
+        { question: '📦 ¿Modalidad de compra?', answer: '✓ Presencial<br>✓ WhatsApp<br>✓ Llamada<br>✓ Factura' }
+    ];
+
+    async function cargarDatosChat() {
+        try {
+            console.log('🔄 Cargando datos desde Google Sheets...');
+            const response = await fetch(APPS_SCRIPT_URL + "?action=all");
+            const datos = await response.json();
+
+            if (datos.faqPublico && datos.faqPublico.length > 0) {
+                faqPublico = datos.faqPublico;
+                console.log('✅ FAQ Público cargadas');
+            } else {
+                faqPublico = faqPublicoLocal;
+            }
+
+            if (datos.faqEmpresa && datos.faqEmpresa.length > 0) {
+                faqEmpresa = datos.faqEmpresa;
+                console.log('✅ FAQ Empresa cargadas');
+            } else {
+                faqEmpresa = faqEmpresaLocal;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            faqPublico = faqPublicoLocal;
+            faqEmpresa = faqEmpresaLocal;
         }
+    }
+
+    function mostrarCategorias() {
+        addChatMessage('¿Cuál es tu tipo de cliente?', true);
+        const el = getChatElements();
+        el.menu.innerHTML = `
+            <button class="chat-menu-btn" onclick="mostrarFAQChat('publico')">
+                <span class="chat-menu-btn-icon">👤</span> Público Final
+            </button>
+            <button class="chat-menu-btn" onclick="mostrarFAQChat('empresa')">
+                <span class="chat-menu-btn-icon">🏢</span> Dueño de Negocio/Empresa
+            </button>
+        `;
+    }
+
+    function mostrarFAQChat(tipo) {
+        const isPublico = tipo === 'publico';
+        const faqData = isPublico ? faqPublico : faqEmpresa;
+        const label = isPublico ? 'Público Final' : 'Dueño de Negocio/Empresa';
+
+        addChatMessage(`${isPublico ? '👤' : '🏢'} ${label}`, true);
+
+        const el = getChatElements();
+        el.menu.innerHTML = '';
+
+        faqData.forEach((faq) => {
+            const btn = document.createElement('button');
+            btn.className = 'chat-menu-btn';
+            btn.onclick = () => mostrarRespuestaChat(faq, isPublico);
+            btn.innerHTML = `<span class="chat-menu-btn-icon">❓</span> ${faq.question}`;
+            el.menu.appendChild(btn);
+        });
+
+        const backBtn = document.createElement('button');
+        backBtn.className = 'chat-menu-btn';
+        backBtn.style.marginTop = '8px';
+        backBtn.onclick = volverAlMenuChat;
+        backBtn.innerHTML = '<span class="chat-menu-btn-icon">⬅️</span> Atrás';
+        el.menu.appendChild(backBtn);
+    }
+
+    function mostrarRespuestaChat(faq, isPublico) {
+        addChatMessage(faq.question, true);
+        showChatTyping();
+
+        setTimeout(() => {
+            removeChatTyping();
+            addChatMessage(faq.answer, false, true);
+            setTimeout(() => {
+                const el = getChatElements();
+                el.menu.innerHTML = `
+                    <button class="chat-menu-btn" onclick="mostrarFAQChat('${isPublico ? 'publico' : 'empresa'}')">
+                        <span class="chat-menu-btn-icon">↩️</span> Otra Pregunta
+                    </button>
+                    <button class="chat-menu-btn" onclick="mostrarCategorias()" style="margin-top: 8px;">
+                        <span class="chat-menu-btn-icon">⬅️</span> Cambiar Categoría
+                    </button>
+                `;
+            }, 500);
+        }, 2000);
+    }
+
+    function volverAlMenuChat() {
+        const el = getChatElements();
+        el.menu.innerHTML = `
+            <button class="chat-menu-btn" onclick="mostrarCategorias()">
+                <span class="chat-menu-btn-icon">❓</span> Preguntas Frecuentes
+            </button>
+        `;
+        getChatContent().innerHTML = '';
+        addChatMessage('¡Hola! 👋 ¿Qué necesitás?', false, true);
+    }
+
+    function getSmartChatResponse(question) {
         return 'Gracias por tu pregunta. WhatsApp: <strong>0299 405-1600</strong> ¡Te atenderemos!';
     }
 
@@ -2922,7 +3020,7 @@
         el.menu.classList.remove('hidden');
         el.inputArea.classList.add('hidden');
         const buttons = [
-            { label: 'Preguntas Frecuentes', icon: '❓', fn: showChatFAQ },
+            { label: 'Preguntas Frecuentes', icon: '❓', fn: mostrarCategorias },
             { label: 'Ver Productos', icon: '🛒', fn: showChatProducts },
             { label: 'Hacer Pregunta', icon: '💬', fn: showChatInputMode },
             { label: 'Contactar', icon: '📱', fn: showChatContact }
@@ -2939,6 +3037,9 @@
     function handleChatEnter(event) {
         if (event.key === 'Enter') sendChatCustomQuestion();
     }
+
+    // Cargar datos al iniciar
+    document.addEventListener('DOMContentLoaded', cargarDatosChat);
 </script>
 
 <style>
