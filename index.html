@@ -985,24 +985,27 @@
         /* Logo con halo de luz detrás, estilo splash de app premium */
         .app-splash-logo-wrap { position: relative; display: flex; align-items: center; justify-content: center; }
         .app-splash-logo-glow {
-            position: absolute; width: 150px; height: 150px; border-radius: 50%;
+            position: absolute; width: 225px; height: 225px; border-radius: 50%;
             background: radial-gradient(circle, rgba(255,255,255,0.28), transparent 70%);
             animation: pulse 2.6s ease-in-out infinite;
         }
         .app-splash-logo {
             position: relative;
-            width: 104px; height: 104px;
-            background: white;
-            border-radius: 26px;
-            padding: 12px;
+            width: 156px; height: 156px;
+            background: transparent;
+            border-radius: 0;
+            padding: 0;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 20px 55px rgba(0,0,0,0.45);
+            box-shadow: none;
             animation: float 3s ease-in-out infinite;
-            overflow: hidden;
+            overflow: visible;
         }
-        .app-splash-logo img { width: 100%; height: 100%; object-fit: contain; }
+        .app-splash-logo img {
+            width: 100%; height: 100%; object-fit: contain;
+            filter: drop-shadow(0 16px 30px rgba(0,0,0,0.4));
+        }
         .app-splash-logo.logo-fallback img { display: none; }
-        .app-splash-logo.logo-fallback::after { content: "🛒"; font-size: 2.6rem; }
+        .app-splash-logo.logo-fallback::after { content: "🛒"; font-size: 3.9rem; }
 
         .app-splash-brand { display: flex; flex-direction: column; align-items: center; gap: 3px; }
         .app-splash-wordmark {
