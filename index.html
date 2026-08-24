@@ -115,6 +115,21 @@
             * { transition: all 0.15s ease !important; }
         }
 
+        /* Ajuste fino para celulares angostos (iPhone SE, Androids compactos ~320-400px):
+           el header (menú + logo + título + Compartir/Acceso) es lo más apretado de toda
+           la app, así que en pantallas chicas se compacta para que nada se corte. */
+        @media (max-width: 400px) {
+            .app-header { padding: 12px 14px; }
+            .header-brand { gap: 8px; }
+            .btn-menu { width: 34px; height: 34px; font-size: 0.95rem; }
+            .header-logo { width: 40px; height: 40px; font-size: 1.1rem; }
+            .header-title h1 { font-size: 0.95rem; }
+            .header-title p { display: none; }
+            .header-actions { gap: 6px; }
+            .btn-share, .btn-login { padding: 7px 9px; font-size: 0; }
+            .btn-share i, .btn-login i { font-size: 0.85rem; }
+        }
+
         /* HEADER PRINCIPAL */
         .app-header {
             background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
@@ -178,7 +193,7 @@
         .header-title p { font-size: 0.7rem; opacity: 0.9; font-weight: 500; }
         .header-actions { display: flex; gap: 8px; }
 
-        .btn-share, .btn-login, .btn-comercios {
+        .btn-share, .btn-login {
             background: rgba(255,255,255,0.18);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.2);
@@ -191,7 +206,7 @@
             transition: all 0.3s ease;
         }
 
-        .btn-share:hover, .btn-login:hover, .btn-comercios:hover {
+        .btn-share:hover, .btn-login:hover {
             background: rgba(255,255,255,0.25);
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
@@ -288,10 +303,6 @@
             display: none;
             animation: slideInRight 0.6s ease;
             box-shadow: var(--shadow-sm);
-        }
-
-        .comercios-status-banner {
-            background: linear-gradient(90deg, #0c4a6e, #0284c7) !important;
         }
 
         /* HERO BANNER */
@@ -437,6 +448,30 @@
         .mode-preventa .cat-tab { background: linear-gradient(135deg, #334155, #1e293b); color: #cbd5e1; border-color: #475569; }
         .mode-preventa .cat-tab.active { background: linear-gradient(135deg, #FF6F00, #FF8C00); border-color: #FF8C00; color: white; }
 
+        /* Segundo renglón: subcategorías de la categoría elegida arriba (solo Público) */
+        .main-subcategories-bar {
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+            padding: 6px 12px 10px 24px;
+            background: linear-gradient(135deg, #ffffff, #fafafa);
+            border-bottom: 1px solid var(--border);
+        }
+        .mode-preventa .main-subcategories-bar { background: linear-gradient(135deg, #1e293b, #0f172a); border-color: #334155; }
+        .cat-tab.sub {
+            padding: 5px 10px;
+            font-size: 0.66rem;
+            background: white;
+            border-color: #e2e8f0;
+            color: var(--text-muted);
+        }
+        .cat-tab.sub.active {
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            color: white; border-color: var(--primary-light);
+        }
+        .mode-preventa .cat-tab.sub { background: #0f172a; border-color: #334155; color: #94a3b8; }
+        .mode-preventa .cat-tab.sub.active { background: linear-gradient(135deg, #FF8C00, #FF6F00); border-color: #FF8C00; color: white; }
+
         /* GRID PRODUCTOS */
         .main-container { padding: 16px; width: 100%; }
         .section-header { font-size: 0.95rem; font-weight: 800; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
@@ -531,6 +566,24 @@
             display: inline-block;
             margin-bottom: 8px;
         }
+
+        /* Leyenda legal obligatoria en productos de Bebidas Alcohólicas */
+        .alcohol-warning {
+            font-size: 0.52rem;
+            line-height: 1.3;
+            color: #92400e;
+            background: #fef3c7;
+            border: 1px solid #fbbf24;
+            border-radius: 6px;
+            padding: 4px 6px;
+            margin-top: 4px;
+            display: flex;
+            align-items: flex-start;
+            gap: 4px;
+        }
+        .alcohol-warning i { color: #d97706; margin-top: 1px; flex-shrink: 0; }
+        .mode-preventa .alcohol-warning { background: #422006; color: #fde68a; border-color: #92400e; }
+        .mode-preventa .alcohol-warning i { color: #fbbf24; }
 
         /* PRECIOS Y DESCUENTOS */
         .price-box { display: flex; flex-direction: column; gap: 2px; margin-bottom: 10px; }
@@ -716,6 +769,54 @@
         }
         .btn-clear-cart:hover { background: #fef2f2; }
         .btn-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
+
+        /* FILA DE PRODUCTO DENTRO DEL CARRITO */
+        .cart-item-row {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 12px 0; border-bottom: 1px dashed var(--border);
+        }
+        .cart-item-img {
+            width: 48px; height: 48px; object-fit: contain; border-radius: 8px;
+            background: #f8fafb; border: 1px solid var(--border); flex-shrink: 0;
+        }
+        .mode-preventa .cart-item-img { background: #334155; border-color: #475569; }
+        .cart-item-info { flex: 1; min-width: 0; }
+        .cart-item-title {
+            font-size: 0.8rem; font-weight: 800; color: var(--text-dark);
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .mode-preventa .cart-item-title { color: #f8fafc; }
+        .cart-item-details {
+            font-size: 0.64rem; color: var(--text-muted); margin-top: 2px;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .cart-item-unit-price { font-size: 0.68rem; color: var(--text-muted); margin-top: 3px; }
+        .cart-item-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+        .cart-item-qty-controls {
+            display: flex; align-items: center; gap: 2px;
+            background: #f8fafb; border: 1.5px solid var(--border); border-radius: 8px; padding: 2px;
+        }
+        .mode-preventa .cart-item-qty-controls { background: #334155; border-color: #475569; }
+        .cart-item-qty-controls button {
+            width: 22px; height: 22px; border: none; background: white; border-radius: 5px;
+            font-weight: bold; cursor: pointer; font-size: 0.8rem; color: var(--text-dark);
+        }
+        .mode-preventa .cart-item-qty-controls button { background: #1e293b; color: #f8fafc; }
+        .cart-item-qty-controls span { font-size: 0.75rem; font-weight: 800; min-width: 16px; text-align: center; }
+        .mode-preventa .cart-item-qty-controls span { color: #f8fafc; }
+        .cart-item-bottom-row { display: flex; align-items: center; gap: 8px; }
+        .cart-item-remove {
+            background: none; border: none; color: #ef4444; cursor: pointer;
+            font-size: 0.85rem; padding: 3px;
+        }
+        .cart-item-remove:hover { color: #b91c1c; }
+        .cart-item-total { font-weight: 800; font-size: 0.8rem; color: var(--text-dark); }
+        .mode-preventa .cart-item-total { color: #f8fafc; }
+
+        .cart-shipping-row {
+            display: flex; justify-content: space-between; font-size: 0.8rem;
+            color: var(--text-muted); padding-top: 8px; margin-top: 4px; border-top: 1px dashed var(--border);
+        }
 
         .loader-box { text-align: center; padding: 50px 20px; }
         .spinner { width: 44px; height: 44px; border: 3px solid var(--border); border-top: 3px solid var(--primary); border-radius: 50%; animation: spin-slow 1s linear infinite; margin: 0 auto 15px; }
@@ -1099,7 +1200,6 @@
             </div>
             <div class="header-actions">
                 <button class="btn-share" onclick="shareApp()"><i class="fas fa-share-alt"></i> Compartir</button>
-                <button class="btn-comercios" id="comercios-btn" onclick="toggleComerciosMode()"><i class="fas fa-store"></i> Comercios</button>
                 <button class="btn-login" id="auth-btn" onclick="openLoginModal()"><i class="fas fa-lock"></i> Acceso</button>
             </div>
         </div>
@@ -1161,10 +1261,6 @@
         <i class="fas fa-user-tie"></i> MODO PREVENTA ACTIVO - Catálogo Exclusivo
     </div>
 
-    <div id="comercios-banner" class="preventa-status-banner comercios-status-banner">
-        <i class="fas fa-store"></i> MODO COMERCIOS ACTIVO - Precios Especiales
-    </div>
-
     <!-- BARRA INTERNA - solo visible para "Directo a la Distribuidora" -->
     <div id="distribuidora-alert-bar" class="distribuidora-alert-bar">
         <span><i class="fas fa-hourglass-half"></i> <span id="distribuidora-alert-text">Productos por vencer</span></span>
@@ -1221,6 +1317,7 @@
 
     <!-- CATEGORÍAS -->
     <div class="main-categories-bar" id="main-categories-bar"></div>
+    <div class="main-subcategories-bar" id="main-subcategories-bar" style="display:none;"></div>
 
     <!-- CONTENIDO PRINCIPAL -->
     <main class="main-container">
@@ -1397,8 +1494,10 @@
     const PREVENTA_KEYS = {
         "PREV2026A": "Iván",
         "PREV2026B": "Ulises",
-        "PREV2026C": "Directo a la Distribuidora"
+        "PREV2026C": "Directo a la Distribuidora",
+        "COM2026": "Comercios"
     };
+    const COMERCIOS_KEY = "COM2026";
 
     // Catálogos crudos, cargados una sola vez desde cada hoja
     let PRODUCTS_PUBLICO = [];
@@ -1746,29 +1845,6 @@
         return 'Almacen';
     }
 
-    // NOTA IMPORTANTE: las tres secciones (Almacén / Refrigerados / Limpieza) de la hoja de
-    // marcas son una clasificación más amplia que la "Subcategoría" de cada producto (ej: "Quesos",
-    // "Leches", "Fideos"). Para que "Todos los Productos" funcione bien en cada sección, se arma
-    // este mapa manual de Subcategoría -> Sección. Si en el futuro agregan una Subcategoría nueva
-    // que no esté en este mapa, esos productos no van a aparecer al tocar "Todos los Productos"
-    // (aunque sí van a seguir apareciendo en el catálogo general y al buscar por marca puntual).
-    const CATEGORY_BUCKET_MAP = {
-        'leches': 'Refrigerados', 'mantecas y cremas': 'Refrigerados', 'yogures': 'Refrigerados',
-        'quesos': 'Refrigerados', 'embutidos y fiambres': 'Refrigerados', 'carnes': 'Refrigerados',
-        'congelados': 'Refrigerados', 'refrigerados': 'Refrigerados',
-        'masas y pastas': 'Almacen', 'arroz': 'Almacen', 'fideos': 'Almacen',
-        'mercadería mixta': 'Almacen', 'mercaderia mixta': 'Almacen', 'harinas': 'Almacen',
-        'aceites / vinagres / grasa': 'Almacen', 'azucar/edulcorantes': 'Almacen',
-        'azúcar/edulcorantes': 'Almacen', 'caldos': 'Almacen', 'condimentos': 'Almacen',
-        'almacen': 'Almacen', 'almacén': 'Almacen',
-        'limpieza': 'Limpieza'
-    };
-
-    function getCategoryBucket(mainCategory) {
-        if (!mainCategory) return null;
-        return CATEGORY_BUCKET_MAP[mainCategory.trim().toLowerCase()] || null;
-    }
-
     // ---------- Hojas de Menú / Submenú (Modo App Vieja, rol Público) ----------
     // No pude confirmar en vivo el orden exacto de columnas de estas 2 hojas nuevas
     // (mi herramienta de lectura web quedó bloqueada momentáneamente), así que el parser
@@ -1831,7 +1907,7 @@
     // Ya no se concatena público + preventa: la hoja unificada ya declara explícitamente,
     // fila por fila, en qué canal(es) debe aparecer cada producto (columna J).
     function rebuildActiveCatalog() {
-        if (currentRole === "PREVENTA" || currentRole === "COMERCIOS") {
+        if (currentRole === "PREVENTA") {
             ALL_PRODUCTS = PRODUCTS_PREVENTA_EXTRA;
         } else {
             ALL_PRODUCTS = PRODUCTS_PUBLICO;
@@ -2003,7 +2079,18 @@
         select.value = brands.includes(previousValue) ? previousValue : 'TODOS';
     }
 
+    // En Público (con datos de Menú cargados) se arma la barra en 2 niveles:
+    // fila 1 = Categorías (Menú), fila 2 = Subcategorías de la elegida (Submenú).
+    // En Preventista/Comercios se mantiene la barra plana de siempre.
     function renderMainCategories() {
+        if (currentRole === 'PUBLICO' && MENU_ITEMS.length > 0) {
+            renderMainCategoriesHierarchical();
+        } else {
+            renderMainCategoriesFlat();
+        }
+    }
+
+    function renderMainCategoriesFlat() {
         const mainCats = ['TODOS', ...new Set(ALL_PRODUCTS.map(p => p.mainCategory))];
         const container = document.getElementById('main-categories-bar');
         if (!mainCats.includes(selectedMainCat)) selectedMainCat = 'TODOS';
@@ -2012,6 +2099,85 @@
                 <span>${cat === 'TODOS' ? 'Todas' : cat}</span>
             </div>
         `).join('');
+        hideSubcategoriesBar();
+    }
+
+    function hideSubcategoriesBar() {
+        const sub = document.getElementById('main-subcategories-bar');
+        if (sub) { sub.style.display = 'none'; sub.innerHTML = ''; }
+    }
+
+    // ---------- Fila 1: Categorías (Menú) ----------
+    function renderMainCategoriesHierarchical() {
+        const container = document.getElementById('main-categories-bar');
+        const menuNames = MENU_ITEMS.map(m => m.name).filter(n => n.trim().toLowerCase() !== 'todos los productos');
+
+        let html = `<div class="cat-tab ${!selectedCategoryBucket ? 'active' : ''}" onclick="selectMenuCategoryTier1(null, this)"><span>Todas</span></div>`;
+        html += menuNames.map(name => `
+            <div class="cat-tab ${selectedCategoryBucket === name ? 'active' : ''}" onclick="selectMenuCategoryTier1('${name.replace(/'/g, "\\'")}', this)">
+                <span>${name}</span>
+            </div>
+        `).join('');
+        container.innerHTML = html;
+
+        renderSubcategoriesTier2();
+    }
+
+    function selectMenuCategoryTier1(menuName, el) {
+        closeMarcasInline();
+        selectedCategoryBucket = menuName; // null = "Todas"
+        selectedMainCat = 'TODOS'; // al cambiar de categoría se resetea la subcategoría fina elegida
+        document.querySelectorAll('#main-categories-bar .cat-tab').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        renderSubcategoriesTier2();
+        filterProducts();
+    }
+
+    // ---------- Fila 2: Subcategorías (Submenú) de la categoría elegida ----------
+    function renderSubcategoriesTier2() {
+        const sub = document.getElementById('main-subcategories-bar');
+        if (!sub) return;
+
+        if (!selectedCategoryBucket) {
+            sub.style.display = 'none';
+            sub.innerHTML = '';
+            return;
+        }
+
+        const items = SUBMENU_ITEMS.filter(s => (s.parentMenu || '').trim().toLowerCase() === selectedCategoryBucket.trim().toLowerCase());
+        if (items.length === 0) {
+            sub.style.display = 'none';
+            sub.innerHTML = '';
+            return;
+        }
+
+        sub.style.display = 'flex';
+        let html = `
+            <div class="cat-tab sub ${selectedMainCat === 'TODOS' ? 'active' : ''}" onclick="selectSubcategoryTier2('__ALL_IN_MENU__', this)">
+                <span>Todas</span>
+            </div>
+        `;
+        html += items.map(s => `
+            <div class="cat-tab sub ${selectedMainCat === s.name ? 'active' : ''}" onclick="selectSubcategoryTier2('${s.name.replace(/'/g, "\\'")}', this)">
+                <span>${s.name}</span>
+            </div>
+        `).join('');
+        sub.innerHTML = html;
+    }
+
+    function selectSubcategoryTier2(subName, el) {
+        closeMarcasInline();
+        selectedMainCat = (subName === '__ALL_IN_MENU__') ? 'TODOS' : subName;
+        document.querySelectorAll('#main-subcategories-bar .cat-tab').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        filterProducts();
+    }
+
+    // Mapeo real Subcategoría -> Categoría, usando la hoja de Submenú (no la heurística de 3 baldes)
+    function getMenuCategoryForSubcategoria(subcategoriaName) {
+        if (!subcategoriaName) return null;
+        const match = SUBMENU_ITEMS.find(s => (s.name || '').trim().toLowerCase() === subcategoriaName.trim().toLowerCase());
+        return match ? match.parentMenu : null;
     }
 
     function onBrandChange() { filterProducts(); }
@@ -2021,6 +2187,7 @@
         selectedCategoryBucket = null;
         document.querySelectorAll('.cat-tab').forEach(c => c.classList.remove('active'));
         el.classList.add('active');
+        hideSubcategoriesBar();
         filterProducts();
     }
 
@@ -2082,9 +2249,15 @@
         const selectedBrand = document.getElementById('brand-select').value;
 
         let results = ALL_PRODUCTS.filter(p => {
-            let matchesCat = selectedCategoryBucket
-                ? getCategoryBucket(p.mainCategory) === selectedCategoryBucket
-                : (selectedMainCat === 'TODOS' || p.mainCategory === selectedMainCat);
+            // Prioridad: subcategoría específica elegida > categoría amplia elegida > todo
+            let matchesCat;
+            if (selectedMainCat !== 'TODOS') {
+                matchesCat = p.mainCategory === selectedMainCat;
+            } else if (selectedCategoryBucket) {
+                matchesCat = getMenuCategoryForSubcategoria(p.mainCategory) === selectedCategoryBucket;
+            } else {
+                matchesCat = true;
+            }
             let matchesBrand = selectedBrand === 'TODOS' || p.brand === selectedBrand;
             let matchesTag = true;
 
@@ -2146,6 +2319,13 @@
         return '';
     }
 
+    // Leyenda legal obligatoria para bebidas alcohólicas (Ley Nacional 24.788)
+    function getAlcoholWarningHtml(p) {
+        const cat = (p.mainCategory || '').toLowerCase();
+        if (!cat.includes('alcoh')) return '';
+        return `<div class="alcohol-warning"><i class="fas fa-triangle-exclamation"></i> Beber con moderación. Prohibida la venta de bebidas alcohólicas a menores de 18 años. Ley Nacional de Lucha contra el Alcoholismo N° 24.788.</div>`;
+    }
+
     function renderProductCard(p, qty, isFeatured = false) {
         const hasDiscount = p.pricePromoVal > 0 && p.pricePromoVal < p.priceNormal;
 
@@ -2160,6 +2340,7 @@
                     <div class="product-brand">${p.brand}</div>
                     <div class="product-title">${p.title}</div>
                     <div class="product-pack-info"><i class="fas fa-box-open"></i> ${p.caracteristicasBulto}</div>
+                    ${getAlcoholWarningHtml(p)}
                 </div>
                 <div>
                     <div class="price-box">
@@ -2387,7 +2568,7 @@
     function applyPreventaLoginUI() {
         document.body.classList.add('mode-preventa');
         document.getElementById('preventa-banner').style.display = 'block';
-        document.getElementById('app-subtitle').innerText = `Preventa - ${activePreventista}`;
+        document.getElementById('app-subtitle').innerText = activePreventaKey === COMERCIOS_KEY ? 'Comercios - Precios Especiales' : `Preventa - ${activePreventista}`;
 
         const btn = document.getElementById('auth-btn');
         btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Salir';
@@ -2401,11 +2582,8 @@
         const subtitleEl = document.getElementById('side-menu-subtitle');
         const logoutEl = document.getElementById('side-menu-logout');
         if (currentRole === "PREVENTA") {
-            if (subtitleEl) subtitleEl.textContent = `Preventa - ${activePreventista}`;
+            if (subtitleEl) subtitleEl.textContent = activePreventaKey === COMERCIOS_KEY ? 'Comercios - Precios Especiales' : `Preventa - ${activePreventista}`;
             if (logoutEl) logoutEl.style.display = 'flex';
-        } else if (currentRole === "COMERCIOS") {
-            if (subtitleEl) subtitleEl.textContent = 'Comercios - Precios Especiales';
-            if (logoutEl) logoutEl.style.display = 'none';
         } else {
             if (subtitleEl) subtitleEl.textContent = 'Distribuidora Mayorista';
             if (logoutEl) logoutEl.style.display = 'none';
@@ -2431,12 +2609,6 @@
     function loginPreventa() {
         const key = document.getElementById('pass-input').value.trim();
         if (PREVENTA_KEYS[key]) {
-            // Comercios y Preventista son modos excluyentes: si estaba en Comercios, se sale primero
-            if (currentRole === "COMERCIOS") {
-                document.getElementById('comercios-banner').style.display = 'none';
-                document.getElementById('comercios-btn').innerHTML = '<i class="fas fa-store"></i> Comercios';
-            }
-
             currentRole = "PREVENTA";
             activePreventaKey = key;
             activePreventista = PREVENTA_KEYS[key];
@@ -2452,6 +2624,7 @@
             // El catálogo activo pasa a ser el de Distribuidora (precio = Precio Distribuidora x Unidades)
             rebuildActiveCatalog();
             selectedMainCat = 'TODOS';
+            selectedCategoryBucket = null;
             selectedTagFilter = 'TODOS';
             document.querySelectorAll('.tag-chip').forEach(c => c.classList.remove('active'));
             document.querySelector('.tag-chip.todos').classList.add('active');
@@ -2490,75 +2663,6 @@
         closeVencimientosPanel();
         closeMarcasInline();
         refreshDistribuidoraAlert();
-    }
-
-    // ==========================================================
-    //  MODO COMERCIOS - acceso público, sin clave, sin vencimientos.
-    //  Ve el mismo catálogo y precios que Preventista (Precio Distribuidora x Unidades).
-    // ==========================================================
-    function toggleComerciosMode() {
-        if (currentRole === "COMERCIOS") {
-            exitComerciosMode();
-        } else {
-            enterComerciosMode();
-        }
-    }
-
-    function enterComerciosMode() {
-        // Comercios y Preventista son modos excluyentes: si había una sesión de preventista
-        // activa, se cierra primero (sin tocar el resto de la UI dos veces).
-        if (currentRole === "PREVENTA") {
-            try { localStorage.removeItem(SESSION_STORAGE_KEY); } catch (e) {}
-            activePreventista = "";
-            activePreventaKey = "";
-            document.getElementById('preventa-banner').style.display = 'none';
-            const authBtn = document.getElementById('auth-btn');
-            authBtn.innerHTML = '<i class="fas fa-lock"></i> Acceso';
-            authBtn.onclick = openLoginModal;
-            closeVencimientosPanel();
-            refreshDistribuidoraAlert();
-        }
-
-        currentRole = "COMERCIOS";
-        document.body.classList.add('mode-preventa');
-        document.getElementById('comercios-banner').style.display = 'block';
-        document.getElementById('app-subtitle').innerText = "Comercios - Precios Especiales";
-
-        const comerciosBtn = document.getElementById('comercios-btn');
-        comerciosBtn.innerHTML = '<i class="fas fa-right-from-bracket"></i> Salir';
-
-        updateSideMenuAuthUI();
-        refreshMarcasChipVisibility();
-        selectedCategoryBucket = null;
-
-        rebuildActiveCatalog();
-        selectedMainCat = 'TODOS';
-        selectedTagFilter = 'TODOS';
-        document.querySelectorAll('.tag-chip').forEach(c => c.classList.remove('active'));
-        const todosChip = document.querySelector('.tag-chip.todos');
-        if (todosChip) todosChip.classList.add('active');
-        filterProducts();
-        updateCartFloatBar();
-    }
-
-    function exitComerciosMode() {
-        currentRole = "PUBLICO";
-        document.body.classList.remove('mode-preventa');
-        document.getElementById('comercios-banner').style.display = 'none';
-        document.getElementById('app-subtitle').innerText = "Distribuidora Mayorista - Rincón";
-
-        const comerciosBtn = document.getElementById('comercios-btn');
-        comerciosBtn.innerHTML = '<i class="fas fa-store"></i> Comercios';
-
-        updateSideMenuAuthUI();
-        refreshMarcasChipVisibility();
-        selectedCategoryBucket = null;
-        closeMarcasInline();
-
-        rebuildActiveCatalog();
-        selectedMainCat = 'TODOS';
-        filterProducts();
-        updateCartFloatBar();
     }
 
     // ==========================================================
@@ -2710,7 +2814,7 @@
             // ofertas destacadas y grilla) y solo se muestra la navegación de la app anterior.
             // Preventista y Comercios comparten el mismo catálogo (Distribuidora), así que
             // ambos navegan por marca; Público navega por Categoría -> Subcategoría.
-            if (currentRole === "PREVENTA" || currentRole === "COMERCIOS") {
+            if (currentRole === "PREVENTA") {
                 marcasSelectedBrand = null;
                 marcasSearchQuery = '';
                 if (headerText) headerText.textContent = 'Modo App Vieja - Buscar por Marca';
@@ -3229,13 +3333,31 @@
             const itemTotal = item.product.finalPrice * item.qty;
             subtotal += itemTotal;
 
+            const detailsParts = [];
+            if (item.product.brand) detailsParts.push(item.product.brand);
+            if (item.product.sku) detailsParts.push('SKU ' + item.product.sku);
+            if (item.product.caracteristicasBulto) detailsParts.push(item.product.caracteristicasBulto);
+            const detailsLine = detailsParts.join(' · ');
+
             return `
-                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed #e2e8f0; padding:12px 0;">
-                    <div>
-                        <strong>${item.product.title}</strong>
-                        <div style="font-size:0.75rem; color:#718096;">$${item.product.finalPrice.toLocaleString('es-AR')} c/u</div>
+                <div class="cart-item-row">
+                    <img class="cart-item-img" src="${item.product.image}" alt="${item.product.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/60?text=Sin+Foto'">
+                    <div class="cart-item-info">
+                        <div class="cart-item-title">${item.product.title}</div>
+                        ${detailsLine ? `<div class="cart-item-details">${detailsLine}</div>` : ''}
+                        <div class="cart-item-unit-price">$${item.product.finalPrice.toLocaleString('es-AR')} c/u</div>
                     </div>
-                    <div style="font-weight:800;">$${itemTotal.toLocaleString('es-AR', {minimumFractionDigits:2})}</div>
+                    <div class="cart-item-actions">
+                        <div class="cart-item-qty-controls">
+                            <button type="button" onclick="updateCartItemQty('${id}', -1)">−</button>
+                            <span>${item.qty}</span>
+                            <button type="button" onclick="updateCartItemQty('${id}', 1)">+</button>
+                        </div>
+                        <div class="cart-item-bottom-row">
+                            <button type="button" class="cart-item-remove" onclick="removeCartItem('${id}')" aria-label="Quitar producto"><i class="fas fa-trash"></i></button>
+                            <span class="cart-item-total">$${itemTotal.toLocaleString('es-AR', {minimumFractionDigits:2})}</span>
+                        </div>
+                    </div>
                 </div>
             `;
         });
@@ -3254,8 +3376,13 @@
             `;
         }
 
+        // El envío a domicilio ($2.000) se suma solo para Público (no para Preventista/Comercios)
+        if (currentRole === "PUBLICO") {
+            html += `<div class="cart-shipping-row"><span><i class="fas fa-truck"></i> Envío a domicilio</span><span>$${COSTO_ENVIO.toLocaleString('es-AR')}</span></div>`;
+        }
+
         let totalFinal = currentRole === "PUBLICO" ? subtotal + COSTO_ENVIO : subtotal;
-        html += `<div style="margin-top:12px; font-weight:900;">Total: $${totalFinal.toLocaleString('es-AR', {minimumFractionDigits:2})}</div>`;
+        html += `<div style="margin-top:8px; font-weight:900; display:flex; justify-content:space-between;"><span>Total:</span><span>$${totalFinal.toLocaleString('es-AR', {minimumFractionDigits:2})}</span></div>`;
 
         container.innerHTML = html;
 
@@ -3274,6 +3401,21 @@
         document.getElementById('client-address').value = prevAddress;
 
         renderCartSuggestions();
+    }
+
+    // Cambia la cantidad de un producto DESDE el carrito (actualiza catálogo, badge y el propio carrito)
+    function updateCartItemQty(id, delta) {
+        updateQty(id, delta);
+        renderCartSummary();
+    }
+
+    // Quita un producto por completo del carrito (ícono de tacho de basura)
+    function removeCartItem(id) {
+        if (!cart[id]) return;
+        delete cart[id];
+        updateProductDisplay(id);
+        updateCartFloatBar();
+        renderCartSummary();
     }
 
     function clearCart() {
@@ -3311,7 +3453,7 @@
         if (currentRole === "PUBLICO") msg += `Envío: $${shipping.toLocaleString('es-AR')}\n`;
         msg += `*Total: $${total.toLocaleString('es-AR')}*\n\nCliente: ${name}${clienteLabel}\nDirección: ${address}\nFecha: ${fecha}`;
 
-        let phone = (currentRole === "PREVENTA" || currentRole === "COMERCIOS") ? PHONE_PREVENTA : PHONE_PUBLICO;
+        let phone = (currentRole === "PREVENTA") ? PHONE_PREVENTA : PHONE_PUBLICO;
         window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
 
         // Limpia el carrito automáticamente después de enviar el pedido
@@ -3368,7 +3510,7 @@
     // ==========================================================
     function openContactModal() {
         closeSideMenu();
-        const phone = (currentRole === "PREVENTA" || currentRole === "COMERCIOS") ? PHONE_PREVENTA : PHONE_PUBLICO;
+        const phone = (currentRole === "PREVENTA") ? PHONE_PREVENTA : PHONE_PUBLICO;
         const link = document.getElementById('contact-whatsapp-link');
         const text = document.getElementById('contact-whatsapp-text');
         link.href = `https://wa.me/${phone}`;
