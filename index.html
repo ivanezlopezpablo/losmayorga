@@ -199,7 +199,13 @@
             font-size: 1.3rem;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             animation: float 3s ease-in-out infinite;
+            overflow: hidden;
+            padding: 6px;
+            flex-shrink: 0;
         }
+        .header-logo img { width: 100%; height: 100%; object-fit: contain; }
+        .header-logo.logo-fallback img { display: none; }
+        .header-logo.logo-fallback::after { content: "🛒"; }
 
         .header-title h1 { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.5px; }
         .header-title p { font-size: 0.7rem; opacity: 0.9; font-weight: 500; }
@@ -850,6 +856,71 @@
             border-radius: 10px; padding: 10px; margin-top: 14px; text-align: left;
         }
 
+        /* RECORRIDO GUIADO (spotlight + tarjeta explicativa).
+           Todo se calcula en vivo con getBoundingClientRect(), así que funciona
+           igual en celular, tablet y PC sin necesitar breakpoints propios. */
+        .tour-overlay { display: none; }
+        .tour-overlay.active { display: block; }
+
+        .tour-blocker {
+            position: fixed; inset: 0; z-index: 8000;
+            background: transparent;
+        }
+
+        .tour-highlight {
+            position: fixed; z-index: 8001;
+            border: 3px solid #ffc107;
+            border-radius: 14px;
+            box-shadow: 0 0 0 9999px rgba(0,0,0,0.68);
+            transition: top 0.35s ease, left 0.35s ease, width 0.35s ease, height 0.35s ease;
+            pointer-events: none;
+        }
+        .tour-highlight.tour-highlight-full {
+            border: none; border-radius: 0;
+            box-shadow: none;
+            background: rgba(0,0,0,0.68);
+        }
+
+        .tour-card {
+            position: fixed; left: 12px; right: 12px; bottom: 16px; z-index: 8002;
+            max-width: 420px; margin: 0 auto;
+            background: white; border-radius: 20px;
+            padding: 18px 20px 20px;
+            box-shadow: 0 -10px 50px rgba(0,0,0,0.4);
+            text-align: left;
+            animation: tourCardIn 0.3s ease;
+        }
+        @keyframes tourCardIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .mode-preventa .tour-card { background: #1e293b; color: #f8fafc; }
+
+        .tour-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .tour-progress { font-size: 0.68rem; font-weight: 800; color: var(--text-muted); }
+        .tour-skip-btn {
+            background: none; border: none; color: var(--text-muted);
+            font-size: 0.7rem; font-weight: 700; cursor: pointer; padding: 4px;
+        }
+        .tour-title { font-size: 1.05rem; font-weight: 900; color: var(--primary); margin-bottom: 6px; }
+        .mode-preventa .tour-title { color: #FF8C00; }
+        .tour-text { font-size: 0.86rem; line-height: 1.5; color: var(--text-dark); margin-bottom: 14px; }
+        .mode-preventa .tour-text { color: #e2e8f0; }
+
+        .tour-dots { display: flex; gap: 5px; justify-content: center; margin-bottom: 14px; flex-wrap: wrap; }
+        .tour-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); transition: all 0.3s ease; }
+        .tour-dot.active { background: var(--primary); width: 18px; border-radius: 3px; }
+        .mode-preventa .tour-dot { background: #475569; }
+        .mode-preventa .tour-dot.active { background: #FF8C00; }
+
+        .tour-actions { display: flex; gap: 10px; }
+        .tour-btn {
+            flex: 1; padding: 11px; border-radius: 12px; font-weight: 800; font-size: 0.82rem;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+            border: none;
+        }
+        .tour-btn.primary { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; }
+        .mode-preventa .tour-btn.primary { background: linear-gradient(135deg, #FF6F00, #FF8C00); }
+        .tour-btn.secondary { background: #f0f4f8; color: var(--text-dark); flex: 0 0 auto; padding: 11px 16px; }
+        .mode-preventa .tour-btn.secondary { background: #334155; color: #f8fafc; }
+
         /* FILA DE PRODUCTO DENTRO DEL CARRITO */
         .cart-item-row {
             display: flex; align-items: flex-start; gap: 10px;
@@ -904,29 +975,57 @@
         /* PANTALLA DE CARGA INICIAL (splash) */
         .app-splash {
             position: fixed; inset: 0; z-index: 5000;
-            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 55%, #0284c7 100%);
+            background: radial-gradient(circle at 50% 20%, #003d7a 0%, var(--primary-dark) 45%, #000a1f 100%);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: 20px; padding: 30px 20px; text-align: center;
+            gap: 18px; padding: 30px 20px; text-align: center;
             transition: opacity 0.5s ease, visibility 0.5s ease;
         }
         .app-splash.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
-        .app-splash-logo {
-            width: 84px; height: 84px;
-            background: linear-gradient(135deg, #ffffff, #f0f4f8);
-            border-radius: 22px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 2.4rem;
-            box-shadow: 0 14px 40px rgba(0,0,0,0.35);
-            animation: float 3s ease-in-out infinite;
+        /* Logo con halo de luz detrás, estilo splash de app premium */
+        .app-splash-logo-wrap { position: relative; display: flex; align-items: center; justify-content: center; }
+        .app-splash-logo-glow {
+            position: absolute; width: 150px; height: 150px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.28), transparent 70%);
+            animation: pulse 2.6s ease-in-out infinite;
         }
-        .app-splash-title { color: white; font-size: 1.35rem; font-weight: 900; letter-spacing: -0.5px; }
-        .app-splash-subtitle { color: rgba(255,255,255,0.85); font-size: 0.82rem; font-weight: 600; margin-top: 4px; }
+        .app-splash-logo {
+            position: relative;
+            width: 104px; height: 104px;
+            background: white;
+            border-radius: 26px;
+            padding: 12px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 20px 55px rgba(0,0,0,0.45);
+            animation: float 3s ease-in-out infinite;
+            overflow: hidden;
+        }
+        .app-splash-logo img { width: 100%; height: 100%; object-fit: contain; }
+        .app-splash-logo.logo-fallback img { display: none; }
+        .app-splash-logo.logo-fallback::after { content: "🛒"; font-size: 2.6rem; }
+
+        .app-splash-brand { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+        .app-splash-wordmark {
+            color: white; font-size: 1.5rem; font-weight: 900;
+            letter-spacing: 0.5px; text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .app-splash-tagline {
+            color: rgba(255,255,255,0.68); font-size: 0.66rem; font-weight: 700;
+            letter-spacing: 2px; text-transform: uppercase;
+        }
+
+        .app-splash-status {
+            display: flex; align-items: center; gap: 10px;
+            color: rgba(255,255,255,0.88); font-size: 0.8rem; font-weight: 600;
+            margin-top: 6px;
+        }
         .app-splash-spinner {
-            width: 34px; height: 34px;
-            border: 3px solid rgba(255,255,255,0.3); border-top-color: white;
+            width: 18px; height: 18px; flex-shrink: 0;
+            border: 2.5px solid rgba(255,255,255,0.3); border-top-color: white;
             border-radius: 50%; animation: spin-slow 0.9s linear infinite;
         }
+
+        .app-splash-divider { width: 54px; height: 2px; background: rgba(255,255,255,0.22); border-radius: 2px; margin: 4px 0; }
 
         .app-splash-payment-icon {
             background: white; border-radius: 14px;
@@ -1059,7 +1158,7 @@
         #side-menu-logout { color: #ef4444; }
         #side-menu-logout i { color: #ef4444; }
 
-        /* SECCIÓN INTERNA - VENCIMIENTOS (solo "Directo a la Distribuidora") */
+        /* SECCIÓN INTERNA - VENCIMIENTOS (todos los Preventistas, excepto Comercios) */
         .distribuidora-alert-bar {
             display: none;
             align-items: center;
@@ -1256,12 +1355,24 @@
 
     <!-- PANTALLA DE CARGA INICIAL -->
     <div class="app-splash" id="app-splash">
-        <div class="app-splash-logo">🛒</div>
-        <div>
-            <div class="app-splash-title">Los Mayorga</div>
-            <div class="app-splash-subtitle">Cargando catálogo mayorista...</div>
+        <div class="app-splash-logo-wrap">
+            <div class="app-splash-logo-glow"></div>
+            <div class="app-splash-logo" id="app-splash-logo">
+                <img src="https://lh3.googleusercontent.com/d/1iRBL1dGxGqM2T-ASFx3XWlAjsVX_G0Bi" alt="Los Mayorga" onerror="document.getElementById('app-splash-logo').classList.add('logo-fallback')">
+            </div>
         </div>
-        <div class="app-splash-spinner"></div>
+
+        <div class="app-splash-brand">
+            <div class="app-splash-wordmark">Los Mayorga</div>
+            <div class="app-splash-tagline">Distribuidora Mayorista</div>
+        </div>
+
+        <div class="app-splash-status">
+            <span class="app-splash-spinner"></span>
+            <span>Cargando catálogo...</span>
+        </div>
+
+        <div class="app-splash-divider"></div>
 
         <div class="app-splash-carousel" id="app-splash-carousel"></div>
         <div class="app-splash-progress-dots" id="app-splash-dots"></div>
@@ -1272,7 +1383,7 @@
         <div class="header-top">
             <div class="header-brand">
                 <button class="btn-menu" id="menu-toggle-btn" onclick="openSideMenu()" aria-label="Abrir menú"><i class="fas fa-bars"></i></button>
-                <div class="header-logo">🛒</div>
+                <div class="header-logo" id="header-logo-main"><img src="https://lh3.googleusercontent.com/d/1iRBL1dGxGqM2T-ASFx3XWlAjsVX_G0Bi" alt="Los Mayorga" onerror="document.getElementById('header-logo-main').classList.add('logo-fallback')"></div>
                 <div class="header-title">
                     <h1>Los Mayorga</h1>
                     <p id="app-subtitle">Distribuidora Mayorista - Rincón</p>
@@ -1301,7 +1412,7 @@
     <div class="side-menu-overlay" id="side-menu-overlay" onclick="closeSideMenu()"></div>
     <aside class="side-menu" id="side-menu">
         <div class="side-menu-header">
-            <div class="header-logo">🛒</div>
+            <div class="header-logo" id="header-logo-sidemenu"><img src="https://lh3.googleusercontent.com/d/1iRBL1dGxGqM2T-ASFx3XWlAjsVX_G0Bi" alt="Los Mayorga" onerror="document.getElementById('header-logo-sidemenu').classList.add('logo-fallback')"></div>
             <div>
                 <div class="side-menu-title">Los Mayorga</div>
                 <div class="side-menu-subtitle" id="side-menu-subtitle">Distribuidora Mayorista</div>
@@ -1310,6 +1421,7 @@
         </div>
         <nav class="side-menu-nav">
             <div class="side-menu-item" onclick="sideMenuGoHome()"><i class="fas fa-home"></i> Inicio</div>
+            <div class="side-menu-item" onclick="startGuidedTour()"><i class="fas fa-graduation-cap"></i> Recorrido Guiado</div>
             <div class="side-menu-item" onclick="sideMenuFavoritos()"><i class="fas fa-heart"></i> Favoritos</div>
             <div class="side-menu-item" onclick="openSearchHistoryModal()"><i class="fas fa-clock-rotate-left"></i> Historial</div>
             <div class="side-menu-item" onclick="sideMenuConfiguracion()"><i class="fas fa-gear"></i> Configuración</div>
@@ -1342,7 +1454,7 @@
         <i class="fas fa-user-tie"></i> MODO PREVENTA ACTIVO - Catálogo Exclusivo
     </div>
 
-    <!-- BARRA INTERNA - solo visible para "Directo a la Distribuidora" -->
+    <!-- BARRA INTERNA - visible para cualquier Preventista (no Comercios) -->
     <div id="distribuidora-alert-bar" class="distribuidora-alert-bar">
         <span><i class="fas fa-hourglass-half"></i> <span id="distribuidora-alert-text">Productos por vencer</span></span>
         <button class="btn-ver-vencimientos" onclick="openVencimientosPanel()">Ver detalle</button>
@@ -1367,7 +1479,7 @@
             </div>
             <div class="hero-slide">
                 <div class="hero-slide-text">
-                    <h2><i class="fas fa-wheat-awn"></i> Sin Gluten</h2>
+                    <h2><i class="fas fa-wheat-awn"></i> Sin Gluten / Sin TACC</h2>
                     <p>Variedad de productos certificados aptos para celíacos.</p>
                 </div>
                 <img src="https://images.unsplash.com/photo-1509440159596-0249088772ff?w=300&q=80" class="hero-slide-img" alt="Sin Tacc">
@@ -1381,12 +1493,12 @@
     </div>
 
     <!-- FILTROS POR ETIQUETA -->
-    <div class="tag-filters-bar">
+    <div class="tag-filters-bar" id="tag-filters-bar">
         <div class="tag-chip marcas" id="tag-chip-marcas" onclick="toggleMarcasInline()" style="display:none;"><i class="fas fa-tags"></i><span>Modo App Vieja</span></div>
         <div class="tag-chip-divider" id="tag-chip-marcas-divider" style="display:none;">|</div>
         <div class="tag-chip todos active" onclick="selectTagFilter('TODOS', this)"><i class="fas fa-th-large"></i><span>Ver Todo</span></div>
         <div class="tag-chip promo" onclick="selectTagFilter('PROMO', this)"><span>Ofertas</span></div>
-        <div class="tag-chip sintacc" onclick="selectTagFilter('SINTACC', this)"><img src="https://www.argentina.gob.ar/sites/default/files/sin_gluten_legal-01.png" alt="Sin Gluten" class="sin-gluten-logo"><span>Sin Gluten</span></div>
+        <div class="tag-chip sintacc" onclick="selectTagFilter('SINTACC', this)"><img src="https://www.argentina.gob.ar/sites/default/files/sin_gluten_legal-01.png" alt="Sin Gluten" class="sin-gluten-logo"><span>Sin Gluten / Sin TACC</span></div>
         <div class="tag-chip nuevo" onclick="selectTagFilter('NUEVOS', this)"><span>Nuevos</span></div>
     </div>
 
@@ -1581,6 +1693,25 @@
             <div class="install-note" id="install-note" style="display:none;"></div>
 
             <button onclick="closeInstallModal()" class="btn-login-enhanced" style="margin-top:14px;">Entendido</button>
+        </div>
+    </div>
+
+    <!-- RECORRIDO GUIADO: bloqueador + resaltado (spotlight) + tarjeta de navegación -->
+    <div class="tour-overlay" id="tour-overlay">
+        <div class="tour-blocker"></div>
+        <div class="tour-highlight" id="tour-highlight"></div>
+        <div class="tour-card" id="tour-card">
+            <div class="tour-card-header">
+                <span class="tour-progress" id="tour-progress">1 / 12</span>
+                <button class="tour-skip-btn" onclick="endGuidedTour()">Saltar ✕</button>
+            </div>
+            <div class="tour-title" id="tour-title"></div>
+            <div class="tour-text" id="tour-text"></div>
+            <div class="tour-dots" id="tour-dots"></div>
+            <div class="tour-actions">
+                <button class="tour-btn secondary" id="tour-prev-btn" onclick="tourPrev()"><i class="fas fa-arrow-left"></i> Anterior</button>
+                <button class="tour-btn primary" id="tour-next-btn" onclick="tourNext()">Siguiente <i class="fas fa-arrow-right"></i></button>
+            </div>
         </div>
     </div>
 
@@ -1793,6 +1924,20 @@
         return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
     }
 
+    // iOS obliga a que "Agregar a pantalla de inicio" se haga desde Safari. Si el usuario
+    // entró desde Chrome/Firefox/otro navegador en su iPhone, hay que ofrecerle abrir el
+    // mismo link en Safari (con el esquema x-safari-https, que iOS sí respeta entre apps).
+    function isIOSSafari() {
+        const ua = navigator.userAgent;
+        if (!/iPhone|iPad|iPod/i.test(ua)) return false;
+        const esOtroNavegador = /CriOS|FxiOS|EdgiOS|OPiOS|mercadolibre|Instagram|FBAN|FBAV/i.test(ua);
+        return !esOtroNavegador;
+    }
+
+    function openInCurrentUrlWithSafari() {
+        window.location.href = 'x-safari-' + window.location.href;
+    }
+
     function initInstallPrompt() {
         detectedPlatform = detectInstallPlatform();
 
@@ -1863,17 +2008,36 @@
 
         let steps = [];
         note.style.display = 'none';
+        // Reset defensivo: vuelve al comportamiento e ícono por default antes de aplicar
+        // el caso especial de "abrir en Safari" (evita que quede pegado de una vez anterior).
+        nativeBtn.onclick = triggerNativeInstall;
+        nativeBtn.innerHTML = '<i class="fas fa-download"></i> Instalar ahora';
 
         if (detectedPlatform === 'ios') {
             icon.innerHTML = '<i class="fab fa-apple"></i>';
-            title.textContent = 'Instalar en iPhone / iPad';
-            desc.textContent = 'Tiene que ser desde Safari (Apple no permite instalar desde otros navegadores en iOS).';
-            nativeBtn.style.display = 'none';
-            steps = [
-                'Tocá el ícono de <strong>Compartir</strong> (el cuadrado con la flecha hacia arriba) en la barra inferior de Safari.',
-                'Deslizá hacia abajo en el menú y tocá <strong>"Agregar a pantalla de inicio"</strong>.',
-                'Tocá <strong>"Agregar"</strong> arriba a la derecha. Listo, el ícono va a aparecer en tu pantalla de inicio.'
-            ];
+
+            if (!isIOSSafari()) {
+                // Está en iPhone pero NO en Safari: no se puede instalar desde acá.
+                title.textContent = 'Abrí este link en Safari';
+                desc.textContent = 'En iPhone, "Agregar a pantalla de inicio" solo funciona desde Safari.';
+                nativeBtn.style.display = 'flex';
+                nativeBtn.innerHTML = '<i class="fab fa-safari"></i> Abrir en Safari';
+                nativeBtn.onclick = openInCurrentUrlWithSafari;
+                steps = [
+                    'Tocá el botón verde de arriba: te va a abrir esta misma página en Safari.',
+                    'Una vez en Safari, tocá el ícono de <strong>Compartir</strong> (el cuadrado con la flecha hacia arriba).',
+                    'Deslizá y tocá <strong>"Agregar a pantalla de inicio"</strong>, y después <strong>"Agregar"</strong>.'
+                ];
+            } else {
+                title.textContent = 'Instalar en iPhone / iPad';
+                desc.textContent = 'Estás en Safari, así que ya podés instalarla.';
+                nativeBtn.style.display = 'none';
+                steps = [
+                    'Tocá el ícono de <strong>Compartir</strong> (el cuadrado con la flecha hacia arriba) en la barra inferior de Safari.',
+                    'Deslizá hacia abajo en el menú y tocá <strong>"Agregar a pantalla de inicio"</strong>.',
+                    'Tocá <strong>"Agregar"</strong> arriba a la derecha. Listo, el ícono va a aparecer en tu pantalla de inicio.'
+                ];
+            }
         } else if (detectedPlatform === 'android') {
             icon.innerHTML = '<i class="fab fa-android"></i>';
             title.textContent = 'Instalar en Android';
@@ -2002,8 +2166,8 @@
             BRAND_LOGOS = csvMarcas ? parseBrandLogosCSV(csvMarcas) : [];
             MENU_ITEMS = csvMenu ? parseMenuCSV(csvMenu) : [];
             SUBMENU_ITEMS = csvSubmenu ? parseSubmenuCSV(csvSubmenu) : [];
-            markNewProducts(PRODUCTS_PUBLICO);
-            markNewProducts(PRODUCTS_PREVENTA_EXTRA);
+            // "Nuevo" ya viene directo de la columna "Etiqueta (Ofertas - Nuevos)" del Sheet,
+            // no hace falta (ni conviene) la vieja heurística por posición de fila.
         } catch (error) {
             console.error("Error al cargar datos:", error);
         } finally {
@@ -2012,7 +2176,17 @@
             document.getElementById('product-grid').style.display = 'grid';
             filterProducts();
             refreshMarcasChipVisibility();
-            setTimeout(maybeShowPromoPopup, 900);
+
+            // Al primer usuario que entra nunca vio la app le mostramos el Recorrido Guiado
+            // en vez del popup de ofertas (mostrar los dos juntos satura). Si ya lo vio antes,
+            // sigue el comportamiento normal del popup de ofertas.
+            let yaVioElTour = true;
+            try { yaVioElTour = !!localStorage.getItem('mayorgaTourSeen'); } catch (e) {}
+            if (!yaVioElTour) {
+                setTimeout(startGuidedTour, 1300);
+            } else {
+                setTimeout(maybeShowPromoPopup, 900);
+            }
 
             // La pantalla de carga se muestra siempre un mínimo de 4 segundos (mientras el
             // carrusel de medios de pago / envíos completa sus 4 slides), y se oculta con un
@@ -2284,11 +2458,21 @@
             const mainCategory = row['Subcategoría'] || 'Almacén';
             const brand = row['Marca'] || 'Otras';
             const characteristics = row['Características del Producto'] || '';
+            const unidadesTexto = row['Unidades'] || '';
 
-            const promoCol = (row['En Promo'] || '').toString().trim().toUpperCase();
-            const isPromo = promoCol.includes('PROMO') || promoCol.includes('OFERTA') || promoCol === 'SI' || promoCol === 'TRUE';
+            // Columna "Empresa / Distribuidora": proveedor al que Los Mayorga le compra ese
+            // producto para reponer stock. Es SOLO para estadística interna futura: nunca se
+            // muestra en ninguna pantalla (ni Público, ni Preventista, ni Comercios).
+            const proveedor = row['Empresa / Distribuidora'] || '';
 
-            const isSinTacc = (row['SIN GLUTEN'] || '').toUpperCase().includes('SI') || title.toLowerCase().includes('sin tacc') || title.toLowerCase().includes('sin gluten');
+            // Una sola columna maneja Ofertas y Nuevos ("Etiqueta (Ofertas - Nuevos)")
+            const etiqueta = (row['Etiqueta (Ofertas - Nuevos)'] || '').toString().trim().toUpperCase();
+            const isNew = etiqueta.includes('NUEVO');
+            const isPromo = !isNew && (etiqueta.includes('OFERTA') || etiqueta.includes('PROMO'));
+
+            const glutenCol = (row['Sin Gluten / Sin Tacc'] || '').toString().trim().toUpperCase();
+            const isSinTacc = glutenCol.includes('GLUTEN') || glutenCol.includes('TACC') || glutenCol === 'SI' || glutenCol === 'SÍ'
+                || title.toLowerCase().includes('sin tacc') || title.toLowerCase().includes('sin gluten');
 
             const expiration = row['Fecha Vencimiento'] || '';
             const expirationDate = parseSpanishDate(expiration);
@@ -2298,39 +2482,26 @@
             const permiteMayorista = visibilidad.includes('mayorista') || visibilidad.includes('ambos');
             const permiteDistribuidora = visibilidad.includes('distribuidora') || visibilidad.includes('ambos');
 
-            const precioMayorista = cleanPrice(row['Precio Mayorista']);
-            const precioDistribuidora = cleanPrice(row['Precio Distribuidora']);
-            const unidades = parseUnits(row['Unidades']);
+            // Ahora hay UNA sola lista de precios ("Precio General"): se usa tal cual, sin
+            // multiplicar por unidades, tanto para Público como para Preventista/Comercios.
+            const precioGeneral = cleanPrice(row['Precio General']);
+            if (precioGeneral <= 0) continue;
+
+            const packInfo = unidadesTexto || characteristics || 'Unidad';
 
             const baseFields = {
-                sku, mainCategory, subCategory: '', title, brand,
-                isPromo, isSinTacc, image: normalImage, isOutOfStock,
-                expiration, expirationDate, isNew: false, rowOrder: i
+                sku, mainCategory, subCategory: '', title, brand, proveedor,
+                packInfo, caracteristicasBulto: packInfo,
+                priceNormal: precioGeneral, pricePromoVal: 0, finalPrice: precioGeneral,
+                isPromo, isNew, isSinTacc, image: normalImage, isOutOfStock,
+                expiration, expirationDate, rowOrder: i
             };
 
-            // Variante para el catálogo Público: precio = columna L, tal cual
-            if (permiteMayorista && precioMayorista > 0) {
-                publico.push({
-                    ...baseFields,
-                    id: 'PU-' + (sku ? sku : i),
-                    packInfo: characteristics || 'Unidad',
-                    caracteristicasBulto: characteristics || 'Unidad',
-                    priceNormal: precioMayorista, pricePromoVal: 0, finalPrice: precioMayorista,
-                    source: 'publico'
-                });
+            if (permiteMayorista) {
+                publico.push({ ...baseFields, id: 'PU-' + (sku ? sku : i), source: 'publico' });
             }
-
-            // Variante para Preventista/Comercios: precio = columna M x columna N
-            if (permiteDistribuidora && precioDistribuidora > 0) {
-                const finalPrice = precioDistribuidora * unidades;
-                const packInfo = unidades > 1 ? `Bulto x${unidades}` : 'Unidad';
-                preventa.push({
-                    ...baseFields,
-                    id: 'PV-' + (sku ? sku : i),
-                    packInfo, caracteristicasBulto: packInfo,
-                    priceNormal: finalPrice, pricePromoVal: 0, finalPrice,
-                    source: 'preventa'
-                });
+            if (permiteDistribuidora) {
+                preventa.push({ ...baseFields, id: 'PV-' + (sku ? sku : i), source: 'preventa' });
             }
         }
 
@@ -2342,16 +2513,6 @@
     // se asume que los productos nuevos se cargan al final de cada hoja y se marcan como
     // "Nuevos" los últimos productos según su posición (fila) dentro de cada hoja de origen.
     // Para una detección exacta, habría que agregar una columna de fecha de carga al Sheet.
-    function markNewProducts(products) {
-        if (!products.length) return;
-        const total = products.length;
-        const count = Math.min(40, Math.max(8, Math.round(total * 0.05)));
-        const startIdx = Math.max(0, total - count);
-        for (let i = startIdx; i < total; i++) {
-            products[i].isNew = true;
-        }
-    }
-
     function renderBrandsSelector() {
         const brands = ['TODOS', ...new Set(ALL_PRODUCTS.map(p => p.brand).filter(b => b.trim() !== ''))].sort();
         const select = document.getElementById('brand-select');
@@ -2484,7 +2645,7 @@
     const CATALOG_TITLES = {
         TODOS: '<i class="fas fa-box"></i> Catálogo Completo',
         PROMO: '<i class="fas fa-fire" style="color:#ef4444;"></i> Ofertas',
-        SINTACC: '<i class="fas fa-wheat-awn"></i> Sin Gluten',
+        SINTACC: '<i class="fas fa-wheat-awn"></i> Sin Gluten / Sin TACC',
         NUEVOS: '<i class="fas fa-star"></i> Recién Llegados'
     };
 
@@ -2911,7 +3072,7 @@
             document.querySelector('.tag-chip.todos').classList.add('active');
             filterProducts();
             updateCartFloatBar();
-            // Sección interna de vencimientos: solo para "Directo a la Distribuidora"
+            // Sección interna de vencimientos: cualquier Preventista (no Comercios)
             refreshDistribuidoraAlert();
         } else {
             document.getElementById('login-error').style.display = 'block';
@@ -2947,7 +3108,8 @@
     }
 
     // ==========================================================
-    //  SECCIÓN INTERNA DE VENCIMIENTOS - solo "Directo a la Distribuidora"
+    //  SECCIÓN INTERNA DE VENCIMIENTOS - visible para cualquier Preventista
+    //  (Iván, Ulises, Distribuidora), pero NO para Comercios.
     // ==========================================================
     const DISTRIBUIDORA_KEY = "PREV2026C";
     const DIAS_URGENCIA = 7; // ventana usada para el aviso resumido de la barra
@@ -2956,8 +3118,8 @@
         const bar = document.getElementById('distribuidora-alert-bar');
         if (!bar) return;
 
-        const isDistribuidora = currentRole === "PREVENTA" && activePreventaKey === DISTRIBUIDORA_KEY;
-        if (!isDistribuidora) {
+        const esPreventistaConVencimientos = currentRole === "PREVENTA" && activePreventaKey !== COMERCIOS_KEY;
+        if (!esPreventistaConVencimientos) {
             bar.style.display = 'none';
             return;
         }
@@ -3765,6 +3927,195 @@
         document.getElementById('side-menu').classList.remove('active');
         document.getElementById('side-menu-overlay').classList.remove('active');
     }
+
+    // ==========================================================
+    //  RECORRIDO GUIADO ("¿Qué es cada cosa?")
+    //  Motor genérico de spotlight + tarjeta explicativa. Cada paso apunta a un
+    //  elemento real de la pantalla (por selector CSS), lo resalta, hace scroll
+    //  hasta él si hace falta, y explica para qué sirve. Funciona igual en
+    //  celular/tablet/PC porque las posiciones se calculan en vivo con
+    //  getBoundingClientRect(), no con medidas fijas.
+    // ==========================================================
+    const TOUR_STEPS = [
+        {
+            target: null,
+            title: '¡Bienvenido a Los Mayorga! 👋',
+            text: 'Te mostramos rápido para qué sirve cada cosa. Podés saltear este recorrido cuando quieras, y volver a verlo después desde el menú ☰ → "Recorrido Guiado".'
+        },
+        {
+            target: '#search-input',
+            title: 'Buscador',
+            text: 'Escribí el nombre de un producto, su SKU o su marca acá arriba para encontrarlo al instante en todo el catálogo.'
+        },
+        {
+            target: '#brand-select',
+            title: 'Filtrar por marca',
+            text: 'Elegí una marca puntual en este desplegable para ver solamente sus productos.'
+        },
+        {
+            target: '#menu-toggle-btn',
+            title: 'Menú',
+            text: 'Tocando este ícono se abre el menú lateral: ahí están el Historial de búsquedas, Contacto, Acerca de, y la opción para Instalar la app en tu celular o PC.',
+            before: () => { closeSideMenu(); }
+        },
+        {
+            target: '#auth-btn',
+            title: 'Acceso',
+            text: 'Si sos preventista o un comercio con clave, entrá acá para ver precios y catálogos especiales.'
+        },
+        {
+            target: '#tag-chip-marcas',
+            title: 'Modo App Vieja',
+            text: 'Si preferís navegar como en la app anterior (por categoría o por marca, con logos), tocá acá para cambiar a esa forma de buscar.',
+            optional: true
+        },
+        {
+            target: '#tag-filters-bar',
+            title: 'Filtros rápidos',
+            text: '"Ver Todo", "Ofertas", "Sin Gluten / Sin TACC" y "Nuevos": tocá cualquiera de estos botones para filtrar el catálogo al instante.'
+        },
+        {
+            target: '#main-categories-bar',
+            title: 'Categorías',
+            text: 'Navegá el catálogo por categoría. Si corresponde, va a aparecer una segunda fila debajo con subcategorías más específicas.'
+        },
+        {
+            target: '.product-card',
+            title: 'Cada producto',
+            text: 'Acá ves imagen, marca, precio y presentación de cada producto. Si tiene oferta, es nuevo, o es sin gluten, aparece una etiqueta arriba a la derecha. Tocá "Agregar" para sumarlo al carrito, o las flechitas +/- para ajustar la cantidad.',
+            optional: true
+        },
+        {
+            target: '#cart-float-main',
+            title: 'Tu carrito',
+            text: 'Acá vas viendo todo lo que agregaste. Tocalo para revisar tu pedido, cambiar cantidades, sacar productos, y enviarlo directo por WhatsApp cuando esté listo.'
+        },
+        {
+            target: '#scroll-top-btn',
+            title: 'Volver arriba',
+            text: 'Este botón aparece cuando bajás mucho buscando productos. Tocalo para volver arriba de un salto, sin tener que deslizar todo el camino de vuelta.',
+            before: () => {
+                const btn = document.getElementById('scroll-top-btn');
+                if (btn) btn.classList.add('visible');
+            }
+        },
+        {
+            target: null,
+            title: '¡Listo! 🎉',
+            text: 'Ya sabés lo esencial para moverte por la app. Podés volver a ver este recorrido cuando quieras desde el menú ☰ → "Recorrido Guiado".'
+        }
+    ];
+
+    let tourActiveSteps = [];
+    let tourStepIndex = 0;
+
+    function isElementVisible(el) {
+        if (!el) return false;
+        const style = window.getComputedStyle(el);
+        return style.display !== 'none' && style.visibility !== 'hidden' && el.offsetParent !== null;
+    }
+
+    function startGuidedTour() {
+        closeSideMenu();
+        dismissInstallBanner();
+        closePromoPopup();
+
+        // Filtra al armar la lista: si un paso "optional" apunta a algo que no existe
+        // o no está visible en este momento (ej: Modo App Vieja recién logueado), se salta.
+        tourActiveSteps = TOUR_STEPS.filter(step => {
+            if (!step.target) return true;
+            const el = document.querySelector(step.target);
+            if (!step.optional) return !!el;
+            return el && isElementVisible(el);
+        });
+
+        tourStepIndex = 0;
+        document.body.style.overflow = 'hidden';
+        document.getElementById('tour-overlay').classList.add('active');
+        window.addEventListener('resize', repositionTourHighlight);
+        renderTourStep();
+    }
+
+    function renderTourStep() {
+        const step = tourActiveSteps[tourStepIndex];
+        if (!step) { endGuidedTour(); return; }
+        if (step.before) step.before();
+
+        let targetEl = step.target ? document.querySelector(step.target) : null;
+
+        // Si el "before" cambió el DOM (ej: cerró el menú) y el target ya no está visible,
+        // se salta este paso en vez de mostrar un resaltado roto.
+        if (step.target && (!targetEl || !isElementVisible(targetEl))) {
+            tourActiveSteps.splice(tourStepIndex, 1);
+            renderTourStep();
+            return;
+        }
+
+        const highlight = document.getElementById('tour-highlight');
+        if (targetEl) {
+            highlight.classList.remove('tour-highlight-full');
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => positionHighlight(targetEl), 320);
+        } else {
+            highlight.classList.add('tour-highlight-full');
+            highlight.style.top = '0'; highlight.style.left = '0';
+            highlight.style.width = '100vw'; highlight.style.height = '100vh';
+        }
+
+        document.getElementById('tour-title').textContent = step.title;
+        document.getElementById('tour-text').textContent = step.text;
+        document.getElementById('tour-progress').textContent = `${tourStepIndex + 1} / ${tourActiveSteps.length}`;
+
+        const prevBtn = document.getElementById('tour-prev-btn');
+        prevBtn.style.visibility = tourStepIndex === 0 ? 'hidden' : 'visible';
+
+        const nextBtn = document.getElementById('tour-next-btn');
+        nextBtn.innerHTML = tourStepIndex === tourActiveSteps.length - 1
+            ? 'Finalizar <i class="fas fa-check"></i>'
+            : 'Siguiente <i class="fas fa-arrow-right"></i>';
+
+        const dots = document.getElementById('tour-dots');
+        dots.innerHTML = tourActiveSteps.map((_, i) => `<div class="tour-dot ${i === tourStepIndex ? 'active' : ''}"></div>`).join('');
+    }
+
+    function positionHighlight(el) {
+        const highlight = document.getElementById('tour-highlight');
+        if (highlight.classList.contains('tour-highlight-full')) return;
+        const rect = el.getBoundingClientRect();
+        const pad = 8;
+        highlight.style.top = (rect.top - pad) + 'px';
+        highlight.style.left = (rect.left - pad) + 'px';
+        highlight.style.width = (rect.width + pad * 2) + 'px';
+        highlight.style.height = (rect.height + pad * 2) + 'px';
+    }
+
+    function repositionTourHighlight() {
+        if (!document.getElementById('tour-overlay').classList.contains('active')) return;
+        const step = tourActiveSteps[tourStepIndex];
+        if (!step || !step.target) return;
+        const el = document.querySelector(step.target);
+        if (el) positionHighlight(el);
+    }
+
+    function tourNext() {
+        if (tourStepIndex >= tourActiveSteps.length - 1) { endGuidedTour(); return; }
+        tourStepIndex++;
+        renderTourStep();
+    }
+
+    function tourPrev() {
+        if (tourStepIndex <= 0) return;
+        tourStepIndex--;
+        renderTourStep();
+    }
+
+    function endGuidedTour() {
+        document.getElementById('tour-overlay').classList.remove('active');
+        document.body.style.overflow = '';
+        window.removeEventListener('resize', repositionTourHighlight);
+        try { localStorage.setItem('mayorgaTourSeen', '1'); } catch (e) {}
+    }
+
     function sideMenuGoHome() {
         closeSideMenu();
         scrollToTop();
