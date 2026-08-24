@@ -2691,6 +2691,332 @@
     function closeContactModal() {
         document.getElementById('contact-modal').classList.remove('active');
     }
+
+    // ========================================
+    // CHAT AVANZADO LOS MAYORGA - INTEGRADO
+    // ========================================
+    
+    const chatWidget = document.getElementById('chatWidget');
+    const chatContent = document.getElementById('chatContent');
+    const chatMenu = document.getElementById('chatMenu');
+    const chatInputArea = document.getElementById('chatInputArea');
+    const chatInput = document.getElementById('chatInput');
+    let chatCurrentMode = 'menu';
+
+    const chatFAQData = [
+        { question: '¿Cuál es el horario de atención?', answer: 'Lunes a Viernes: 9am-1pm y 4:30pm-9pm<br>Sábado: 9am-1pm y 4:30pm-9pm<br>Domingo: Cerrado' },
+        { question: '¿Cómo hago un pedido?', answer: '3 formas:<br>1️⃣ Por esta App<br>2️⃣ WhatsApp: 0299 405-1600<br>3️⃣ Visitando nuestro local' },
+        { question: '¿Hacen envío a domicilio?', answer: '¡Sí! Distribuimos en el norte de Neuquén.<br>📞 Consultá: 0299 405-1600' },
+        { question: '¿Qué métodos de pago aceptan?', answer: '💳 Débito<br>💳 Crédito<br>📱 Mercado Pago<br>💵 Efectivo' },
+        { question: 'Soy comerciante, ¿precios especiales?', answer: '¡Sí! 📞 Llamá: 0299 405-1600<br>Te conectamos con nuestro preventista' }
+    ];
+
+    const chatProductsData = [
+        { name: 'Lácteos', icon: '🥛', category: 'lacteos' },
+        { name: 'Bebidas', icon: '🥤', category: 'bebidas' },
+        { name: 'Almacén', icon: '🍝', category: 'almacen' },
+        { name: 'Congelados', icon: '❄️', category: 'congelados' },
+        { name: 'Carnes', icon: '🥩', category: 'carnes' },
+        { name: 'Frutas/Verduras', icon: '🥬', category: 'frutas' },
+        { name: 'Snacks', icon: '🍪', category: 'snacks' },
+        { name: 'Ofertas', icon: '🔥', category: 'ofertas' }
+    ];
+
+    const chatProductResponses = {
+        lacteos: '🥛 Leche, Yogurt, Quesos, Manteca y más.<br>Navega nuestro catálogo o llama: 0299 405-1600',
+        bebidas: '🥤 Todas las marcas disponibles.<br>Juices, Gaseosas, Aguas, Energizantes',
+        almacen: '🍝 Aceite, harinas, pastas, arroz, azúcar, legumbres<br>Busca en nuestro catálogo',
+        congelados: '❄️ Verduras congeladas, pizzas, empanadas<br>Consultá: 0299 405-1600',
+        carnes: '🥩 Carnes frescas de calidad<br>Consultá disponibilidad: 0299 405-1600',
+        frutas: '🥬 Frutas y verduras frescas diarias<br>Llama: 0299 405-1600',
+        snacks: '🍪 Galletitas, chocolates, golosinas<br>Busca en el catálogo',
+        ofertas: '🔥 ¡Ofertas especiales esta semana!<br>Llama: 0299 405-1600'
+    };
+
+    const chatKeywordResponses = {
+        'precio': 'Los precios varían. Navega el catálogo o llama: <strong>0299 405-1600</strong>',
+        'entrega': 'Realizamos entregas. ¿Tu localidad? WhatsApp: <strong>0299 405-1600</strong>',
+        'disponibilidad': 'Amplio stock. ¿Qué buscas? WhatsApp: <strong>0299 405-1600</strong>',
+        'catalogo': 'Navega nuestro catálogo completo en esta app',
+        'whatsapp': 'WhatsApp: <strong>0299 405-1600</strong> ¡Estamos online!'
+    };
+
+    function toggleChat() {
+        chatWidget.classList.toggle('hidden');
+        if (!chatWidget.classList.contains('hidden')) {
+            chatInput.focus();
+            scrollChatToBottom();
+        }
+    }
+
+    function scrollChatToBottom() {
+        setTimeout(() => { chatContent.scrollTop = chatContent.scrollHeight; }, 100);
+    }
+
+    function addChatMessage(text, isUser = false, isHTML = false) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `chat-message ${isUser ? 'chat-message-user' : 'chat-message-bot'}`;
+        if (isUser) {
+            messageDiv.textContent = text;
+        } else {
+            const nameSpan = document.createElement('div');
+            nameSpan.className = 'chat-message-bot-name';
+            nameSpan.textContent = 'Los Mayorga';
+            const contentSpan = document.createElement('div');
+            if (isHTML) contentSpan.innerHTML = text;
+            else contentSpan.textContent = text;
+            messageDiv.appendChild(nameSpan);
+            messageDiv.appendChild(contentSpan);
+        }
+        chatContent.appendChild(messageDiv);
+        scrollChatToBottom();
+    }
+
+    function showChatTyping() {
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'chat-typing';
+        typingDiv.id = 'typing-indicator';
+        typingDiv.innerHTML = 'escribiendo<span id="chat-dots">.</span>';
+        chatContent.appendChild(typingDiv);
+        let dotCount = 1;
+        const dotsInterval = setInterval(() => {
+            dotCount = (dotCount % 3) + 1;
+            const dotsEl = document.getElementById('chat-dots');
+            if (dotsEl) dotsEl.textContent = '.'.repeat(dotCount);
+        }, 400);
+        typingDiv.dotsInterval = dotsInterval;
+        scrollChatToBottom();
+    }
+
+    function removeChatTyping() {
+        const typing = document.getElementById('typing-indicator');
+        if (typing) {
+            if (typing.dotsInterval) clearInterval(typing.dotsInterval);
+            typing.remove();
+        }
+    }
+
+    function showChatFAQ() {
+        chatCurrentMode = 'faq';
+        chatMenu.innerHTML = '';
+        chatFAQData.forEach((faq, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'chat-menu-btn';
+            btn.onclick = () => respondChatFAQ(index);
+            btn.innerHTML = `<span class="chat-menu-btn-icon">❓</span> ${faq.question}`;
+            chatMenu.appendChild(btn);
+        });
+        const backBtn = document.createElement('button');
+        backBtn.className = 'chat-menu-btn';
+        backBtn.style.marginTop = '8px';
+        backBtn.onclick = chatGoBack;
+        backBtn.innerHTML = '<span class="chat-menu-btn-icon">⬅️</span> Volver';
+        chatMenu.appendChild(backBtn);
+    }
+
+    function respondChatFAQ(index) {
+        const faq = chatFAQData[index];
+        addChatMessage(faq.question, true);
+        showChatTyping();
+        setTimeout(() => {
+            removeChatTyping();
+            addChatMessage(faq.answer, false, true);
+            chatGoBack();
+        }, 2000);
+    }
+
+    function showChatProducts() {
+        chatCurrentMode = 'products';
+        chatMenu.innerHTML = '';
+        const productsContainer = document.createElement('div');
+        productsContainer.className = 'chat-products';
+        chatProductsData.forEach(product => {
+            const card = document.createElement('div');
+            card.className = 'chat-product-card';
+            card.onclick = () => respondChatProduct(product);
+            card.innerHTML = `<div class="chat-product-icon">${product.icon}</div><div class="chat-product-name">${product.name}</div>`;
+            productsContainer.appendChild(card);
+        });
+        chatMenu.appendChild(productsContainer);
+        const backBtn = document.createElement('button');
+        backBtn.className = 'chat-menu-btn';
+        backBtn.style.marginTop = '12px';
+        backBtn.onclick = chatGoBack;
+        backBtn.innerHTML = '<span class="chat-menu-btn-icon">⬅️</span> Volver';
+        chatMenu.appendChild(backBtn);
+    }
+
+    function respondChatProduct(product) {
+        addChatMessage(`${product.icon} ${product.name}`, true);
+        showChatTyping();
+        setTimeout(() => {
+            removeChatTyping();
+            addChatMessage(chatProductResponses[product.category], false, true);
+            chatGoBack();
+        }, 2000);
+    }
+
+    function showChatInputMode() {
+        chatCurrentMode = 'input';
+        chatMenu.classList.add('hidden');
+        chatInputArea.classList.remove('hidden');
+        chatInput.value = '';
+        chatInput.focus();
+        addChatMessage('Escribí tu pregunta y te responderé. 😊');
+    }
+
+    function sendChatCustomQuestion() {
+        const question = chatInput.value.trim();
+        if (!question) return;
+        addChatMessage(question, true);
+        chatInput.value = '';
+        showChatTyping();
+        setTimeout(() => {
+            removeChatTyping();
+            const response = getSmartChatResponse(question);
+            addChatMessage(response, false, true);
+        }, 2000);
+    }
+
+    function getSmartChatResponse(question) {
+        const lowerQuestion = question.toLowerCase();
+        for (const [keyword, response] of Object.entries(chatKeywordResponses)) {
+            if (lowerQuestion.includes(keyword)) return response;
+        }
+        return 'Gracias por tu pregunta. WhatsApp: <strong>0299 405-1600</strong> ¡Te atenderemos!';
+    }
+
+    function showChatContact() {
+        addChatMessage('¿Contacto?', true);
+        showChatTyping();
+        setTimeout(() => {
+            removeChatTyping();
+            addChatMessage('📞 Llamá: 0299 405-1600<br>📱 WhatsApp: 0299 405-1600<br>📍 Rincón de los Sauces, Neuquén', false, true);
+            chatGoBack();
+        }, 2000);
+    }
+
+    function chatGoBack() {
+        chatCurrentMode = 'menu';
+        chatMenu.innerHTML = '';
+        chatMenu.classList.remove('hidden');
+        chatInputArea.classList.add('hidden');
+        const buttons = [
+            { label: 'Preguntas Frecuentes', icon: '❓', fn: showChatFAQ },
+            { label: 'Ver Productos', icon: '🛒', fn: showChatProducts },
+            { label: 'Hacer Pregunta', icon: '💬', fn: showChatInputMode },
+            { label: 'Contactar', icon: '📱', fn: showChatContact }
+        ];
+        buttons.forEach(btn => {
+            const button = document.createElement('button');
+            button.className = 'chat-menu-btn';
+            button.onclick = btn.fn;
+            button.innerHTML = `<span class="chat-menu-btn-icon">${btn.icon}</span> ${btn.label}`;
+            chatMenu.appendChild(button);
+        });
+    }
+
+    function handleChatEnter(event) {
+        if (event.key === 'Enter') sendChatCustomQuestion();
+    }
+</script>
+
+<style>
+    /* CHAT STYLES */
+    @keyframes chatSlideInUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes chatScaleIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    @keyframes chatBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    @keyframes chatFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .chat-button { position: fixed; left: 20px; bottom: 20px; z-index: 9998; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #001f54 0%, #003d7a 100%); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(0,0,0,0.12); transition: all 0.2s ease; opacity: 0; transform: scale(0); animation: chatScaleIn 0.4s ease forwards; animation-delay: 2s; }
+    .chat-button:hover { transform: scale(1.1); box-shadow: 0 8px 28px rgba(0, 31, 84, 0.4); }
+    .chat-button:active { transform: scale(0.95); }
+    .chat-button-icon { font-size: 28px; color: white; }
+    .chat-button-badge { position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; animation: chatBounce 2s ease infinite; }
+
+    .chat-widget { position: fixed; left: 20px; bottom: 90px; z-index: 9999; width: 100%; max-width: 380px; max-height: 700px; display: flex; flex-direction: column; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.12); animation: chatSlideInUp 0.35s ease; transform-origin: bottom left; }
+    .chat-widget.hidden { display: none; }
+
+    .chat-header { background: linear-gradient(135deg, #001f54 0%, #003d7a 100%); color: white; padding: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0; }
+    .chat-header-info { display: flex; align-items: center; gap: 12px; flex: 1; }
+    .chat-header-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: white; padding: 2px; }
+    .chat-header-text h3 { font-size: 0.95rem; font-weight: 700; margin: 0; }
+    .chat-header-text p { font-size: 0.65rem; opacity: 0.95; margin: 0; }
+    .chat-close-btn { background: rgba(255,255,255,0.2); border: none; color: white; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; }
+    .chat-close-btn:hover { background: rgba(255,255,255,0.3); }
+
+    .chat-content { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; background: white; }
+    .chat-message { padding: 12px 14px; border-radius: 12px; font-size: 0.85rem; line-height: 1.45; max-width: 90%; animation: chatFadeIn 0.3s ease; }
+    .chat-message-bot { background: #f5f5f5; color: #1a202c; align-self: flex-start; }
+    .chat-message-bot-name { font-size: 0.65rem; color: #718096; font-weight: 700; margin-bottom: 4px; }
+    .chat-message-user { background: #001f54; color: white; align-self: flex-end; }
+    .chat-typing { background: #f5f5f5; padding: 12px 14px; font-size: 0.8rem; color: #718096; letter-spacing: 2px; align-self: flex-start; border-radius: 12px; }
+    .chat-content::-webkit-scrollbar { width: 6px; }
+    .chat-content::-webkit-scrollbar-track { background: #f5f5f5; }
+    .chat-content::-webkit-scrollbar-thumb { background: #003d7a; border-radius: 3px; }
+
+    .chat-menu { display: flex; flex-direction: column; gap: 8px; width: 100%; padding: 12px; border-top: 1px solid rgba(0, 31, 84, 0.1); background: white; flex-shrink: 0; max-height: 300px; overflow-y: auto; }
+    .chat-menu-btn { background: white; border: 1.5px solid #003d7a; color: #001f54; padding: 11px 12px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; text-align: left; font-weight: 700; transition: all 0.2s ease; text-transform: uppercase; letter-spacing: 0.3px; white-space: normal; }
+    .chat-menu-btn:hover { background: #f0f4f8; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 31, 84, 0.15); }
+    .chat-menu-btn:active { transform: translateY(0); }
+    .chat-menu-btn-icon { margin-right: 8px; font-size: 1rem; }
+
+    .chat-input-area { display: flex; gap: 8px; padding: 12px; border-top: 1px solid rgba(0, 31, 84, 0.1); background: white; flex-shrink: 0; }
+    .chat-input-area.hidden { display: none; }
+    .chat-input { flex: 1; border: 1.5px solid #003d7a; border-radius: 8px; padding: 10px 12px; font-size: 0.8rem; font-family: inherit; transition: all 0.2s ease; }
+    .chat-input:focus { outline: none; border-color: #001f54; box-shadow: 0 0 0 3px rgba(0, 31, 84, 0.1); }
+    .chat-input::placeholder { color: #718096; }
+    .chat-send-btn { background: linear-gradient(135deg, #001f54 0%, #003d7a 100%); border: none; color: white; width: 40px; height: 40px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; font-size: 1.2rem; }
+    .chat-send-btn:hover { transform: scale(1.05); }
+    .chat-send-btn:active { transform: scale(0.95); }
+
+    .chat-products { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+    .chat-product-card { background: #f9f9f9; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; transition: all 0.2s ease; font-size: 0.7rem; }
+    .chat-product-card:hover { border-color: #003d7a; box-shadow: 0 2px 8px rgba(0, 31, 84, 0.15); transform: translateY(-2px); }
+    .chat-product-icon { font-size: 1.8rem; margin-bottom: 4px; }
+    .chat-product-name { font-weight: 700; color: #1a202c; }
+
+    @media (max-width: 420px) {
+        .chat-widget { left: 10px; bottom: 70px; max-width: calc(100% - 20px); }
+        .chat-button { left: 10px; bottom: 10px; }
+        .chat-menu-btn { font-size: 0.75rem; padding: 9px 10px; }
+    }
+</style>
+
+<button class="chat-button" id="chatButton" onclick="toggleChat()" title="Abrir chat">
+    <span class="chat-button-icon">💬</span>
+    <div class="chat-button-badge">1</div>
+</button>
+
+<div class="chat-widget hidden" id="chatWidget">
+    <div class="chat-header">
+        <div class="chat-header-info">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23001f54'/%3E%3Ctext x='50' y='60' font-size='60' font-weight='bold' fill='white' text-anchor='middle'%3ELM%3C/text%3E%3C/svg%3E" alt="Los Mayorga" class="chat-header-img" loading="lazy">
+            <div class="chat-header-text">
+                <h3>Chat Los Mayorga</h3>
+                <p>Online • Responde en 2s</p>
+            </div>
+        </div>
+        <button class="chat-close-btn" onclick="toggleChat()" title="Cerrar">✕</button>
+    </div>
+    <div class="chat-content" id="chatContent">
+        <div class="chat-message chat-message-bot">
+            <div class="chat-message-bot-name">Los Mayorga</div>
+            <div>¡Hola! 👋 Bienvenido a Los Mayorga.<br><br>¿En qué le podemos ayudar?</div>
+        </div>
+    </div>
+    <div class="chat-menu" id="chatMenu">
+        <button class="chat-menu-btn" onclick="showChatFAQ()"><span class="chat-menu-btn-icon">❓</span> Preguntas Frecuentes</button>
+        <button class="chat-menu-btn" onclick="showChatProducts()"><span class="chat-menu-btn-icon">🛒</span> Ver Productos</button>
+        <button class="chat-menu-btn" onclick="showChatInputMode()"><span class="chat-menu-btn-icon">💬</span> Hacer Pregunta</button>
+        <button class="chat-menu-btn" onclick="showChatContact()"><span class="chat-menu-btn-icon">📱</span> Contactar</button>
+    </div>
+    <div class="chat-input-area hidden" id="chatInputArea">
+        <input type="text" class="chat-input" id="chatInput" placeholder="Escribe tu pregunta..." onkeypress="handleChatEnter(event)">
+        <button class="chat-send-btn" onclick="sendChatCustomQuestion()">➤</button>
+    </div>
+</div>
+
 </script>
 </body>
 </html>
