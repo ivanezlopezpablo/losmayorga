@@ -2055,7 +2055,10 @@
     // está conectado, no interrumpe el envío del pedido.
     function logVentaEnSupabase(orderData) {
         const client = getSupabaseClient();
-        if (!client) return;
+        if (!client) {
+            console.warn('[Pedidos->Supabase] No se pudo guardar: el cliente de Supabase no está inicializado (revisá SUPABASE_URL / SUPABASE_ANON_KEY).');
+            return;
+        }
         client.rpc('crear_pedido', {
             p_rol: orderData.rol,
             p_preventista: orderData.preventista || '',
@@ -2073,7 +2076,14 @@
             p_cliente_telefono: orderData.clienteTelefono || null,
             p_cliente_rubro: orderData.clienteRubro || null,
             p_cliente_preventista_asignado: orderData.clientePreventistaAsignado || null
-        }).catch(() => { /* silencioso: no interrumpe el pedido si falla el registro */ });
+        }).then(({ error }) => {
+            // TEMPORAL para diagnóstico: Supabase muchas veces NO rechaza la promesa ante
+            // un error (lo devuelve acá adentro en "error"), así que había que revisar esto
+            // para ver el motivo real por el que no se estaba guardando en "pedidos".
+            if (error) console.error('[Pedidos->Supabase] Error al guardar el pedido:', error);
+        }).catch((err) => {
+            console.error('[Pedidos->Supabase] Error de red al guardar el pedido:', err);
+        });
     }
 
     let COSTO_ENVIO = 2000;
