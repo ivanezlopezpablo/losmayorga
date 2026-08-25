@@ -1018,6 +1018,127 @@
         }
         .clientes-loading { text-align: center; padding: 30px; color: var(--text-muted); font-size: 0.85rem; }
 
+        /* PANEL DE PEDIDOS */
+        .pedidos-filter-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 12px; }
+        .pedidos-filter-chip {
+            padding: 6px 12px; border-radius: 16px; white-space: nowrap;
+            background: #f0f4f8; color: #475569; font-size: 0.72rem; font-weight: 800;
+            border: 1.5px solid #e2e8f0; cursor: pointer;
+        }
+        .pedidos-filter-chip.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white; border-color: var(--primary);
+        }
+        .mode-preventa .pedidos-filter-chip { background: #334155; color: #cbd5e1; border-color: #475569; }
+        .mode-preventa .pedidos-filter-chip.active { background: linear-gradient(135deg, #FF6F00, #FF8C00); border-color: #FF8C00; color: white; }
+
+        .pedido-item {
+            border: 1.5px solid var(--border); border-radius: 12px; padding: 12px;
+            margin-bottom: 8px; cursor: pointer; transition: all 0.2s ease;
+        }
+        .pedido-item:hover { border-color: var(--primary-light); box-shadow: var(--shadow-sm); }
+        .mode-preventa .pedido-item { border-color: #334155; }
+        .pedido-item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .pedido-item-cliente { font-size: 0.85rem; font-weight: 800; color: var(--text-dark); }
+        .mode-preventa .pedido-item-cliente { color: #f8fafc; }
+        .pedido-item-total { font-size: 0.9rem; font-weight: 900; color: var(--primary); }
+        .mode-preventa .pedido-item-total { color: #FF8C00; }
+        .pedido-item-meta { font-size: 0.68rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .pedido-rol-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 8px;
+            font-size: 0.6rem; font-weight: 900; text-transform: uppercase;
+        }
+        .pedido-rol-badge.rol-publico { background: #dbeafe; color: #1e40af; }
+        .pedido-rol-badge.rol-preventa { background: #fef3c7; color: #92400e; }
+        .pedido-rol-badge.rol-comercios { background: #dcfce7; color: #166534; }
+
+        .pedido-detail-item-row {
+            display: flex; justify-content: space-between; gap: 10px;
+            padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 0.8rem;
+        }
+        .pedido-detail-item-row:last-child { border-bottom: none; }
+
+        /* PANEL DE ESTADÍSTICAS */
+        .estadisticas-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+        .estadisticas-tab {
+            flex: 1; text-align: center; padding: 9px; border-radius: 12px;
+            background: #f0f4f8; color: #475569; font-size: 0.78rem; font-weight: 800;
+            border: 1.5px solid #e2e8f0; cursor: pointer;
+        }
+        .estadisticas-tab.active { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; border-color: var(--primary); }
+        .mode-preventa .estadisticas-tab { background: #334155; color: #cbd5e1; border-color: #475569; }
+        .mode-preventa .estadisticas-tab.active { background: linear-gradient(135deg, #FF6F00, #FF8C00); border-color: #FF8C00; color: white; }
+
+        .estadisticas-periodo-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 10px; }
+        .estadisticas-periodo-chip {
+            padding: 6px 12px; border-radius: 16px; white-space: nowrap;
+            background: #f0f4f8; color: #475569; font-size: 0.7rem; font-weight: 800;
+            border: 1.5px solid #e2e8f0; cursor: pointer;
+        }
+        .estadisticas-periodo-chip.active { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; border-color: var(--primary); }
+        .mode-preventa .estadisticas-periodo-chip { background: #334155; color: #cbd5e1; border-color: #475569; }
+        .mode-preventa .estadisticas-periodo-chip.active { background: linear-gradient(135deg, #FF6F00, #FF8C00); border-color: #FF8C00; color: white; }
+
+        .estadisticas-custom-dates { display: flex; gap: 8px; margin-bottom: 12px; }
+        .estadisticas-custom-dates input { flex: 1; }
+
+        .estadisticas-resumen {
+            display: flex; justify-content: space-between; align-items: center;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white; border-radius: 14px; padding: 14px; margin-bottom: 14px;
+        }
+        .mode-preventa .estadisticas-resumen { background: linear-gradient(135deg, #FF6F00, #FF8C00); }
+        .estadisticas-resumen-label { font-size: 0.68rem; font-weight: 700; opacity: 0.85; }
+        .estadisticas-resumen-value { font-size: 1.3rem; font-weight: 900; }
+
+        .estadistica-row { margin-bottom: 12px; }
+        .estadistica-row-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+        .estadistica-row-nombre { font-size: 0.84rem; font-weight: 800; color: var(--text-dark); }
+        .mode-preventa .estadistica-row-nombre { color: #f8fafc; }
+        .estadistica-row-meta { font-size: 0.66rem; color: var(--text-muted); }
+        .estadistica-row-total { font-size: 0.88rem; font-weight: 900; color: var(--primary); }
+        .mode-preventa .estadistica-row-total { color: #FF8C00; }
+        .estadistica-bar-track { height: 8px; border-radius: 4px; background: #f0f4f8; overflow: hidden; }
+        .mode-preventa .estadistica-bar-track { background: #334155; }
+        .estadistica-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--primary), var(--primary-light)); }
+        .mode-preventa .estadistica-bar-fill { background: linear-gradient(90deg, #FF6F00, #FF8C00); }
+
+        /* BUSCADOR DE CLIENTE DENTRO DEL CARRITO (Preventista/Distribuidora/Administración) */
+        .cliente-picker-search-box { position: relative; margin-bottom: 10px; }
+        .cliente-picker-dropdown {
+            display: none;
+            position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 50;
+            background: white; border: 1.5px solid var(--border); border-radius: 12px;
+            box-shadow: var(--shadow-lg); max-height: 220px; overflow-y: auto;
+        }
+        .cliente-picker-dropdown.visible { display: block; }
+        .mode-preventa .cliente-picker-dropdown { background: #1e293b; border-color: #334155; }
+        .cliente-picker-option { padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--border); }
+        .cliente-picker-option:last-child { border-bottom: none; }
+        .cliente-picker-option:hover { background: #f0f4f8; }
+        .mode-preventa .cliente-picker-option { border-color: #334155; }
+        .mode-preventa .cliente-picker-option:hover { background: #334155; }
+        .cliente-picker-option-name { font-size: 0.82rem; font-weight: 800; color: var(--text-dark); }
+        .mode-preventa .cliente-picker-option-name { color: #f8fafc; }
+        .cliente-picker-option-meta { font-size: 0.66rem; color: var(--text-muted); margin-top: 2px; }
+        .cliente-picker-empty { padding: 12px; font-size: 0.76rem; color: var(--text-muted); text-align: center; }
+
+        .cliente-picker-locked { position: relative; margin-bottom: 10px; }
+        .cliente-picker-locked-input {
+            padding-right: 40px !important;
+            background: #eef7f0 !important;
+            border-color: #86efac !important;
+            font-weight: 800;
+            color: #166534 !important;
+        }
+        .mode-preventa .cliente-picker-locked-input { background: #052e16 !important; color: #86efac !important; border-color: #16a34a !important; }
+        .cliente-picker-clear-btn {
+            position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; color: #166534; cursor: pointer;
+            width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        }
+        .cliente-picker-clear-btn:hover { background: rgba(22,101,52,0.15); }
+
         /* FILA DE PRODUCTO DENTRO DEL CARRITO */
         .cart-item-row {
             display: flex; align-items: flex-start; gap: 10px;
@@ -1530,6 +1651,8 @@
             <div class="side-menu-item" onclick="openContactModal()"><i class="fas fa-phone"></i> Contacto</div>
             <div class="side-menu-item" onclick="sideMenuAcercaDe()"><i class="fas fa-circle-info"></i> Acerca de</div>
             <div class="side-menu-item" id="side-menu-clientes" style="display:none;" onclick="openClientesPanel()"><i class="fas fa-address-book"></i> Clientes</div>
+            <div class="side-menu-item" id="side-menu-pedidos" style="display:none;" onclick="openPedidosPanel()"><i class="fas fa-receipt"></i> Pedidos</div>
+            <div class="side-menu-item" id="side-menu-estadisticas" style="display:none;" onclick="openEstadisticasPanel()"><i class="fas fa-chart-column"></i> Estadísticas</div>
             <div class="side-menu-item" onclick="openInstallModal()"><i class="fas fa-mobile-screen-button"></i> Instalar App</div>
             <div class="side-menu-item" id="side-menu-logout" style="display:none;" onclick="sideMenuLogout()"><i class="fas fa-right-from-bracket"></i> Cerrar Sesión</div>
         </nav>
@@ -1716,7 +1839,7 @@
 
             <div class="login-field-group">
                 <label class="login-field-label" for="user-input"><i class="fas fa-user"></i> Usuario</label>
-                <input type="text" id="user-input" class="form-control-enhanced" placeholder="Tu nombre (opcional)" autocomplete="username">
+                <input type="text" id="user-input" class="form-control-enhanced" placeholder="Tu nombre, o tu email si tenés cuenta" autocomplete="username">
             </div>
 
             <div class="login-field-group">
@@ -1837,6 +1960,28 @@
         </div>
     </div>
 
+    <!-- PANEL DE PEDIDOS (Distribuidora/Administración) -->
+    <div class="modal-overlay" id="pedidos-modal">
+        <div class="modal-card clientes-modal-card">
+            <div class="clientes-header">
+                <h2><i class="fas fa-receipt"></i> Pedidos</h2>
+                <button class="btn-close" onclick="closePedidosPanel()">✕</button>
+            </div>
+            <div id="pedidos-body"></div>
+        </div>
+    </div>
+
+    <!-- PANEL DE ESTADÍSTICAS (Distribuidora/Administración) -->
+    <div class="modal-overlay" id="estadisticas-modal">
+        <div class="modal-card clientes-modal-card">
+            <div class="clientes-header">
+                <h2><i class="fas fa-chart-column"></i> Estadísticas</h2>
+                <button class="btn-close" onclick="closeEstadisticasPanel()">✕</button>
+            </div>
+            <div id="estadisticas-body"></div>
+        </div>
+    </div>
+
     <!-- RECORRIDO GUIADO: bloqueador + resaltado (spotlight) + tarjeta de navegación -->
     <div class="tour-overlay" id="tour-overlay">
         <div class="tour-blocker"></div>
@@ -1900,6 +2045,33 @@
         }).catch(() => { /* silencioso: no interrumpe el pedido si falla el registro */ });
     }
 
+    // Guarda el pedido en Supabase (tabla "pedidos"), además del Sheet. Esto es lo que
+    // permite que Administración/Distribuidora los vean DENTRO de la app, con filtros,
+    // en vez de tener que abrir el Excel. Es "fire and forget": si Supabase todavía no
+    // está conectado, no interrumpe el envío del pedido.
+    function logVentaEnSupabase(orderData) {
+        const client = getSupabaseClient();
+        if (!client) return;
+        client.rpc('crear_pedido', {
+            p_rol: orderData.rol,
+            p_preventista: orderData.preventista || '',
+            p_cliente: orderData.cliente,
+            p_direccion: orderData.direccion || '',
+            p_caracteristicas_domicilio: orderData.caracteristicasDomicilio || '',
+            p_medio_pago: orderData.medioPago || '',
+            p_items: orderData.items || [],
+            p_cantidad_items: orderData.cantidadItems || 0,
+            p_subtotal: orderData.subtotal || 0,
+            p_envio: orderData.envio || 0,
+            p_total: orderData.total || 0,
+            p_cliente_dueño: orderData.clienteDueño || null,
+            p_cliente_cuit: orderData.clienteCuit || null,
+            p_cliente_telefono: orderData.clienteTelefono || null,
+            p_cliente_rubro: orderData.clienteRubro || null,
+            p_cliente_preventista_asignado: orderData.clientePreventistaAsignado || null
+        }).catch(() => { /* silencioso: no interrumpe el pedido si falla el registro */ });
+    }
+
     let COSTO_ENVIO = 2000;
 
     const PREVENTA_KEYS = {
@@ -1942,6 +2114,7 @@
         cart = cartsByScope[newScopeKey] || {};
         cartsByScope[newScopeKey] = cart;
         currentCartScope = newScopeKey;
+        carritoClienteSeleccionado = null; // evita arrastrar el cliente elegido de un rol a otro
     }
 
     let selectedMainCat = 'TODOS';
@@ -3289,11 +3462,20 @@
         const subtitleEl = document.getElementById('side-menu-subtitle');
         const logoutEl = document.getElementById('side-menu-logout');
         const clientesEl = document.getElementById('side-menu-clientes');
+        const pedidosEl = document.getElementById('side-menu-pedidos');
         // "Clientes" es visible para cualquier staff (Iván, Ulises, Distribuidora,
         // Administración), pero NUNCA para Comercios (por eso está gestionado por
         // funciones RPC del lado de Supabase, no solo por este ocultamiento visual).
         const vePanelClientes = currentRole === "PREVENTA" && activePreventaKey !== COMERCIOS_KEY;
         if (clientesEl) clientesEl.style.display = vePanelClientes ? 'flex' : 'none';
+
+        // "Pedidos" (ventas realizadas) es más sensible: solo Distribuidora y
+        // Administración, no Iván/Ulises ni Comercios.
+        const vePanelPedidos = currentRole === "PREVENTA" && (activePreventaKey === ADMIN_KEY || activePreventaKey === DISTRIBUIDORA_KEY);
+        if (pedidosEl) pedidosEl.style.display = vePanelPedidos ? 'flex' : 'none';
+
+        const estadisticasEl = document.getElementById('side-menu-estadisticas');
+        if (estadisticasEl) estadisticasEl.style.display = vePanelPedidos ? 'flex' : 'none';
 
         if (currentRole === "PREVENTA") {
             if (subtitleEl) subtitleEl.textContent = getRoleSubtitleText();
@@ -3325,6 +3507,15 @@
         const key = document.getElementById('pass-input').value.trim();
         const usuarioTipeado = document.getElementById('user-input').value.trim();
 
+        // Si en "Usuario" escribieron un email, es una cuenta nueva de Supabase Auth
+        // (email + contraseña real, individual por persona). Se prueba primero.
+        if (usuarioTipeado.includes('@')) {
+            const loggedIn = await intentarLoginConEmail(usuarioTipeado, key);
+            if (loggedIn) return;
+            document.getElementById('login-error').style.display = 'block';
+            return;
+        }
+
         if (PREVENTA_KEYS[key]) {
             // Si escribió su nombre en "Usuario", se usa ese (útil sobre todo con las
             // claves compartidas de Distribuidora/Administración); si lo dejó vacío,
@@ -3348,6 +3539,36 @@
         }
 
         document.getElementById('login-error').style.display = 'block';
+    }
+
+    // Login con email + contraseña real (Supabase Auth). Si el perfil existe y tiene
+    // un rol válido, entra usando la MISMA lógica interna de siempre (loginComoStaff),
+    // así el resto de la app (Clientes, Pedidos, vencimientos, etc.) no necesita
+    // ningún cambio: por dentro, cada rol de Supabase se mapea a la clave equivalente.
+    async function intentarLoginConEmail(email, password) {
+        const client = getSupabaseClient();
+        if (!client) return false;
+
+        const { data: authData, error: authError } = await client.auth.signInWithPassword({ email, password });
+        if (authError || !authData.user) return false;
+
+        const { data: perfil, error: perfilError } = await client
+            .from('perfiles')
+            .select('nombre, rol')
+            .eq('id', authData.user.id)
+            .single();
+
+        if (perfilError || !perfil) {
+            try { await client.auth.signOut(); } catch (e) {}
+            return false;
+        }
+
+        const claveInterna = perfil.rol === 'administracion' ? ADMIN_KEY
+            : perfil.rol === 'distribuidora' ? DISTRIBUIDORA_KEY
+            : 'PREV2026A'; // preventista: internamente da lo mismo cuál (mismos permisos), el nombre real es perfil.nombre
+
+        loginComoStaff(claveInterna, perfil.nombre);
+        return true;
     }
 
     // Aplica el login (usado tanto por clave de staff como por CUIT de Comercio validado)
@@ -3385,6 +3606,10 @@
         document.body.classList.remove('mode-preventa');
         document.getElementById('preventa-banner').style.display = 'none';
         document.getElementById('app-subtitle').innerText = "Distribuidora Mayorista - Rincón";
+
+        // Si había entrado con email/contraseña real (Supabase Auth), cierra esa sesión también.
+        const client = getSupabaseClient();
+        if (client) { client.auth.signOut().catch(() => {}); }
 
         const btn = document.getElementById('auth-btn');
         btn.innerHTML = '<i class="fas fa-lock"></i> Acceso';
@@ -4191,7 +4416,6 @@
 
         // Preserva lo que el usuario ya escribió al re-renderizar (por ejemplo al tocar
         // "Ver más" o al agregar una sugerencia), incluyendo los campos nuevos del Mayorista.
-        const prevName = document.getElementById('client-name') ? document.getElementById('client-name').value : '';
         const prevAddress = document.getElementById('client-address') ? document.getElementById('client-address').value : '';
         const prevPayment = document.getElementById('client-payment') ? document.getElementById('client-payment').value : '';
         const prevAddressDetails = document.getElementById('client-address-details') ? document.getElementById('client-address-details').value : '';
@@ -4210,21 +4434,123 @@
             <input type="text" id="client-address-details" class="form-control" placeholder="Características del domicilio (color de casa, portón, referencias) *" required>
         ` : '';
 
-        form.innerHTML = `
+        // Preventista/Distribuidora/Administración: buscador de clientes de Supabase en
+        // vez de nombre/dirección sueltos. Si eligen uno existente, solo se ve el nombre
+        // de fantasía acá (el resto de sus datos van igual en el mensaje de WhatsApp).
+        const camposClienteHtml = esStaffParaBusquedaCliente() ? renderClientePickerHtml() : `
             <input type="text" id="client-name" class="form-control" placeholder="Nombre y Apellido *" required>
             <input type="text" id="client-address" class="form-control" placeholder="Dirección *" required>
+        `;
+
+        form.innerHTML = `
+            ${camposClienteHtml}
             ${camposExtraMayorista}
             <button class="btn-whatsapp-send" onclick="sendWhatsAppOrder()"><i class="fab fa-whatsapp"></i> Enviar por WhatsApp</button>
             <button type="button" class="btn-clear-cart" onclick="clearCart()"><i class="fas fa-trash"></i> Vaciar carrito</button>
         `;
-        document.getElementById('client-name').value = prevName;
-        document.getElementById('client-address').value = prevAddress;
+
+        if (!esStaffParaBusquedaCliente() || !carritoClienteSeleccionado) {
+            const addrEl = document.getElementById('client-address');
+            if (addrEl) addrEl.value = prevAddress;
+        }
         if (currentRole === "PUBLICO") {
             document.getElementById('client-payment').value = prevPayment;
             document.getElementById('client-address-details').value = prevAddressDetails;
         }
 
         renderCartSuggestions();
+    }
+
+    // ---------- Buscador de clientes dentro del carrito (Preventista/Distribuidora/Administración) ----------
+    let carritoClienteSeleccionado = null; // objeto completo del cliente elegido, o null si es cliente nuevo/manual
+    let carritoClienteResultadosCache = [];
+    let carritoClienteSearchTimeout = null;
+
+    function esStaffParaBusquedaCliente() {
+        return currentRole === "PREVENTA" && activePreventaKey !== COMERCIOS_KEY;
+    }
+
+    function renderClientePickerHtml() {
+        if (carritoClienteSeleccionado) {
+            return `
+                <div class="cliente-picker-locked">
+                    <input type="text" id="client-name" class="form-control cliente-picker-locked-input" value="${carritoClienteSeleccionado.nombre_fantasia}" readonly required>
+                    <button type="button" class="cliente-picker-clear-btn" onclick="limpiarClienteSeleccionadoCarrito()" title="Cambiar cliente"><i class="fas fa-times"></i></button>
+                </div>
+            `;
+        }
+        return `
+            <div class="cliente-picker-search-box">
+                <input type="text" id="client-name" class="form-control" placeholder="Buscar comercio (nombre, dueño, dirección o CUIT)..." autocomplete="off" oninput="onCarritoClienteSearchInput()" onblur="hideClientePickerDropdownDelayed()" required>
+                <div class="cliente-picker-dropdown" id="cliente-picker-dropdown"></div>
+            </div>
+            <input type="text" id="client-address" class="form-control" placeholder="Dirección *" required>
+        `;
+    }
+
+    function onCarritoClienteSearchInput() {
+        clearTimeout(carritoClienteSearchTimeout);
+        const input = document.getElementById('client-name');
+        const q = input ? input.value.trim() : '';
+        const dd = document.getElementById('cliente-picker-dropdown');
+        if (q.length < 2) {
+            if (dd) { dd.innerHTML = ''; dd.classList.remove('visible'); }
+            return;
+        }
+        carritoClienteSearchTimeout = setTimeout(() => buscarClientesParaCarrito(q), 300);
+    }
+
+    function hideClientePickerDropdownDelayed() {
+        setTimeout(() => {
+            const dd = document.getElementById('cliente-picker-dropdown');
+            if (dd) dd.classList.remove('visible');
+        }, 180);
+    }
+
+    async function buscarClientesParaCarrito(query) {
+        const client = getSupabaseClient();
+        const dd = document.getElementById('cliente-picker-dropdown');
+        if (!dd) return;
+
+        if (!client) {
+            dd.innerHTML = `<div class="cliente-picker-empty">Supabase todavía no está conectado.</div>`;
+            dd.classList.add('visible');
+            return;
+        }
+
+        const { data, error } = await client.rpc('listar_clientes', {
+            p_clave: getStaffKeyForClientes(),
+            p_busqueda: query
+        });
+
+        if (error || !data || data.length === 0) {
+            carritoClienteResultadosCache = [];
+            dd.innerHTML = `<div class="cliente-picker-empty">Sin coincidencias. Podés seguir escribiendo para cargarlo como cliente nuevo (sin guardarlo en la base).</div>`;
+            dd.classList.add('visible');
+            return;
+        }
+
+        carritoClienteResultadosCache = data.slice(0, 8);
+        dd.innerHTML = carritoClienteResultadosCache.map((c, i) => `
+            <div class="cliente-picker-option" onmousedown="seleccionarClienteParaCarrito(${i})">
+                <div class="cliente-picker-option-name">${c.nombre_fantasia}</div>
+                <div class="cliente-picker-option-meta">${c.nombre_dueño || '-'} · ${c.direccion || 'Sin dirección'} · CUIT ${c.cuit}${c.preventista_asignado ? ' · Cliente de ' + c.preventista_asignado : ''}</div>
+            </div>
+        `).join('');
+        dd.classList.add('visible');
+    }
+
+    // onmousedown (no onclick) para que dispare ANTES del onblur del input y no se pierda el click
+    function seleccionarClienteParaCarrito(index) {
+        const c = carritoClienteResultadosCache[index];
+        if (!c) return;
+        carritoClienteSeleccionado = c;
+        renderCartSummary();
+    }
+
+    function limpiarClienteSeleccionadoCarrito() {
+        carritoClienteSeleccionado = null;
+        renderCartSummary();
     }
 
     // Cambia la cantidad de un producto DESDE el carrito (actualiza catálogo, badge y el propio carrito)
@@ -4255,7 +4581,11 @@
 
     function sendWhatsAppOrder() {
         const name = document.getElementById('client-name').value.trim();
-        const address = document.getElementById('client-address').value.trim();
+        const clienteDeBase = esStaffParaBusquedaCliente() && carritoClienteSeleccionado;
+        const addressInput = document.getElementById('client-address');
+        // Si eligió un cliente existente del buscador, la dirección sale de su ficha
+        // (no se pide de nuevo); si no, se toma del campo de dirección de siempre.
+        const address = clienteDeBase ? (carritoClienteSeleccionado.direccion || '') : (addressInput ? addressInput.value.trim() : '');
 
         // Medio de pago y características del domicilio: obligatorios solo en el
         // carrito de Público (Mayorista).
@@ -4290,6 +4620,16 @@
         let msg = `*PEDIDO DE COMPRA*\n\n_Productos:_\n${itemsFormatted}\n\n_Resumen:_\nSubtotal: $${subtotal.toLocaleString('es-AR')}\n`;
         if (currentRole === "PUBLICO") msg += `Envío: $${shipping.toLocaleString('es-AR')}\n`;
         msg += `*Total: $${total.toLocaleString('es-AR')}*\n\nCliente: ${name}${clienteLabel}\nDirección: ${address}`;
+
+        // Si el pedido se armó eligiendo un cliente ya cargado en la base, se agregan sus
+        // datos completos al WhatsApp (aunque en el carrito solo se vea el nombre de fantasía).
+        if (clienteDeBase) {
+            const c = carritoClienteSeleccionado;
+            if (c.nombre_dueño) msg += `\nDueño/a: ${c.nombre_dueño}`;
+            if (c.cuit) msg += `\nCUIT: ${c.cuit}`;
+            if (c.celular_whatsapp) msg += `\nTeléfono: ${c.celular_whatsapp}`;
+        }
+
         if (currentRole === "PUBLICO") {
             msg += `\nCaracterísticas del domicilio: ${addressDetails}\nMedio de pago: ${paymentMethod}`;
         }
@@ -4298,9 +4638,10 @@
         let phone = (currentRole === "PREVENTA") ? PHONE_PREVENTA : PHONE_PUBLICO;
         window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
 
-        // Respaldo del pedido en el Google Sheet de "Registro de Ventas" (Administración
-        // lo puede revisar ahí siempre, incluso si el mensaje de WhatsApp llega cortado).
-        logVentaEnSheet({
+        // Respaldo del pedido: Google Sheet (Apps Script) + tabla "pedidos" en Supabase.
+        // Administración/Distribuidora los pueden ver desde el panel "Pedidos" de la app,
+        // con filtros, incluso si el mensaje de WhatsApp llega cortado.
+        const datosPedido = {
             rol: currentRole === "PREVENTA" ? (activePreventaKey === COMERCIOS_KEY ? 'Comercios' : 'Preventa') : 'Público',
             preventista: currentRole === "PREVENTA" ? activePreventista : '',
             cliente: name,
@@ -4319,13 +4660,30 @@
             subtotal: subtotal,
             envio: shipping,
             total: total
-        });
+        };
+
+        // Si el pedido se armó eligiendo un cliente ya cargado, se suman sus datos
+        // completos del negocio (CUIT, dueño, teléfono, rubro, preventista asignado)
+        // al registro guardado -- esto es lo que permite después ver estadísticas
+        // reales por cliente y por preventista en el panel de Administración.
+        if (clienteDeBase) {
+            const c = carritoClienteSeleccionado;
+            datosPedido.clienteDueño = c.nombre_dueño || '';
+            datosPedido.clienteCuit = c.cuit || '';
+            datosPedido.clienteTelefono = c.celular_whatsapp || '';
+            datosPedido.clienteRubro = c.rubro || '';
+            datosPedido.clientePreventistaAsignado = c.preventista_asignado || '';
+        }
+
+        logVentaEnSheet(datosPedido);
+        logVentaEnSupabase(datosPedido);
 
         // Limpia el carrito automáticamente después de enviar el pedido
         setTimeout(() => {
             cart = {};
             cartsByScope[currentCartScope] = cart;
             cartListExpanded = false;
+            carritoClienteSeleccionado = null;
             updateCartFloatBar();
             document.querySelectorAll('[data-product-id]').forEach(el => updateProductDisplay(el.dataset.productId));
             toggleCartModal(false);
@@ -4636,7 +4994,7 @@
             <div class="cliente-item" onclick="openClienteDetail('${c.id}')">
                 <div>
                     <div class="cliente-item-name">${c.nombre_fantasia}</div>
-                    <div class="cliente-item-meta">${c.nombre_dueño || '-'} · CUIT ${c.cuit} · ${c.localidad || 'Sin localidad'}</div>
+                    <div class="cliente-item-meta">${c.nombre_dueño || '-'} · CUIT ${c.cuit} · ${c.localidad || 'Sin localidad'}${c.preventista_asignado ? ' · ' + c.preventista_asignado : ''}</div>
                 </div>
                 <i class="fas fa-chevron-right" style="color:var(--text-muted);"></i>
             </div>
@@ -4672,6 +5030,7 @@
             <div class="cliente-detail-row"><div class="cliente-detail-label">Rubro</div><div class="cliente-detail-value">${c.rubro || '-'}</div></div>
             <div class="cliente-detail-row"><div class="cliente-detail-label">Tipo de Registro</div><div class="cliente-detail-value">${c.tipo_registro || '-'}</div></div>
             <div class="cliente-detail-row"><div class="cliente-detail-label">Zona de reparto</div><div class="cliente-detail-value">${c.zona_reparto || '-'}</div></div>
+            <div class="cliente-detail-row"><div class="cliente-detail-label">Cliente de</div><div class="cliente-detail-value">${c.preventista_asignado || '-'}</div></div>
             <div class="cliente-detail-row"><div class="cliente-detail-label">Notas</div><div class="cliente-detail-value">${c.notas || '-'}</div></div>
             <div class="cliente-detail-row"><div class="cliente-detail-label">Alta</div><div class="cliente-detail-value">${c.fecha_alta ? new Date(c.fecha_alta).toLocaleDateString('es-AR') : '-'} · ${c.dado_de_alta_por || '-'}</div></div>
 
@@ -4684,9 +5043,10 @@
 
     const RUBROS_COMERCIO = ['Almacén / Kiosco', 'Supermercado', 'Restaurante / Bar', 'Panadería', 'Verdulería / Frutería', 'Carnicería', 'Farmacia', 'Ferretería', 'Otro'];
     const TIPOS_REGISTRO_FISCAL = ['Monotributista', 'Responsable Inscripto', 'Exento', 'Consumidor Final', 'Otro'];
+    const PREVENTISTAS_ASIGNABLES = ['Iván', 'Ulises', 'Directo a la Distribuidora'];
 
-    function buildSelectOptions(options, selectedValue) {
-        return `<option value="">Seleccionar...</option>` + options.map(opt =>
+    function buildSelectOptions(options, selectedValue, placeholderTexto) {
+        return `<option value="">${placeholderTexto || 'Seleccionar...'}</option>` + options.map(opt =>
             `<option value="${opt}" ${opt === selectedValue ? 'selected' : ''}>${opt}</option>`
         ).join('');
     }
@@ -4710,8 +5070,9 @@
                 <input type="text" id="cf-localidad" class="form-control-enhanced" placeholder="Localidad" value="${c.localidad || ''}">
                 <input type="text" id="cf-provincia" class="form-control-enhanced" placeholder="Provincia" value="${c.provincia || ''}">
                 <input type="email" id="cf-email" class="form-control-enhanced" placeholder="Email" value="${c.email || ''}">
-                <select id="cf-rubro" class="form-control-enhanced">${buildSelectOptions(RUBROS_COMERCIO, c.rubro)}</select>
-                <select id="cf-tipo-registro" class="form-control-enhanced">${buildSelectOptions(TIPOS_REGISTRO_FISCAL, c.tipo_registro)}</select>
+                <select id="cf-rubro" class="form-control-enhanced">${buildSelectOptions(RUBROS_COMERCIO, c.rubro, 'Tipo de Comercio...')}</select>
+                <select id="cf-tipo-registro" class="form-control-enhanced">${buildSelectOptions(TIPOS_REGISTRO_FISCAL, c.tipo_registro, 'Tipo de Registro Fiscal...')}</select>
+                <select id="cf-preventista-asignado" class="form-control-enhanced cliente-form-full">${buildSelectOptions(PREVENTISTAS_ASIGNABLES, c.preventista_asignado, '¿Cliente de qué preventista?...')}</select>
                 <input type="text" id="cf-zona" class="form-control-enhanced cliente-form-full" placeholder="Zona de reparto" value="${c.zona_reparto || ''}">
                 <textarea id="cf-notas" class="form-control-enhanced cliente-form-full" placeholder="Notas internas" rows="2">${c.notas || ''}</textarea>
             </div>
@@ -4749,7 +5110,8 @@
             p_rubro: document.getElementById('cf-rubro').value.trim(),
             p_tipo_registro: document.getElementById('cf-tipo-registro').value.trim(),
             p_zona_reparto: document.getElementById('cf-zona').value.trim(),
-            p_notas: document.getElementById('cf-notas').value.trim()
+            p_notas: document.getElementById('cf-notas').value.trim(),
+            p_preventista_asignado: document.getElementById('cf-preventista-asignado').value.trim()
         };
 
         let result;
@@ -4780,6 +5142,349 @@
         if (error) { alert('No se pudo eliminar: ' + error.message); return; }
         clientesSelected = null;
         renderClientesList();
+    }
+
+    // ==========================================================
+    //  PANEL DE PEDIDOS (ventas realizadas) - Distribuidora/Administración
+    //  Filtros por canal (Mayorista/Preventista/Comercios) + búsqueda por cliente.
+    // ==========================================================
+    let pedidosFiltroRol = ''; // '' = todos, 'Público' | 'Preventa' | 'Comercios'
+    let pedidosBusqueda = '';
+    let pedidosListCache = [];
+
+    const PEDIDOS_FILTROS = [
+        { valor: '', label: 'Todos' },
+        { valor: 'Público', label: 'Mayorista' },
+        { valor: 'Preventa', label: 'Preventista' },
+        { valor: 'Comercios', label: 'Comercios' }
+    ];
+
+    function openPedidosPanel() {
+        closeSideMenu();
+        pedidosFiltroRol = '';
+        pedidosBusqueda = '';
+        document.getElementById('pedidos-modal').classList.add('active');
+        renderPedidosList();
+    }
+
+    function closePedidosPanel() {
+        document.getElementById('pedidos-modal').classList.remove('active');
+    }
+
+    function renderPedidosList() {
+        const body = document.getElementById('pedidos-body');
+        body.innerHTML = `
+            <div class="clientes-search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="pedidos-search-input" placeholder="Buscar por cliente o preventista..." oninput="onPedidosSearchInput()">
+            </div>
+            <div class="pedidos-filter-row" id="pedidos-filter-row"></div>
+            <div id="pedidos-list-container"><div class="clientes-loading">Cargando pedidos...</div></div>
+        `;
+        const input = document.getElementById('pedidos-search-input');
+        if (input) input.value = pedidosBusqueda;
+        renderPedidosFilterChips();
+        loadPedidosList();
+    }
+
+    function renderPedidosFilterChips() {
+        const container = document.getElementById('pedidos-filter-row');
+        if (!container) return;
+        container.innerHTML = PEDIDOS_FILTROS.map(f => `
+            <div class="pedidos-filter-chip ${pedidosFiltroRol === f.valor ? 'active' : ''}" onclick="selectPedidosFiltro('${f.valor}')">${f.label}</div>
+        `).join('');
+    }
+
+    function selectPedidosFiltro(valor) {
+        pedidosFiltroRol = valor;
+        renderPedidosFilterChips();
+        loadPedidosList();
+    }
+
+    function onPedidosSearchInput() {
+        const input = document.getElementById('pedidos-search-input');
+        pedidosBusqueda = input ? input.value : '';
+        loadPedidosList();
+    }
+
+    function getRolBadgeClass(rol) {
+        if (rol === 'Público') return 'rol-publico';
+        if (rol === 'Comercios') return 'rol-comercios';
+        return 'rol-preventa';
+    }
+    function getRolLabel(rol) {
+        if (rol === 'Público') return 'Mayorista';
+        return rol;
+    }
+
+    async function loadPedidosList() {
+        const container = document.getElementById('pedidos-list-container');
+        if (!container) return;
+
+        const client = getSupabaseClient();
+        if (!client) {
+            container.innerHTML = `<div class="clientes-error"><i class="fas fa-triangle-exclamation"></i> Todavía no está conectado Supabase.</div>`;
+            return;
+        }
+
+        const { data, error } = await client.rpc('listar_pedidos', {
+            p_clave: getStaffKeyForClientes(),
+            p_rol_filtro: pedidosFiltroRol,
+            p_busqueda: pedidosBusqueda.trim(),
+            p_limite: 50
+        });
+
+        if (error) {
+            container.innerHTML = `<div class="clientes-error"><i class="fas fa-triangle-exclamation"></i> No se pudo cargar: ${error.message}</div>`;
+            return;
+        }
+
+        pedidosListCache = data || [];
+
+        if (pedidosListCache.length === 0) {
+            container.innerHTML = `<p style="text-align:center; color:#999; padding:20px 0;">Sin pedidos${pedidosBusqueda || pedidosFiltroRol ? ' para ese filtro' : ' registrados todavía'}.</p>`;
+            return;
+        }
+
+        container.innerHTML = pedidosListCache.map(p => {
+            const fecha = new Date(p.creado_en);
+            const fechaTexto = fecha.toLocaleDateString('es-AR') + ' ' + fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+            return `
+                <div class="pedido-item" onclick="openPedidoDetail(${p.id})">
+                    <div class="pedido-item-top">
+                        <span class="pedido-item-cliente">${p.cliente}</span>
+                        <span class="pedido-item-total">$${Number(p.total).toLocaleString('es-AR', {minimumFractionDigits:2})}</span>
+                    </div>
+                    <div class="pedido-item-meta">
+                        <span class="pedido-rol-badge ${getRolBadgeClass(p.rol)}">${getRolLabel(p.rol)}</span>
+                        <span>${fechaTexto}</span>
+                        <span>· ${p.cantidad_items} ítem${p.cantidad_items === 1 ? '' : 's'}</span>
+                        ${p.preventista ? `<span>· ${p.preventista}</span>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function openPedidoDetail(id) {
+        const p = pedidosListCache.find(x => x.id === id);
+        if (!p) return;
+        const body = document.getElementById('pedidos-body');
+        const fecha = new Date(p.creado_en);
+        const fechaTexto = fecha.toLocaleDateString('es-AR') + ' ' + fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+        const items = Array.isArray(p.items) ? p.items : [];
+
+        const itemsHtml = items.map(it => `
+            <div class="pedido-detail-item-row">
+                <div>
+                    <strong>${it.cantidad}x ${it.nombre}</strong><br>
+                    <span style="font-size:0.68rem; color:var(--text-muted);">${it.marca || '-'} · SKU ${it.sku || '-'}</span>
+                </div>
+                <div>$${Number(it.subtotal).toLocaleString('es-AR', {minimumFractionDigits:2})}</div>
+            </div>
+        `).join('');
+
+        body.innerHTML = `
+            <button type="button" class="marcas-back-btn" onclick="renderPedidosList()"><i class="fas fa-arrow-left"></i> Volver</button>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                <span class="pedido-rol-badge ${getRolBadgeClass(p.rol)}">${getRolLabel(p.rol)}</span>
+                <span style="font-size:0.72rem; color:var(--text-muted);">${fechaTexto}</span>
+            </div>
+            <h3 style="font-size:1.05rem; font-weight:900; margin-bottom:10px;">${p.cliente}</h3>
+
+            <div class="cliente-detail-row"><div class="cliente-detail-label">Dirección</div><div class="cliente-detail-value">${p.direccion || '-'}</div></div>
+            ${p.caracteristicas_domicilio ? `<div class="cliente-detail-row"><div class="cliente-detail-label">Domicilio</div><div class="cliente-detail-value">${p.caracteristicas_domicilio}</div></div>` : ''}
+            ${p.medio_pago ? `<div class="cliente-detail-row"><div class="cliente-detail-label">Medio de pago</div><div class="cliente-detail-value">${p.medio_pago}</div></div>` : ''}
+            ${p.preventista ? `<div class="cliente-detail-row"><div class="cliente-detail-label">Preventista</div><div class="cliente-detail-value">${p.preventista}</div></div>` : ''}
+
+            <div style="margin:14px 0 8px; font-weight:800; font-size:0.85rem;">Productos</div>
+            ${itemsHtml}
+
+            <div style="margin-top:12px; display:flex; justify-content:space-between; font-size:0.85rem;"><span>Subtotal</span><span>$${Number(p.subtotal).toLocaleString('es-AR', {minimumFractionDigits:2})}</span></div>
+            ${p.envio > 0 ? `<div style="display:flex; justify-content:space-between; font-size:0.85rem;"><span>Envío</span><span>$${Number(p.envio).toLocaleString('es-AR', {minimumFractionDigits:2})}</span></div>` : ''}
+            <div style="margin-top:6px; display:flex; justify-content:space-between; font-weight:900; font-size:0.95rem;"><span>Total</span><span>$${Number(p.total).toLocaleString('es-AR', {minimumFractionDigits:2})}</span></div>
+        `;
+    }
+
+    // ==========================================================
+    //  PANEL DE ESTADÍSTICAS (Distribuidora/Administración)
+    //  Cuánto compra cada cliente, cuánto vendió cada preventista, con
+    //  filtros de período (semana/mes/año/todo/personalizado).
+    // ==========================================================
+    let estadisticasVista = 'cliente'; // 'cliente' | 'preventista'
+    let estadisticasPeriodo = 'mes';   // 'semana' | 'mes' | 'anio' | 'todo' | 'personalizado'
+    let estadisticasDesdeCustom = '';
+    let estadisticasHastaCustom = '';
+
+    const ESTADISTICAS_PERIODOS = [
+        { valor: 'semana', label: 'Esta semana' },
+        { valor: 'mes', label: 'Este mes' },
+        { valor: 'anio', label: 'Este año' },
+        { valor: 'todo', label: 'Todo' },
+        { valor: 'personalizado', label: 'Personalizado' }
+    ];
+
+    function openEstadisticasPanel() {
+        closeSideMenu();
+        estadisticasVista = 'cliente';
+        estadisticasPeriodo = 'mes';
+        document.getElementById('estadisticas-modal').classList.add('active');
+        renderEstadisticasPanel();
+    }
+
+    function closeEstadisticasPanel() {
+        document.getElementById('estadisticas-modal').classList.remove('active');
+    }
+
+    function getRangoFechasEstadisticas() {
+        const ahora = new Date();
+        if (estadisticasPeriodo === 'semana') {
+            const desde = new Date(ahora);
+            desde.setDate(ahora.getDate() - 7);
+            return { desde: desde.toISOString(), hasta: null };
+        }
+        if (estadisticasPeriodo === 'mes') {
+            const desde = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+            return { desde: desde.toISOString(), hasta: null };
+        }
+        if (estadisticasPeriodo === 'anio') {
+            const desde = new Date(ahora.getFullYear(), 0, 1);
+            return { desde: desde.toISOString(), hasta: null };
+        }
+        if (estadisticasPeriodo === 'personalizado') {
+            const desde = estadisticasDesdeCustom ? new Date(estadisticasDesdeCustom + 'T00:00:00').toISOString() : null;
+            const hasta = estadisticasHastaCustom ? new Date(estadisticasHastaCustom + 'T23:59:59').toISOString() : null;
+            return { desde, hasta };
+        }
+        return { desde: null, hasta: null }; // 'todo'
+    }
+
+    function renderEstadisticasPanel() {
+        const body = document.getElementById('estadisticas-body');
+        body.innerHTML = `
+            <div class="estadisticas-tabs" id="estadisticas-tabs"></div>
+            <div class="estadisticas-periodo-row" id="estadisticas-periodo-row"></div>
+            <div id="estadisticas-custom-dates-container"></div>
+            <div id="estadisticas-results"><div class="clientes-loading">Cargando...</div></div>
+        `;
+        renderEstadisticasTabs();
+        renderEstadisticasPeriodoChips();
+        renderEstadisticasCustomDates();
+        loadEstadisticas();
+    }
+
+    function renderEstadisticasTabs() {
+        const container = document.getElementById('estadisticas-tabs');
+        if (!container) return;
+        container.innerHTML = `
+            <div class="estadisticas-tab ${estadisticasVista === 'cliente' ? 'active' : ''}" onclick="selectEstadisticasVista('cliente')"><i class="fas fa-store"></i> Por Cliente</div>
+            <div class="estadisticas-tab ${estadisticasVista === 'preventista' ? 'active' : ''}" onclick="selectEstadisticasVista('preventista')"><i class="fas fa-user-tie"></i> Por Preventista</div>
+        `;
+    }
+
+    function selectEstadisticasVista(vista) {
+        estadisticasVista = vista;
+        renderEstadisticasTabs();
+        loadEstadisticas();
+    }
+
+    function renderEstadisticasPeriodoChips() {
+        const container = document.getElementById('estadisticas-periodo-row');
+        if (!container) return;
+        container.innerHTML = ESTADISTICAS_PERIODOS.map(p => `
+            <div class="estadisticas-periodo-chip ${estadisticasPeriodo === p.valor ? 'active' : ''}" onclick="selectEstadisticasPeriodo('${p.valor}')">${p.label}</div>
+        `).join('');
+    }
+
+    function selectEstadisticasPeriodo(periodo) {
+        estadisticasPeriodo = periodo;
+        renderEstadisticasPeriodoChips();
+        renderEstadisticasCustomDates();
+        if (periodo !== 'personalizado') loadEstadisticas();
+    }
+
+    function renderEstadisticasCustomDates() {
+        const container = document.getElementById('estadisticas-custom-dates-container');
+        if (!container) return;
+        if (estadisticasPeriodo !== 'personalizado') { container.innerHTML = ''; return; }
+        container.innerHTML = `
+            <div class="estadisticas-custom-dates">
+                <input type="date" id="estadisticas-desde" class="form-control" value="${estadisticasDesdeCustom}" onchange="onEstadisticasCustomDateChange()">
+                <input type="date" id="estadisticas-hasta" class="form-control" value="${estadisticasHastaCustom}" onchange="onEstadisticasCustomDateChange()">
+            </div>
+        `;
+    }
+
+    function onEstadisticasCustomDateChange() {
+        estadisticasDesdeCustom = document.getElementById('estadisticas-desde').value;
+        estadisticasHastaCustom = document.getElementById('estadisticas-hasta').value;
+        if (estadisticasDesdeCustom && estadisticasHastaCustom) loadEstadisticas();
+    }
+
+    async function loadEstadisticas() {
+        const container = document.getElementById('estadisticas-results');
+        if (!container) return;
+        container.innerHTML = `<div class="clientes-loading">Cargando...</div>`;
+
+        const client = getSupabaseClient();
+        if (!client) {
+            container.innerHTML = `<div class="clientes-error"><i class="fas fa-triangle-exclamation"></i> Todavía no está conectado Supabase.</div>`;
+            return;
+        }
+
+        const { desde, hasta } = getRangoFechasEstadisticas();
+        const nombreFuncion = estadisticasVista === 'cliente' ? 'estadisticas_por_cliente' : 'estadisticas_por_preventista';
+
+        const { data, error } = await client.rpc(nombreFuncion, {
+            p_clave: getStaffKeyForClientes(),
+            p_desde: desde,
+            p_hasta: hasta
+        });
+
+        if (error) {
+            container.innerHTML = `<div class="clientes-error"><i class="fas fa-triangle-exclamation"></i> No se pudo cargar: ${error.message}</div>`;
+            return;
+        }
+
+        if (!data || data.length === 0) {
+            container.innerHTML = `<p style="text-align:center; color:#999; padding:20px 0;">Sin datos en este período.</p>`;
+            return;
+        }
+
+        const totalGeneral = data.reduce((sum, row) => sum + Number(row.total_comprado ?? row.total_vendido ?? 0), 0);
+        const maxValor = Math.max(...data.map(row => Number(row.total_comprado ?? row.total_vendido ?? 0)));
+
+        const resumenLabel = estadisticasVista === 'cliente' ? 'Total comprado (todos los clientes)' : 'Total vendido (todos los preventistas)';
+        let html = `
+            <div class="estadisticas-resumen">
+                <div>
+                    <div class="estadisticas-resumen-label">${resumenLabel}</div>
+                    <div class="estadisticas-resumen-value">$${totalGeneral.toLocaleString('es-AR', {minimumFractionDigits:2})}</div>
+                </div>
+                <i class="fas fa-chart-simple" style="font-size:1.6rem; opacity:0.7;"></i>
+            </div>
+        `;
+
+        html += data.map(row => {
+            const nombre = row.cliente || row.preventista || 'Sin nombre';
+            const totalFila = Number(row.total_comprado ?? row.total_vendido ?? 0);
+            const cantidadPedidos = row.cantidad_pedidos || 0;
+            const porcentaje = maxValor > 0 ? Math.round((totalFila / maxValor) * 100) : 0;
+            return `
+                <div class="estadistica-row">
+                    <div class="estadistica-row-top">
+                        <div>
+                            <div class="estadistica-row-nombre">${nombre}</div>
+                            <div class="estadistica-row-meta">${cantidadPedidos} pedido${cantidadPedidos === 1 ? '' : 's'}</div>
+                        </div>
+                        <div class="estadistica-row-total">$${totalFila.toLocaleString('es-AR', {minimumFractionDigits:2})}</div>
+                    </div>
+                    <div class="estadistica-bar-track"><div class="estadistica-bar-fill" style="width:${porcentaje}%;"></div></div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = html;
     }
 
     function sideMenuGoHome() {
