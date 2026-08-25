@@ -698,6 +698,74 @@
 
         .mode-preventa .scroll-top-btn { background: linear-gradient(135deg, #FF6F00, #FF8C00); }
 
+        /* BOTÓN FLOTANTE DE WHATSAPP CON PREGUNTAS FRECUENTES (abajo a la izquierda,
+           para no pisarse con el carrito/subir-arriba que están a la derecha) */
+        .faq-whatsapp-btn {
+            position: fixed; left: 20px; bottom: 20px;
+            width: 62px; height: 62px;
+            background: linear-gradient(135deg, #1da851, var(--wa-green));
+            border-radius: 50%; border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 6px 24px rgba(37,211,102,0.45);
+            z-index: 1498;
+        }
+        .faq-whatsapp-btn i.fa-whatsapp { color: white; font-size: 1.7rem; }
+        .faq-whatsapp-crown {
+            position: absolute; top: -9px; left: 14px;
+            color: #ffd60a; font-size: 0.95rem;
+            transform: rotate(-22deg);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+        }
+        .faq-whatsapp-online-dot {
+            position: absolute; bottom: 2px; right: 2px;
+            width: 15px; height: 15px; border-radius: 50%;
+            background: #22c55e; border: 2.5px solid white;
+            animation: pulse 1.6s ease-in-out infinite;
+        }
+
+        /* PANEL DE PREGUNTAS FRECUENTES */
+        .faq-modal-card { max-width: 380px; padding: 0; display: flex; flex-direction: column; max-height: 80vh; }
+        .faq-header {
+            background: linear-gradient(135deg, #1da851, var(--wa-green));
+            color: white; padding: 18px 20px; border-radius: 20px 20px 0 0;
+            display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+        }
+        .faq-header-icon {
+            width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.2);
+            display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;
+        }
+        .faq-header-text { flex: 1; }
+        .faq-header-title { font-weight: 900; font-size: 0.95rem; }
+        .faq-header-subtitle { font-size: 0.7rem; opacity: 0.9; display: flex; align-items: center; gap: 5px; }
+        .faq-header-subtitle .faq-status-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; animation: pulse 1.6s ease-in-out infinite; }
+        .faq-close-btn { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
+
+        .faq-body { overflow-y: auto; padding: 16px 18px; flex: 1 1 auto; scrollbar-width: none; }
+        .faq-body::-webkit-scrollbar { width: 0; display: none; }
+        .faq-intro { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px; }
+
+        .faq-item { border: 1.5px solid var(--border); border-radius: 12px; margin-bottom: 8px; overflow: hidden; }
+        .faq-question {
+            padding: 12px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.82rem; font-weight: 700; color: var(--text-dark); gap: 10px;
+        }
+        .faq-question i.fa-chevron-down { font-size: 0.7rem; color: var(--text-muted); transition: transform 0.2s ease; flex-shrink: 0; }
+        .faq-item.open .faq-question i.fa-chevron-down { transform: rotate(180deg); }
+        .faq-answer {
+            max-height: 0; overflow: hidden; transition: max-height 0.25s ease;
+            font-size: 0.78rem; color: var(--text-muted); line-height: 1.5;
+        }
+        .faq-item.open .faq-answer { max-height: 260px; }
+        .faq-answer-inner { padding: 0 14px 14px; }
+
+        .faq-whatsapp-cta {
+            margin: 6px 18px 18px; flex-shrink: 0;
+            background: linear-gradient(135deg, #1da851, var(--wa-green));
+            color: white; border: none; padding: 13px; border-radius: 12px;
+            font-weight: 900; width: calc(100% - 36px); cursor: pointer; font-size: 0.85rem;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+
         .cart-icon-container { font-size: 2rem; color: white; position: relative; }
         .cart-badge {
             position: absolute; top: -12px; right: -12px;
@@ -960,15 +1028,47 @@
         .tour-btn.secondary { background: #f0f4f8; color: var(--text-dark); flex: 0 0 auto; padding: 11px 16px; }
         .mode-preventa .tour-btn.secondary { background: #334155; color: #f8fafc; }
 
-        /* PANEL DE CLIENTES */
-        .clientes-modal-card { display: flex; flex-direction: column; padding: 0; max-width: 560px; max-height: 88vh; }
+        /* PANEL DE CLIENTES / PEDIDOS / ESTADÍSTICAS (comparten la misma tarjeta base) */
+        .clientes-modal-card {
+            display: flex; flex-direction: column; padding: 0;
+            max-width: 560px; width: 92vw; max-height: 88vh;
+        }
         .clientes-header {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 20px 22px 12px; flex-shrink: 0;
+            padding: 20px 24px 14px; flex-shrink: 0;
+            border-bottom: 1px solid var(--border);
         }
         .clientes-header h2 { font-size: 1.1rem; font-weight: 900; color: var(--primary); }
         .mode-preventa .clientes-header h2 { color: #FF8C00; }
-        #clientes-body { overflow-y: auto; padding: 0 22px 22px; flex: 1 1 auto; }
+
+        /* Antes solo #clientes-body tenía este padding: #pedidos-body y
+           #estadisticas-body quedaban con el contenido pegado a los bordes. */
+        #clientes-body, #pedidos-body, #estadisticas-body {
+            overflow-y: auto; flex: 1 1 auto;
+            padding: 18px 24px 26px;
+            /* Firefox: oculta la barra de scroll visible mantenendo el scroll funcional */
+            scrollbar-width: none;
+        }
+        #clientes-body::-webkit-scrollbar, #pedidos-body::-webkit-scrollbar, #estadisticas-body::-webkit-scrollbar {
+            /* Chrome/Safari/Edge: mismo objetivo, sin barra visible */
+            width: 0; height: 0; display: none;
+        }
+
+        /* PC / Tablet: el popup se agranda para aprovechar mejor el espacio */
+        @media (min-width: 700px) {
+            .clientes-modal-card { max-width: 680px; max-height: 82vh; }
+            #clientes-body, #pedidos-body, #estadisticas-body { padding: 22px 32px 32px; }
+        }
+        @media (min-width: 1024px) {
+            .clientes-modal-card { max-width: 760px; }
+        }
+
+        /* Celular angosto: que no quede pegado a los bordes de la pantalla */
+        @media (max-width: 420px) {
+            .clientes-modal-card { width: 94vw; max-height: 90vh; }
+            #clientes-body, #pedidos-body, #estadisticas-body { padding: 14px 16px 22px; }
+            .clientes-header { padding: 16px 16px 12px; }
+        }
 
         .clientes-search-box { position: relative; margin-bottom: 12px; }
         .clientes-search-box i {
@@ -1735,6 +1835,13 @@
         <button class="desktop-nav-btn" onclick="openAboutModal()"><i class="fas fa-info-circle"></i></button>
     </div>
 
+    <!-- BOTÓN FLOTANTE DE WHATSAPP CON PREGUNTAS FRECUENTES -->
+    <button class="faq-whatsapp-btn" id="faq-whatsapp-btn" onclick="openFaqPanel()" aria-label="Preguntas frecuentes por WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+        <i class="fas fa-crown faq-whatsapp-crown"></i>
+        <span class="faq-whatsapp-online-dot"></span>
+    </button>
+
     <!-- CARRITO FLOTANTE -->
     <button class="scroll-top-btn" id="scroll-top-btn" onclick="scrollToTop()" aria-label="Subir arriba">
         <i class="fas fa-arrow-up"></i>
@@ -1856,6 +1963,25 @@
                 <div id="cart-suggestions" style="margin-bottom:6px;"></div>
             </div>
             <div class="cart-modal-footer" id="cart-checkout-form" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- PANEL DE PREGUNTAS FRECUENTES (WhatsApp) -->
+    <div class="modal-overlay" id="faq-modal">
+        <div class="modal-card faq-modal-card">
+            <div class="faq-header">
+                <div class="faq-header-icon"><i class="fab fa-whatsapp"></i></div>
+                <div class="faq-header-text">
+                    <div class="faq-header-title">Los Mayorga</div>
+                    <div class="faq-header-subtitle"><span class="faq-status-dot"></span> En línea - Preguntas frecuentes</div>
+                </div>
+                <button class="faq-close-btn" onclick="closeFaqPanel()">✕</button>
+            </div>
+            <div class="faq-body">
+                <p class="faq-intro">Elegí una pregunta para ver la respuesta al instante, o escribinos directo por WhatsApp.</p>
+                <div id="faq-items-container"></div>
+            </div>
+            <button class="faq-whatsapp-cta" onclick="irAWhatsAppDesdeFaq()"><i class="fab fa-whatsapp"></i> Hablar por WhatsApp</button>
         </div>
     </div>
 
@@ -2154,6 +2280,71 @@
     }
 
     let COSTO_ENVIO = 2000;
+
+    // ==========================================================
+    //  PREGUNTAS FRECUENTES (botón flotante de WhatsApp)
+    //  ⚠️ EDITAR ACÁ: reemplazá los textos entre [corchetes] por la info real.
+    //  El resto (envío, medios de pago) ya se arma solo con datos que la app
+    //  ya conoce, así que no hace falta tocarlo.
+    // ==========================================================
+    const FAQ_ITEMS = [
+        {
+            pregunta: '¿Cuáles son los horarios de atención?',
+            respuesta: '[COMPLETAR: por ejemplo, "Lunes a Viernes de 8 a 18hs, Sábados de 8 a 13hs"]'
+        },
+        {
+            pregunta: '¿Cuál es la dirección del local / la distribuidora?',
+            respuesta: '[COMPLETAR: dirección exacta en Rincón de los Sauces, Neuquén]'
+        },
+        {
+            pregunta: '¿Hacen envíos a domicilio?',
+            respuesta: `Sí, hacemos envíos a domicilio en Rincón de los Sauces. El costo de envío para pedidos minoristas es de $${COSTO_ENVIO.toLocaleString('es-AR')}. Para comercios y preventistas, el envío ya está coordinado sin este cargo extra.`
+        },
+        {
+            pregunta: '¿Qué medios de pago aceptan?',
+            respuesta: 'Aceptamos Efectivo, Transferencia bancaria, Mercado Pago y Tarjeta de débito/crédito.'
+        },
+        {
+            pregunta: 'Soy un comercio, ¿cómo accedo a precios mayoristas especiales?',
+            respuesta: 'Los comercios y preventistas tienen precios diferenciados dentro de la app. Si ya sos cliente, entrá con tu CUIT desde el botón "Acceso". Si todavía no estás dado de alta, escribinos por WhatsApp y coordinamos tu registro.'
+        },
+        {
+            pregunta: '¿Cuáles son los precios para el público en general?',
+            respuesta: 'Podés ver todo el catálogo con precios actualizados navegando la app libremente, sin necesidad de registrarte. Cualquier consulta puntual sobre un producto, escribinos por WhatsApp.'
+        }
+    ];
+
+    function openFaqPanel() {
+        renderFaqItems();
+        document.getElementById('faq-modal').classList.add('active');
+    }
+
+    function closeFaqPanel() {
+        document.getElementById('faq-modal').classList.remove('active');
+    }
+
+    function renderFaqItems() {
+        const container = document.getElementById('faq-items-container');
+        container.innerHTML = FAQ_ITEMS.map((item, i) => `
+            <div class="faq-item" id="faq-item-${i}">
+                <div class="faq-question" onclick="toggleFaqItem(${i})">
+                    <span>${item.pregunta}</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer"><div class="faq-answer-inner">${item.respuesta}</div></div>
+            </div>
+        `).join('');
+    }
+
+    function toggleFaqItem(indice) {
+        const el = document.getElementById('faq-item-' + indice);
+        if (el) el.classList.toggle('open');
+    }
+
+    function irAWhatsAppDesdeFaq() {
+        const msg = 'Hola Los Mayorga! Tengo una consulta.';
+        window.open(`https://wa.me/${PHONE_PUBLICO}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
 
     const PREVENTA_KEYS = {
         "PREV2026A": "Iván",
@@ -3614,6 +3805,11 @@
             errorEl.style.display = 'none';
             const { data, error } = await client.rpc('validar_cuit_comercio', { p_cuit: key });
             if (!error && data && data.length > 0) {
+                // Trae su ficha COMPLETA (solo la propia, nunca la de otros) para poder
+                // auto-completar sus datos al armar un pedido, sin que tenga que volver
+                // a escribirlos -- y así su CUIT queda bien identificado en cada compra.
+                const { data: fichaCompleta } = await client.rpc('obtener_cliente_por_cuit', { p_cuit: key });
+                comercioAutenticadoData = (fichaCompleta && fichaCompleta.length > 0) ? fichaCompleta[0] : null;
                 loginComoStaff(COMERCIOS_KEY, data[0].nombre_fantasia);
                 return;
             }
@@ -3683,6 +3879,7 @@
         currentRole = "PUBLICO";
         activePreventista = "";
         activePreventaKey = "";
+        comercioAutenticadoData = null;
         switchCartScope('PUBLICO');
         document.body.classList.remove('mode-preventa');
         document.getElementById('preventa-banner').style.display = 'none';
@@ -4518,10 +4715,23 @@
         // Preventista/Distribuidora/Administración: buscador de clientes de Supabase en
         // vez de nombre/dirección sueltos. Si eligen uno existente, solo se ve el nombre
         // de fantasía acá (el resto de sus datos van igual en el mensaje de WhatsApp).
-        const camposClienteHtml = esStaffParaBusquedaCliente() ? renderClientePickerHtml() : `
-            <input type="text" id="client-name" class="form-control" placeholder="Nombre y Apellido *" required>
-            <input type="text" id="client-address" class="form-control" placeholder="Dirección *" required>
-        `;
+        // Comercios: como ya sabemos quién es (entró con su propio CUIT), se le muestra
+        // directo su nombre bloqueado, sin pedirle que lo vuelva a escribir.
+        let camposClienteHtml;
+        if (esStaffParaBusquedaCliente()) {
+            camposClienteHtml = renderClientePickerHtml();
+        } else if (activePreventaKey === COMERCIOS_KEY && comercioAutenticadoData) {
+            camposClienteHtml = `
+                <div class="cliente-picker-locked">
+                    <input type="text" id="client-name" class="form-control cliente-picker-locked-input" value="${comercioAutenticadoData.nombre_fantasia}" readonly required>
+                </div>
+            `;
+        } else {
+            camposClienteHtml = `
+                <input type="text" id="client-name" class="form-control" placeholder="Nombre y Apellido *" required>
+                <input type="text" id="client-address" class="form-control" placeholder="Dirección *" required>
+            `;
+        }
 
         form.innerHTML = `
             ${camposClienteHtml}
@@ -4544,6 +4754,9 @@
 
     // ---------- Buscador de clientes dentro del carrito (Preventista/Distribuidora/Administración) ----------
     let carritoClienteSeleccionado = null; // objeto completo del cliente elegido, o null si es cliente nuevo/manual
+    // Ficha completa del propio Comercio autenticado por CUIT (se completa sola al loguearse,
+    // así arma su pedido con sus datos reales sin tener que volver a escribirlos).
+    let comercioAutenticadoData = null;
     let carritoClienteResultadosCache = [];
     let carritoClienteSearchTimeout = null;
 
@@ -4662,11 +4875,17 @@
 
     function sendWhatsAppOrder() {
         const name = document.getElementById('client-name').value.trim();
-        const clienteDeBase = esStaffParaBusquedaCliente() && carritoClienteSeleccionado;
+        const esComercioAutenticado = activePreventaKey === COMERCIOS_KEY && comercioAutenticadoData;
+        // "Ficha de origen" de los datos completos: el cliente elegido del buscador
+        // (staff), o la propia ficha del Comercio logueado con su CUIT.
+        const fichaClienteOrigen = esStaffParaBusquedaCliente() && carritoClienteSeleccionado
+            ? carritoClienteSeleccionado
+            : (esComercioAutenticado ? comercioAutenticadoData : null);
+
         const addressInput = document.getElementById('client-address');
-        // Si eligió un cliente existente del buscador, la dirección sale de su ficha
-        // (no se pide de nuevo); si no, se toma del campo de dirección de siempre.
-        const address = clienteDeBase ? (carritoClienteSeleccionado.direccion || '') : (addressInput ? addressInput.value.trim() : '');
+        // Si hay una ficha de origen (cliente elegido o comercio autenticado), la
+        // dirección sale de ahí; si no, se toma del campo de dirección de siempre.
+        const address = fichaClienteOrigen ? (fichaClienteOrigen.direccion || '') : (addressInput ? addressInput.value.trim() : '');
 
         // Medio de pago y características del domicilio: obligatorios solo en el
         // carrito de Público (Mayorista).
@@ -4702,10 +4921,11 @@
         if (currentRole === "PUBLICO") msg += `Envío: $${shipping.toLocaleString('es-AR')}\n`;
         msg += `*Total: $${total.toLocaleString('es-AR')}*\n\nCliente: ${name}${clienteLabel}\nDirección: ${address}`;
 
-        // Si el pedido se armó eligiendo un cliente ya cargado en la base, se agregan sus
-        // datos completos al WhatsApp (aunque en el carrito solo se vea el nombre de fantasía).
-        if (clienteDeBase) {
-            const c = carritoClienteSeleccionado;
+        // Si el pedido se armó con un cliente identificado (elegido del buscador, o un
+        // Comercio autenticado con su propio CUIT), se agregan sus datos completos al
+        // WhatsApp (aunque en el carrito solo se vea el nombre de fantasía).
+        if (fichaClienteOrigen) {
+            const c = fichaClienteOrigen;
             if (c.nombre_dueño) msg += `\nDueño/a: ${c.nombre_dueño}`;
             if (c.cuit) msg += `\nCUIT: ${c.cuit}`;
             if (c.celular_whatsapp) msg += `\nTeléfono: ${c.celular_whatsapp}`;
@@ -4743,12 +4963,13 @@
             total: total
         };
 
-        // Si el pedido se armó eligiendo un cliente ya cargado, se suman sus datos
-        // completos del negocio (CUIT, dueño, teléfono, rubro, preventista asignado)
-        // al registro guardado -- esto es lo que permite después ver estadísticas
-        // reales por cliente y por preventista en el panel de Administración.
-        if (clienteDeBase) {
-            const c = carritoClienteSeleccionado;
+        // Si el pedido se armó con un cliente identificado (buscador del staff, o
+        // Comercio autenticado con su propio CUIT), se suman sus datos completos del
+        // negocio (CUIT, dueño, teléfono, rubro, preventista asignado) al registro
+        // guardado -- esto es lo que permite ver estadísticas reales por cliente,
+        // agrupadas por CUIT en vez de por el nombre que se haya tipeado cada vez.
+        if (fichaClienteOrigen) {
+            const c = fichaClienteOrigen;
             datosPedido.clienteDueño = c.nombre_dueño || '';
             datosPedido.clienteCuit = c.cuit || '';
             datosPedido.clienteTelefono = c.celular_whatsapp || '';
@@ -5010,11 +5231,14 @@
     let clientesSelected = null;
     let clientesFormMode = 'new';
     let clientesListCache = [];
+    let clientesListExpanded = false;
+    const CLIENTES_VISIBLE_ITEMS = 5;
 
     function openClientesPanel() {
         closeSideMenu();
         clientesSearchQuery = '';
         clientesSelected = null;
+        clientesListExpanded = false;
         document.getElementById('clientes-modal').classList.add('active');
         renderClientesList();
     }
@@ -5041,7 +5265,13 @@
     function onClientesSearchInput() {
         const input = document.getElementById('clientes-search-input');
         clientesSearchQuery = input ? input.value : '';
+        clientesListExpanded = false;
         loadClientesList();
+    }
+
+    function toggleClientesListExpand() {
+        clientesListExpanded = !clientesListExpanded;
+        renderClientesListItems();
     }
 
     async function loadClientesList() {
@@ -5065,13 +5295,22 @@
         }
 
         clientesListCache = data || [];
+        renderClientesListItems();
+    }
+
+    function renderClientesListItems() {
+        const container = document.getElementById('clientes-list-container');
+        if (!container) return;
 
         if (clientesListCache.length === 0) {
             container.innerHTML = `<p style="text-align:center; color:#999; padding:20px 0;">Sin clientes cargados${clientesSearchQuery ? ' para esa búsqueda' : ' todavía'}.</p>`;
             return;
         }
 
-        container.innerHTML = clientesListCache.map(c => `
+        const visibles = clientesListExpanded ? clientesListCache : clientesListCache.slice(0, CLIENTES_VISIBLE_ITEMS);
+        const restantes = clientesListCache.length - visibles.length;
+
+        let html = visibles.map(c => `
             <div class="cliente-item" onclick="openClienteDetail('${c.id}')">
                 <div>
                     <div class="cliente-item-name">${c.nombre_fantasia}</div>
@@ -5080,6 +5319,22 @@
                 <i class="fas fa-chevron-right" style="color:var(--text-muted);"></i>
             </div>
         `).join('');
+
+        if (restantes > 0) {
+            html += `
+                <button type="button" class="btn-cart-toggle" onclick="toggleClientesListExpand()">
+                    <i class="fas fa-chevron-down"></i> Ver ${restantes} cliente${restantes > 1 ? 's' : ''} más
+                </button>
+            `;
+        } else if (clientesListExpanded && clientesListCache.length > CLIENTES_VISIBLE_ITEMS) {
+            html += `
+                <button type="button" class="btn-cart-toggle" onclick="toggleClientesListExpand()">
+                    <i class="fas fa-chevron-up"></i> Ver menos
+                </button>
+            `;
+        }
+
+        container.innerHTML = html;
     }
 
     function openClienteDetail(id) {
@@ -5232,6 +5487,8 @@
     let pedidosFiltroRol = ''; // '' = todos, 'Público' | 'Preventa' | 'Comercios'
     let pedidosBusqueda = '';
     let pedidosListCache = [];
+    let pedidosListExpanded = false;
+    const PEDIDOS_VISIBLE_ITEMS = 5;
 
     const PEDIDOS_FILTROS = [
         { valor: '', label: 'Todos' },
@@ -5244,6 +5501,7 @@
         closeSideMenu();
         pedidosFiltroRol = '';
         pedidosBusqueda = '';
+        pedidosListExpanded = false;
         document.getElementById('pedidos-modal').classList.add('active');
         renderPedidosList();
     }
@@ -5278,6 +5536,7 @@
 
     function selectPedidosFiltro(valor) {
         pedidosFiltroRol = valor;
+        pedidosListExpanded = false;
         renderPedidosFilterChips();
         loadPedidosList();
     }
@@ -5285,7 +5544,13 @@
     function onPedidosSearchInput() {
         const input = document.getElementById('pedidos-search-input');
         pedidosBusqueda = input ? input.value : '';
+        pedidosListExpanded = false;
         loadPedidosList();
+    }
+
+    function togglePedidosListExpand() {
+        pedidosListExpanded = !pedidosListExpanded;
+        renderPedidosListItems();
     }
 
     function getRolBadgeClass(rol) {
@@ -5321,13 +5586,22 @@
         }
 
         pedidosListCache = data || [];
+        renderPedidosListItems();
+    }
+
+    function renderPedidosListItems() {
+        const container = document.getElementById('pedidos-list-container');
+        if (!container) return;
 
         if (pedidosListCache.length === 0) {
             container.innerHTML = `<p style="text-align:center; color:#999; padding:20px 0;">Sin pedidos${pedidosBusqueda || pedidosFiltroRol ? ' para ese filtro' : ' registrados todavía'}.</p>`;
             return;
         }
 
-        container.innerHTML = pedidosListCache.map(p => {
+        const visibles = pedidosListExpanded ? pedidosListCache : pedidosListCache.slice(0, PEDIDOS_VISIBLE_ITEMS);
+        const restantes = pedidosListCache.length - visibles.length;
+
+        let html = visibles.map(p => {
             const fecha = new Date(p.creado_en);
             const fechaTexto = fecha.toLocaleDateString('es-AR') + ' ' + fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
             return `
@@ -5345,6 +5619,22 @@
                 </div>
             `;
         }).join('');
+
+        if (restantes > 0) {
+            html += `
+                <button type="button" class="btn-cart-toggle" onclick="togglePedidosListExpand()">
+                    <i class="fas fa-chevron-down"></i> Ver ${restantes} pedido${restantes > 1 ? 's' : ''} más
+                </button>
+            `;
+        } else if (pedidosListExpanded && pedidosListCache.length > PEDIDOS_VISIBLE_ITEMS) {
+            html += `
+                <button type="button" class="btn-cart-toggle" onclick="togglePedidosListExpand()">
+                    <i class="fas fa-chevron-up"></i> Ver menos
+                </button>
+            `;
+        }
+
+        container.innerHTML = html;
     }
 
     function openPedidoDetail(id) {
@@ -5774,7 +6064,7 @@
             const porcentaje = Math.round((total / maxValor) * 100);
             const inicial = (row.cliente || '?').charAt(0).toUpperCase();
             return `
-                <div class="estadistica-row" onclick="abrirDetalleClienteEstadisticas('${(row.cliente || '').replace(/'/g, "\\'")}')">
+                <div class="estadistica-row" onclick="abrirDetalleClienteEstadisticasPorIndice(${i}, ${estadisticasClienteBusqueda ? 'true' : 'false'})">
                     <div class="estadistica-rank ${i===0?'top1':i===1?'top2':i===2?'top3':''}">${i < 3 ? (i+1) : inicial}</div>
                     <div class="estadistica-row-body">
                         <div class="estadistica-row-top">
@@ -5789,11 +6079,21 @@
         }).join('');
 
         container.innerHTML = html;
+        estadisticasRankingClientesVisibleCache = data;
+    }
+    let estadisticasRankingClientesVisibleCache = [];
+
+    // El índice se resuelve sobre la lista actualmente en pantalla (que puede estar
+    // filtrada por el buscador), así siempre abre el cliente correcto en el que tocaron.
+    function abrirDetalleClienteEstadisticasPorIndice(indice) {
+        const row = estadisticasRankingClientesVisibleCache[indice];
+        if (!row) return;
+        abrirDetalleClienteEstadisticas(row.identidad, row.cliente);
     }
 
     // Ficha de detalle de un cliente puntual: histórico completo (no depende del
     // filtro de período activo, muestra su historia real de compras entera).
-    async function abrirDetalleClienteEstadisticas(nombreCliente) {
+    async function abrirDetalleClienteEstadisticas(identidadCliente, nombreCliente) {
         estadisticasClienteDetalleActual = nombreCliente;
         destroyEstadisticasChart();
         const container = document.getElementById('estadisticas-results');
@@ -5804,9 +6104,9 @@
         const clave = getStaffKeyForClientes();
 
         const [detalleRes, historialRes, ultimosRes] = await Promise.all([
-            client.rpc('estadisticas_detalle_cliente', { p_clave: clave, p_cliente: nombreCliente }),
-            client.rpc('estadisticas_historial_mensual_cliente', { p_clave: clave, p_cliente: nombreCliente }),
-            client.rpc('estadisticas_ultimos_pedidos_cliente', { p_clave: clave, p_cliente: nombreCliente, p_limite: 8 })
+            client.rpc('estadisticas_detalle_cliente', { p_clave: clave, p_identidad: identidadCliente }),
+            client.rpc('estadisticas_historial_mensual_cliente', { p_clave: clave, p_identidad: identidadCliente }),
+            client.rpc('estadisticas_ultimos_pedidos_cliente', { p_clave: clave, p_identidad: identidadCliente, p_limite: 8 })
         ]);
 
         if (detalleRes.error) {
