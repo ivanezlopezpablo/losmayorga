@@ -20,6 +20,8 @@
 
     <!-- Cliente JS de Supabase (para el panel de Clientes de Preventista/Administración) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <!-- Chart.js: gráficos del panel de Estadísticas -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
     
     <style>
         :root {
@@ -994,15 +996,12 @@
             margin-bottom: 8px; cursor: pointer; transition: all 0.2s ease;
         }
         .cliente-item:hover { border-color: var(--primary-light); box-shadow: var(--shadow-sm); }
-        .mode-preventa .cliente-item { border-color: #334155; }
         .cliente-item-name { font-size: 0.85rem; font-weight: 800; color: var(--text-dark); }
-        .mode-preventa .cliente-item-name { color: #f8fafc; }
         .cliente-item-meta { font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; }
 
         .cliente-detail-row { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--border); }
         .cliente-detail-label { flex: 0 0 130px; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); }
         .cliente-detail-value { flex: 1; font-size: 0.82rem; color: var(--text-dark); }
-        .mode-preventa .cliente-detail-value { color: #f8fafc; }
 
         .cliente-map-frame {
             width: 100%; height: 200px; border: none; border-radius: 14px; margin: 14px 0;
@@ -1037,10 +1036,8 @@
             margin-bottom: 8px; cursor: pointer; transition: all 0.2s ease;
         }
         .pedido-item:hover { border-color: var(--primary-light); box-shadow: var(--shadow-sm); }
-        .mode-preventa .pedido-item { border-color: #334155; }
         .pedido-item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
         .pedido-item-cliente { font-size: 0.85rem; font-weight: 800; color: var(--text-dark); }
-        .mode-preventa .pedido-item-cliente { color: #f8fafc; }
         .pedido-item-total { font-size: 0.9rem; font-weight: 900; color: var(--primary); }
         .mode-preventa .pedido-item-total { color: #FF8C00; }
         .pedido-item-meta { font-size: 0.68rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
@@ -1059,49 +1056,119 @@
         .pedido-detail-item-row:last-child { border-bottom: none; }
 
         /* PANEL DE ESTADÍSTICAS */
-        .estadisticas-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+        .estadisticas-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
         .estadisticas-tab {
-            flex: 1; text-align: center; padding: 9px; border-radius: 12px;
-            background: #f0f4f8; color: #475569; font-size: 0.78rem; font-weight: 800;
+            flex: 1; text-align: center; padding: 9px 6px; border-radius: 12px;
+            background: #f0f4f8; color: #475569; font-size: 0.7rem; font-weight: 800;
             border: 1.5px solid #e2e8f0; cursor: pointer;
         }
         .estadisticas-tab.active { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; border-color: var(--primary); }
         .mode-preventa .estadisticas-tab { background: #334155; color: #cbd5e1; border-color: #475569; }
         .mode-preventa .estadisticas-tab.active { background: linear-gradient(135deg, #FF6F00, #FF8C00); border-color: #FF8C00; color: white; }
 
-        .estadisticas-periodo-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 10px; }
+        .estadisticas-periodo-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 8px; }
         .estadisticas-periodo-chip {
             padding: 6px 12px; border-radius: 16px; white-space: nowrap;
-            background: #f0f4f8; color: #475569; font-size: 0.7rem; font-weight: 800;
+            background: #f0f4f8; color: #475569; font-size: 0.68rem; font-weight: 800;
             border: 1.5px solid #e2e8f0; cursor: pointer;
         }
         .estadisticas-periodo-chip.active { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; border-color: var(--primary); }
         .mode-preventa .estadisticas-periodo-chip { background: #334155; color: #cbd5e1; border-color: #475569; }
         .mode-preventa .estadisticas-periodo-chip.active { background: linear-gradient(135deg, #FF6F00, #FF8C00); border-color: #FF8C00; color: white; }
 
+        /* Filtro de canal: reutiliza el mismo estilo que el filtro de período, pero
+           en una fila aparte (naranja/celeste distinto del período para no confundir). */
+        .estadisticas-canal-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 8px; }
+        .estadisticas-canal-chip {
+            padding: 6px 12px; border-radius: 16px; white-space: nowrap;
+            background: #eef2ff; color: #4338ca; font-size: 0.68rem; font-weight: 800;
+            border: 1.5px solid #c7d2fe; cursor: pointer;
+        }
+        .estadisticas-canal-chip.active { background: linear-gradient(135deg, #4338ca, #6366f1); color: white; border-color: #4338ca; }
+        .mode-preventa .estadisticas-canal-chip { background: #1e1b4b; color: #a5b4fc; border-color: #3730a3; }
+        .mode-preventa .estadisticas-canal-chip.active { background: linear-gradient(135deg, #4338ca, #6366f1); color: white; border-color: #6366f1; }
+
+        .estadisticas-select-filtro {
+            width: 100%; padding: 9px 12px; border-radius: 12px; border: 1.5px solid var(--border);
+            font-size: 0.78rem; margin-bottom: 10px; background: white; color: var(--text-dark);
+        }
+
         .estadisticas-custom-dates { display: flex; gap: 8px; margin-bottom: 12px; }
         .estadisticas-custom-dates input { flex: 1; }
 
-        .estadisticas-resumen {
-            display: flex; justify-content: space-between; align-items: center;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            color: white; border-radius: 14px; padding: 14px; margin-bottom: 14px;
+        /* Tarjetas de KPI (grilla 2 columnas) */
+        .estadisticas-kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+        .estadisticas-kpi-card {
+            border-radius: 14px; padding: 12px; background: #f8fafb; border: 1.5px solid var(--border);
         }
-        .mode-preventa .estadisticas-resumen { background: linear-gradient(135deg, #FF6F00, #FF8C00); }
-        .estadisticas-resumen-label { font-size: 0.68rem; font-weight: 700; opacity: 0.85; }
-        .estadisticas-resumen-value { font-size: 1.3rem; font-weight: 900; }
+        .estadisticas-kpi-card.destacada {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white; border: none;
+        }
+        .mode-preventa .estadisticas-kpi-card.destacada { background: linear-gradient(135deg, #FF6F00, #FF8C00); }
+        .estadisticas-kpi-label { font-size: 0.62rem; font-weight: 800; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.3px; }
+        .estadisticas-kpi-value { font-size: 1.15rem; font-weight: 900; margin-top: 3px; }
+        .estadisticas-kpi-card.destacada .estadisticas-kpi-value { font-size: 1.6rem; }
+        .estadisticas-kpi-sub { font-size: 0.62rem; color: var(--text-muted); margin-top: 2px; }
+        .estadisticas-kpi-card.destacada .estadisticas-kpi-sub { color: rgba(255,255,255,0.85); }
 
-        .estadistica-row { margin-bottom: 12px; }
-        .estadistica-row-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
-        .estadistica-row-nombre { font-size: 0.84rem; font-weight: 800; color: var(--text-dark); }
-        .mode-preventa .estadistica-row-nombre { color: #f8fafc; }
-        .estadistica-row-meta { font-size: 0.66rem; color: var(--text-muted); }
-        .estadistica-row-total { font-size: 0.88rem; font-weight: 900; color: var(--primary); }
+        .estadisticas-seccion-titulo {
+            font-size: 0.8rem; font-weight: 900; color: var(--text-dark);
+            margin: 16px 0 8px; display: flex; align-items: center; gap: 6px;
+        }
+        .estadisticas-chart-box { position: relative; height: 180px; margin-bottom: 16px; }
+
+        .estadisticas-canal-breakdown { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+        .estadisticas-canal-item { display: flex; align-items: center; gap: 10px; }
+        .estadisticas-canal-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .estadisticas-canal-info { flex: 1; }
+        .estadisticas-canal-nombre { font-size: 0.76rem; font-weight: 800; color: var(--text-dark); display: flex; justify-content: space-between; }
+        .estadisticas-canal-track { height: 6px; border-radius: 3px; background: #f0f4f8; overflow: hidden; margin-top: 3px; }
+        .estadisticas-canal-fill { height: 100%; border-radius: 3px; }
+
+        .estadisticas-search-box { position: relative; margin-bottom: 10px; }
+        .estadisticas-search-box i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem; }
+        .estadisticas-search-box input {
+            width: 100%; padding: 10px 14px 10px 36px; border-radius: 12px; border: 1.5px solid var(--border);
+            font-size: 0.85rem; outline: none; background: white; color: var(--text-dark);
+        }
+
+        /* Ranking con medalla/avatar */
+        .estadistica-row {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+            padding: 8px; border-radius: 12px; cursor: pointer; transition: background 0.15s ease;
+        }
+        .estadistica-row:hover { background: #f8fafb; }
+        .estadistica-rank {
+            width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.7rem; font-weight: 900; background: #f0f4f8; color: #64748b;
+        }
+        .estadistica-rank.top1 { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: white; }
+        .estadistica-rank.top2 { background: linear-gradient(135deg, #cbd5e1, #94a3b8); color: white; }
+        .estadistica-rank.top3 { background: linear-gradient(135deg, #d97706, #92400e); color: white; }
+        .estadistica-row-body { flex: 1; min-width: 0; }
+        .estadistica-row-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; gap: 8px; }
+        .estadistica-row-nombre { font-size: 0.82rem; font-weight: 800; color: var(--text-dark); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .estadistica-row-meta { font-size: 0.64rem; color: var(--text-muted); }
+        .estadistica-row-total { font-size: 0.85rem; font-weight: 900; color: var(--primary); white-space: nowrap; }
         .mode-preventa .estadistica-row-total { color: #FF8C00; }
-        .estadistica-bar-track { height: 8px; border-radius: 4px; background: #f0f4f8; overflow: hidden; }
-        .mode-preventa .estadistica-bar-track { background: #334155; }
+        .estadistica-bar-track { height: 7px; border-radius: 4px; background: #f0f4f8; overflow: hidden; }
         .estadistica-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--primary), var(--primary-light)); }
         .mode-preventa .estadistica-bar-fill { background: linear-gradient(90deg, #FF6F00, #FF8C00); }
+
+        /* Ficha de detalle de un cliente puntual */
+        .estadisticas-cliente-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+        .estadisticas-cliente-avatar {
+            width: 48px; height: 48px; border-radius: 14px; flex-shrink: 0;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white; font-weight: 900; font-size: 1.2rem;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .mode-preventa .estadisticas-cliente-avatar { background: linear-gradient(135deg, #FF6F00, #FF8C00); }
+        .estadisticas-cliente-nombre { font-size: 1.05rem; font-weight: 900; color: var(--text-dark); }
+        .estadisticas-cliente-freq { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
 
         /* BUSCADOR DE CLIENTE DENTRO DEL CARRITO (Preventista/Distribuidora/Administración) */
         .cliente-picker-search-box { position: relative; margin-bottom: 10px; }
@@ -5322,13 +5389,23 @@
 
     // ==========================================================
     //  PANEL DE ESTADÍSTICAS (Distribuidora/Administración)
-    //  Cuánto compra cada cliente, cuánto vendió cada preventista, con
-    //  filtros de período (semana/mes/año/todo/personalizado).
+    //  3 vistas: Resumen general (KPIs + gráfico + medios de pago + top
+    //  productos), Por Cliente (ranking + búsqueda + ficha individual con
+    //  gráfico y frecuencia de compra) y Por Preventista (ranking).
+    //  Filtros: período (semana/mes/año/todo/personalizado) y canal
+    //  (Mayorista/Preventista/Comercios), más filtro de preventista asignado
+    //  en la vista Por Cliente.
     // ==========================================================
-    let estadisticasVista = 'cliente'; // 'cliente' | 'preventista'
-    let estadisticasPeriodo = 'mes';   // 'semana' | 'mes' | 'anio' | 'todo' | 'personalizado'
+    let estadisticasVista = 'resumen'; // 'resumen' | 'cliente' | 'preventista'
+    let estadisticasPeriodo = 'mes';
     let estadisticasDesdeCustom = '';
     let estadisticasHastaCustom = '';
+    let estadisticasCanalFiltro = '';       // '' | 'Público' | 'Preventa' | 'Comercios'
+    let estadisticasPreventistaFiltro = ''; // solo vista "cliente"
+    let estadisticasClienteBusqueda = '';
+    let estadisticasClienteRankingCache = [];
+    let estadisticasClienteDetalleActual = null;
+    let estadisticasChartInstance = null;
 
     const ESTADISTICAS_PERIODOS = [
         { valor: 'semana', label: 'Esta semana' },
@@ -5337,33 +5414,52 @@
         { valor: 'todo', label: 'Todo' },
         { valor: 'personalizado', label: 'Personalizado' }
     ];
+    const ESTADISTICAS_CANALES = [
+        { valor: '', label: 'Todos los canales' },
+        { valor: 'Público', label: 'Mayorista' },
+        { valor: 'Preventa', label: 'Preventista' },
+        { valor: 'Comercios', label: 'Comercios' }
+    ];
 
     function openEstadisticasPanel() {
         closeSideMenu();
-        estadisticasVista = 'cliente';
+        estadisticasVista = 'resumen';
         estadisticasPeriodo = 'mes';
+        estadisticasCanalFiltro = '';
+        estadisticasPreventistaFiltro = '';
+        estadisticasClienteBusqueda = '';
+        estadisticasClienteDetalleActual = null;
         document.getElementById('estadisticas-modal').classList.add('active');
         renderEstadisticasPanel();
     }
 
     function closeEstadisticasPanel() {
+        destroyEstadisticasChart();
         document.getElementById('estadisticas-modal').classList.remove('active');
+    }
+
+    function destroyEstadisticasChart() {
+        if (estadisticasChartInstance) {
+            estadisticasChartInstance.destroy();
+            estadisticasChartInstance = null;
+        }
+    }
+
+    function getEstadisticasChartColor() {
+        return document.body.classList.contains('mode-preventa') ? '#FF8C00' : '#0284c7';
     }
 
     function getRangoFechasEstadisticas() {
         const ahora = new Date();
         if (estadisticasPeriodo === 'semana') {
-            const desde = new Date(ahora);
-            desde.setDate(ahora.getDate() - 7);
+            const desde = new Date(ahora); desde.setDate(ahora.getDate() - 7);
             return { desde: desde.toISOString(), hasta: null };
         }
         if (estadisticasPeriodo === 'mes') {
-            const desde = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
-            return { desde: desde.toISOString(), hasta: null };
+            return { desde: new Date(ahora.getFullYear(), ahora.getMonth(), 1).toISOString(), hasta: null };
         }
         if (estadisticasPeriodo === 'anio') {
-            const desde = new Date(ahora.getFullYear(), 0, 1);
-            return { desde: desde.toISOString(), hasta: null };
+            return { desde: new Date(ahora.getFullYear(), 0, 1).toISOString(), hasta: null };
         }
         if (estadisticasPeriodo === 'personalizado') {
             const desde = estadisticasDesdeCustom ? new Date(estadisticasDesdeCustom + 'T00:00:00').toISOString() : null;
@@ -5373,33 +5469,43 @@
         return { desde: null, hasta: null }; // 'todo'
     }
 
+    function fmtMoney(n) { return '$' + Number(n || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 }); }
+
+    // ---------- Estructura general del panel ----------
     function renderEstadisticasPanel() {
         const body = document.getElementById('estadisticas-body');
         body.innerHTML = `
             <div class="estadisticas-tabs" id="estadisticas-tabs"></div>
             <div class="estadisticas-periodo-row" id="estadisticas-periodo-row"></div>
             <div id="estadisticas-custom-dates-container"></div>
+            <div id="estadisticas-canal-container"></div>
+            <div id="estadisticas-extra-filtros"></div>
             <div id="estadisticas-results"><div class="clientes-loading">Cargando...</div></div>
         `;
         renderEstadisticasTabs();
         renderEstadisticasPeriodoChips();
         renderEstadisticasCustomDates();
-        loadEstadisticas();
+        renderEstadisticasCanalChips();
+        renderEstadisticasExtraFiltros();
+        cargarVistaEstadisticasActual();
     }
 
     function renderEstadisticasTabs() {
         const container = document.getElementById('estadisticas-tabs');
         if (!container) return;
         container.innerHTML = `
-            <div class="estadisticas-tab ${estadisticasVista === 'cliente' ? 'active' : ''}" onclick="selectEstadisticasVista('cliente')"><i class="fas fa-store"></i> Por Cliente</div>
-            <div class="estadisticas-tab ${estadisticasVista === 'preventista' ? 'active' : ''}" onclick="selectEstadisticasVista('preventista')"><i class="fas fa-user-tie"></i> Por Preventista</div>
+            <div class="estadisticas-tab ${estadisticasVista === 'resumen' ? 'active' : ''}" onclick="selectEstadisticasVista('resumen')"><i class="fas fa-chart-pie"></i> Resumen</div>
+            <div class="estadisticas-tab ${estadisticasVista === 'cliente' ? 'active' : ''}" onclick="selectEstadisticasVista('cliente')"><i class="fas fa-store"></i> Cliente</div>
+            <div class="estadisticas-tab ${estadisticasVista === 'preventista' ? 'active' : ''}" onclick="selectEstadisticasVista('preventista')"><i class="fas fa-user-tie"></i> Preventista</div>
         `;
     }
 
     function selectEstadisticasVista(vista) {
         estadisticasVista = vista;
+        estadisticasClienteDetalleActual = null;
         renderEstadisticasTabs();
-        loadEstadisticas();
+        renderEstadisticasExtraFiltros();
+        cargarVistaEstadisticasActual();
     }
 
     function renderEstadisticasPeriodoChips() {
@@ -5414,7 +5520,7 @@
         estadisticasPeriodo = periodo;
         renderEstadisticasPeriodoChips();
         renderEstadisticasCustomDates();
-        if (periodo !== 'personalizado') loadEstadisticas();
+        if (periodo !== 'personalizado') cargarVistaEstadisticasActual();
     }
 
     function renderEstadisticasCustomDates() {
@@ -5432,31 +5538,390 @@
     function onEstadisticasCustomDateChange() {
         estadisticasDesdeCustom = document.getElementById('estadisticas-desde').value;
         estadisticasHastaCustom = document.getElementById('estadisticas-hasta').value;
-        if (estadisticasDesdeCustom && estadisticasHastaCustom) loadEstadisticas();
+        if (estadisticasDesdeCustom && estadisticasHastaCustom) cargarVistaEstadisticasActual();
     }
 
-    async function loadEstadisticas() {
-        const container = document.getElementById('estadisticas-results');
+    function renderEstadisticasCanalChips() {
+        const container = document.getElementById('estadisticas-canal-container');
         if (!container) return;
+        container.innerHTML = `
+            <div class="estadisticas-canal-row">
+                ${ESTADISTICAS_CANALES.map(c => `
+                    <div class="estadisticas-canal-chip ${estadisticasCanalFiltro === c.valor ? 'active' : ''}" onclick="selectEstadisticasCanal('${c.valor}')">${c.label}</div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    function selectEstadisticasCanal(canal) {
+        estadisticasCanalFiltro = canal;
+        renderEstadisticasCanalChips();
+        cargarVistaEstadisticasActual();
+    }
+
+    // Filtro extra: solo aparece en la vista "Por Cliente" (preventista asignado + buscador)
+    function renderEstadisticasExtraFiltros() {
+        const container = document.getElementById('estadisticas-extra-filtros');
+        if (!container) return;
+        if (estadisticasVista !== 'cliente') { container.innerHTML = ''; return; }
+        container.innerHTML = `
+            <select id="estadisticas-preventista-filtro" class="estadisticas-select-filtro" onchange="onEstadisticasPreventistaFiltroChange()">
+                <option value="">Todos los preventistas</option>
+                ${PREVENTISTAS_ASIGNABLES.map(p => `<option value="${p}" ${estadisticasPreventistaFiltro === p ? 'selected' : ''}>${p}</option>`).join('')}
+            </select>
+            <div class="estadisticas-search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="estadisticas-cliente-busqueda" placeholder="Buscar cliente por nombre..." oninput="onEstadisticasClienteBusquedaInput()" value="${estadisticasClienteBusqueda}">
+            </div>
+        `;
+    }
+
+    function onEstadisticasPreventistaFiltroChange() {
+        estadisticasPreventistaFiltro = document.getElementById('estadisticas-preventista-filtro').value;
+        loadEstadisticasPorCliente();
+    }
+
+    function onEstadisticasClienteBusquedaInput() {
+        estadisticasClienteBusqueda = document.getElementById('estadisticas-cliente-busqueda').value.trim().toLowerCase();
+        renderRankingClientes();
+    }
+
+    function cargarVistaEstadisticasActual() {
+        destroyEstadisticasChart();
+        if (estadisticasVista === 'resumen') loadEstadisticasResumen();
+        else if (estadisticasVista === 'cliente') loadEstadisticasPorCliente();
+        else loadEstadisticasPorPreventista();
+    }
+
+    // ---------- VISTA: RESUMEN GENERAL ----------
+    async function loadEstadisticasResumen() {
+        const container = document.getElementById('estadisticas-results');
         container.innerHTML = `<div class="clientes-loading">Cargando...</div>`;
 
         const client = getSupabaseClient();
-        if (!client) {
-            container.innerHTML = `<div class="clientes-error"><i class="fas fa-triangle-exclamation"></i> Todavía no está conectado Supabase.</div>`;
+        if (!client) { container.innerHTML = `<div class="clientes-error"><i class="fas fa-triangle-exclamation"></i> Todavía no está conectado Supabase.</div>`; return; }
+
+        const { desde, hasta } = getRangoFechasEstadisticas();
+        const clave = getStaffKeyForClientes();
+
+        const [resumenRes, evolucionRes, medioPagoRes, productosRes] = await Promise.all([
+            client.rpc('estadisticas_resumen', { p_clave: clave, p_desde: desde, p_hasta: hasta, p_rol_filtro: estadisticasCanalFiltro }),
+            client.rpc('estadisticas_evolucion', { p_clave: clave, p_desde: desde, p_hasta: hasta, p_rol_filtro: estadisticasCanalFiltro }),
+            client.rpc('estadisticas_medio_pago', { p_clave: clave, p_desde: desde, p_hasta: hasta }),
+            client.rpc('estadisticas_productos_top', { p_clave: clave, p_desde: desde, p_hasta: hasta, p_limite: 6 })
+        ]);
+
+        if (resumenRes.error) {
+            container.innerHTML = `<div class="clientes-error"><i class="fas fa-triangle-exclamation"></i> ${resumenRes.error.message}</div>`;
             return;
         }
 
-        const { desde, hasta } = getRangoFechasEstadisticas();
-        const nombreFuncion = estadisticasVista === 'cliente' ? 'estadisticas_por_cliente' : 'estadisticas_por_preventista';
+        const r = (resumenRes.data && resumenRes.data[0]) || {
+            total_pedidos: 0, total_vendido: 0, ticket_promedio: 0,
+            total_publico: 0, total_preventa: 0, total_comercios: 0,
+            pedidos_publico: 0, pedidos_preventa: 0, pedidos_comercios: 0, clientes_unicos: 0
+        };
 
-        const { data, error } = await client.rpc(nombreFuncion, {
+        let html = `
+            <div class="estadisticas-kpi-grid">
+                <div class="estadisticas-kpi-card destacada">
+                    <div class="estadisticas-kpi-label"><i class="fas fa-sack-dollar"></i> Total Vendido</div>
+                    <div class="estadisticas-kpi-value">${fmtMoney(r.total_vendido)}</div>
+                    <div class="estadisticas-kpi-sub">${r.total_pedidos} pedido${r.total_pedidos === 1 ? '' : 's'} en este período</div>
+                </div>
+                <div class="estadisticas-kpi-card">
+                    <div class="estadisticas-kpi-label">Ticket Promedio</div>
+                    <div class="estadisticas-kpi-value">${fmtMoney(r.ticket_promedio)}</div>
+                </div>
+                <div class="estadisticas-kpi-card">
+                    <div class="estadisticas-kpi-label">Clientes Únicos</div>
+                    <div class="estadisticas-kpi-value">${r.clientes_unicos}</div>
+                </div>
+            </div>
+
+            <div class="estadisticas-seccion-titulo"><i class="fas fa-diagram-project"></i> Ventas por canal</div>
+            <div class="estadisticas-canal-breakdown" id="estadisticas-canal-breakdown"></div>
+
+            <div class="estadisticas-seccion-titulo"><i class="fas fa-chart-line"></i> Evolución</div>
+            <div class="estadisticas-chart-box"><canvas id="estadisticas-chart-evolucion"></canvas></div>
+
+            <div class="estadisticas-seccion-titulo"><i class="fas fa-credit-card"></i> Medios de pago (Mayorista)</div>
+            <div id="estadisticas-medios-pago"></div>
+
+            <div class="estadisticas-seccion-titulo"><i class="fas fa-trophy"></i> Productos más vendidos</div>
+            <div id="estadisticas-productos-top"></div>
+        `;
+        container.innerHTML = html;
+
+        // Ventas por canal (barras de proporción)
+        const canalBreakdown = document.getElementById('estadisticas-canal-breakdown');
+        const canales = [
+            { nombre: 'Mayorista (Público)', total: Number(r.total_publico), color: '#0284c7' },
+            { nombre: 'Preventista', total: Number(r.total_preventa), color: '#FF8C00' },
+            { nombre: 'Comercios', total: Number(r.total_comercios), color: '#16a34a' }
+        ];
+        const maxCanal = Math.max(...canales.map(c => c.total), 1);
+        canalBreakdown.innerHTML = canales.map(c => `
+            <div class="estadisticas-canal-item">
+                <div class="estadisticas-canal-dot" style="background:${c.color};"></div>
+                <div class="estadisticas-canal-info">
+                    <div class="estadisticas-canal-nombre"><span>${c.nombre}</span><span>${fmtMoney(c.total)}</span></div>
+                    <div class="estadisticas-canal-track"><div class="estadisticas-canal-fill" style="width:${Math.round((c.total/maxCanal)*100)}%; background:${c.color};"></div></div>
+                </div>
+            </div>
+        `).join('');
+
+        // Gráfico de evolución
+        const evolucion = evolucionRes.data || [];
+        const ctx = document.getElementById('estadisticas-chart-evolucion');
+        if (ctx && typeof Chart !== 'undefined') {
+            const color = getEstadisticasChartColor();
+            estadisticasChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: evolucion.map(e => e.fecha),
+                    datasets: [{ label: 'Ventas', data: evolucion.map(e => Number(e.total)), backgroundColor: color, borderRadius: 4 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { ticks: { callback: v => '$' + v.toLocaleString('es-AR') } } }
+                }
+            });
+        }
+
+        // Medios de pago
+        const mediosDiv = document.getElementById('estadisticas-medios-pago');
+        const medios = medioPagoRes.data || [];
+        mediosDiv.innerHTML = medios.length === 0
+            ? `<p style="font-size:0.78rem; color:var(--text-muted);">Sin datos de medios de pago en este período.</p>`
+            : medios.map(m => `
+                <div class="estadistica-row" style="cursor:default;">
+                    <div class="estadistica-row-body">
+                        <div class="estadistica-row-top"><span class="estadistica-row-nombre">${m.medio_pago}</span><span class="estadistica-row-total">${fmtMoney(m.total)}</span></div>
+                        <div class="estadistica-row-meta">${m.cantidad} pedido${m.cantidad === 1 ? '' : 's'}</div>
+                    </div>
+                </div>
+            `).join('');
+
+        // Productos top
+        const productosDiv = document.getElementById('estadisticas-productos-top');
+        const productos = productosRes.data || [];
+        productosDiv.innerHTML = productos.length === 0
+            ? `<p style="font-size:0.78rem; color:var(--text-muted);">Sin ventas de productos en este período.</p>`
+            : productos.map((p, i) => `
+                <div class="estadistica-row" style="cursor:default;">
+                    <div class="estadistica-rank ${i===0?'top1':i===1?'top2':i===2?'top3':''}">${i+1}</div>
+                    <div class="estadistica-row-body">
+                        <div class="estadistica-row-top"><span class="estadistica-row-nombre">${p.producto}</span><span class="estadistica-row-total">${fmtMoney(p.facturacion)}</span></div>
+                        <div class="estadistica-row-meta">${Number(p.cantidad_vendida)} unidades vendidas</div>
+                    </div>
+                </div>
+            `).join('');
+    }
+
+    // ---------- VISTA: POR CLIENTE ----------
+    async function loadEstadisticasPorCliente() {
+        const container = document.getElementById('estadisticas-results');
+        container.innerHTML = `<div class="clientes-loading">Cargando...</div>`;
+
+        const client = getSupabaseClient();
+        if (!client) { container.innerHTML = `<div class="clientes-error"><i class="fas fa-triangle-exclamation"></i> Todavía no está conectado Supabase.</div>`; return; }
+
+        const { desde, hasta } = getRangoFechasEstadisticas();
+        const { data, error } = await client.rpc('estadisticas_por_cliente', {
             p_clave: getStaffKeyForClientes(),
-            p_desde: desde,
-            p_hasta: hasta
+            p_desde: desde, p_hasta: hasta,
+            p_preventista_filtro: estadisticasPreventistaFiltro,
+            p_rol_filtro: estadisticasCanalFiltro
         });
 
         if (error) {
-            container.innerHTML = `<div class="clientes-error"><i class="fas fa-triangle-exclamation"></i> No se pudo cargar: ${error.message}</div>`;
+            container.innerHTML = `<div class="clientes-error"><i class="fas fa-triangle-exclamation"></i> ${error.message}</div>`;
+            return;
+        }
+
+        estadisticasClienteRankingCache = data || [];
+        renderRankingClientes();
+    }
+
+    function renderRankingClientes() {
+        const container = document.getElementById('estadisticas-results');
+        if (!container) return;
+
+        let data = estadisticasClienteRankingCache;
+        if (estadisticasClienteBusqueda) {
+            data = data.filter(row => (row.cliente || '').toLowerCase().includes(estadisticasClienteBusqueda));
+        }
+
+        if (data.length === 0) {
+            container.innerHTML = `<p style="text-align:center; color:#999; padding:20px 0;">Sin datos${estadisticasClienteBusqueda ? ' para esa búsqueda' : ' en este período'}.</p>`;
+            return;
+        }
+
+        const totalGeneral = data.reduce((sum, row) => sum + Number(row.total_comprado || 0), 0);
+        const maxValor = Math.max(...data.map(row => Number(row.total_comprado || 0)), 1);
+
+        let html = `
+            <div class="estadisticas-kpi-card destacada" style="margin-bottom:14px;">
+                <div class="estadisticas-kpi-label">Total comprado (${data.length} cliente${data.length===1?'':'s'})</div>
+                <div class="estadisticas-kpi-value">${fmtMoney(totalGeneral)}</div>
+            </div>
+        `;
+
+        html += data.map((row, i) => {
+            const total = Number(row.total_comprado || 0);
+            const porcentaje = Math.round((total / maxValor) * 100);
+            const inicial = (row.cliente || '?').charAt(0).toUpperCase();
+            return `
+                <div class="estadistica-row" onclick="abrirDetalleClienteEstadisticas('${(row.cliente || '').replace(/'/g, "\\'")}')">
+                    <div class="estadistica-rank ${i===0?'top1':i===1?'top2':i===2?'top3':''}">${i < 3 ? (i+1) : inicial}</div>
+                    <div class="estadistica-row-body">
+                        <div class="estadistica-row-top">
+                            <span class="estadistica-row-nombre">${row.cliente}</span>
+                            <span class="estadistica-row-total">${fmtMoney(total)}</span>
+                        </div>
+                        <div class="estadistica-row-meta">${row.cantidad_pedidos} pedido${row.cantidad_pedidos === 1 ? '' : 's'}</div>
+                        <div class="estadistica-bar-track"><div class="estadistica-bar-fill" style="width:${porcentaje}%;"></div></div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = html;
+    }
+
+    // Ficha de detalle de un cliente puntual: histórico completo (no depende del
+    // filtro de período activo, muestra su historia real de compras entera).
+    async function abrirDetalleClienteEstadisticas(nombreCliente) {
+        estadisticasClienteDetalleActual = nombreCliente;
+        destroyEstadisticasChart();
+        const container = document.getElementById('estadisticas-results');
+        container.innerHTML = `<div class="clientes-loading">Cargando ficha del cliente...</div>`;
+
+        const client = getSupabaseClient();
+        if (!client) return;
+        const clave = getStaffKeyForClientes();
+
+        const [detalleRes, historialRes, ultimosRes] = await Promise.all([
+            client.rpc('estadisticas_detalle_cliente', { p_clave: clave, p_cliente: nombreCliente }),
+            client.rpc('estadisticas_historial_mensual_cliente', { p_clave: clave, p_cliente: nombreCliente }),
+            client.rpc('estadisticas_ultimos_pedidos_cliente', { p_clave: clave, p_cliente: nombreCliente, p_limite: 8 })
+        ]);
+
+        if (detalleRes.error) {
+            container.innerHTML = `<div class="clientes-error"><i class="fas fa-triangle-exclamation"></i> ${detalleRes.error.message}</div>`;
+            return;
+        }
+
+        const d = (detalleRes.data && detalleRes.data[0]) || { cantidad_pedidos: 0, total_comprado: 0, primera_compra: null, ultima_compra: null, ticket_promedio: 0 };
+
+        // Frecuencia de compra: promedio de días entre pedidos (si hay al menos 2)
+        let frecuenciaTexto = 'Todavía no hay suficientes compras para calcular frecuencia.';
+        if (d.cantidad_pedidos > 1 && d.primera_compra && d.ultima_compra) {
+            const diasTotales = (new Date(d.ultima_compra) - new Date(d.primera_compra)) / (1000 * 60 * 60 * 24);
+            const diasPromedio = Math.round(diasTotales / (d.cantidad_pedidos - 1));
+            frecuenciaTexto = diasPromedio <= 0 ? 'Varias compras el mismo día' : `Compra en promedio cada ${diasPromedio} día${diasPromedio === 1 ? '' : 's'}`;
+        } else if (d.cantidad_pedidos === 1) {
+            frecuenciaTexto = 'Solo hizo 1 compra hasta ahora.';
+        }
+
+        const inicial = (nombreCliente || '?').charAt(0).toUpperCase();
+        let html = `
+            <button type="button" class="marcas-back-btn" onclick="volverAlRankingClientes()"><i class="fas fa-arrow-left"></i> Volver al ranking</button>
+
+            <div class="estadisticas-cliente-header">
+                <div class="estadisticas-cliente-avatar">${inicial}</div>
+                <div>
+                    <div class="estadisticas-cliente-nombre">${nombreCliente}</div>
+                    <div class="estadisticas-cliente-freq"><i class="fas fa-repeat"></i> ${frecuenciaTexto}</div>
+                </div>
+            </div>
+
+            <div class="estadisticas-kpi-grid">
+                <div class="estadisticas-kpi-card destacada">
+                    <div class="estadisticas-kpi-label">Total Histórico Comprado</div>
+                    <div class="estadisticas-kpi-value">${fmtMoney(d.total_comprado)}</div>
+                </div>
+                <div class="estadisticas-kpi-card">
+                    <div class="estadisticas-kpi-label">Cantidad de Compras</div>
+                    <div class="estadisticas-kpi-value">${d.cantidad_pedidos}</div>
+                </div>
+                <div class="estadisticas-kpi-card">
+                    <div class="estadisticas-kpi-label">Ticket Promedio</div>
+                    <div class="estadisticas-kpi-value">${fmtMoney(d.ticket_promedio)}</div>
+                </div>
+            </div>
+
+            <div class="estadisticas-seccion-titulo"><i class="fas fa-chart-column"></i> Compras por mes</div>
+            <div class="estadisticas-chart-box"><canvas id="estadisticas-chart-cliente"></canvas></div>
+
+            <div class="estadisticas-seccion-titulo"><i class="fas fa-clock-rotate-left"></i> Últimos pedidos</div>
+            <div id="estadisticas-cliente-ultimos-pedidos"></div>
+        `;
+        container.innerHTML = html;
+
+        // Gráfico mensual
+        const historial = historialRes.data || [];
+        const ctx = document.getElementById('estadisticas-chart-cliente');
+        if (ctx && typeof Chart !== 'undefined' && historial.length > 0) {
+            const color = getEstadisticasChartColor();
+            estadisticasChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: historial.map(h => h.mes),
+                    datasets: [{ label: 'Compras', data: historial.map(h => Number(h.total)), backgroundColor: color, borderRadius: 4 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { ticks: { callback: v => '$' + v.toLocaleString('es-AR') } } }
+                }
+            });
+        } else if (ctx) {
+            ctx.parentElement.innerHTML = `<p style="font-size:0.78rem; color:var(--text-muted); text-align:center; padding:20px 0;">Sin historial suficiente para graficar.</p>`;
+        }
+
+        // Últimos pedidos
+        const ultimosDiv = document.getElementById('estadisticas-cliente-ultimos-pedidos');
+        const ultimos = ultimosRes.data || [];
+        ultimosDiv.innerHTML = ultimos.length === 0 ? '' : ultimos.map(p => {
+            const fecha = new Date(p.creado_en);
+            const fechaTexto = fecha.toLocaleDateString('es-AR') + ' ' + fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+            return `
+                <div class="estadistica-row" style="cursor:default;">
+                    <div class="estadistica-row-body">
+                        <div class="estadistica-row-top"><span class="estadistica-row-nombre">${fechaTexto}</span><span class="estadistica-row-total">${fmtMoney(p.total)}</span></div>
+                        <div class="estadistica-row-meta">${p.cantidad_items} ítem${p.cantidad_items === 1 ? '' : 's'} · ${getRolLabel(p.rol)}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function volverAlRankingClientes() {
+        estadisticasClienteDetalleActual = null;
+        destroyEstadisticasChart();
+        renderRankingClientes();
+    }
+
+    // ---------- VISTA: POR PREVENTISTA ----------
+    async function loadEstadisticasPorPreventista() {
+        const container = document.getElementById('estadisticas-results');
+        container.innerHTML = `<div class="clientes-loading">Cargando...</div>`;
+
+        const client = getSupabaseClient();
+        if (!client) { container.innerHTML = `<div class="clientes-error"><i class="fas fa-triangle-exclamation"></i> Todavía no está conectado Supabase.</div>`; return; }
+
+        const { desde, hasta } = getRangoFechasEstadisticas();
+        const { data, error } = await client.rpc('estadisticas_por_preventista', {
+            p_clave: getStaffKeyForClientes(),
+            p_desde: desde, p_hasta: hasta,
+            p_rol_filtro: estadisticasCanalFiltro
+        });
+
+        if (error) {
+            container.innerHTML = `<div class="clientes-error"><i class="fas fa-triangle-exclamation"></i> ${error.message}</div>`;
             return;
         }
 
@@ -5465,35 +5930,30 @@
             return;
         }
 
-        const totalGeneral = data.reduce((sum, row) => sum + Number(row.total_comprado ?? row.total_vendido ?? 0), 0);
-        const maxValor = Math.max(...data.map(row => Number(row.total_comprado ?? row.total_vendido ?? 0)));
+        const totalGeneral = data.reduce((sum, row) => sum + Number(row.total_vendido || 0), 0);
+        const maxValor = Math.max(...data.map(row => Number(row.total_vendido || 0)), 1);
 
-        const resumenLabel = estadisticasVista === 'cliente' ? 'Total comprado (todos los clientes)' : 'Total vendido (todos los preventistas)';
         let html = `
-            <div class="estadisticas-resumen">
-                <div>
-                    <div class="estadisticas-resumen-label">${resumenLabel}</div>
-                    <div class="estadisticas-resumen-value">$${totalGeneral.toLocaleString('es-AR', {minimumFractionDigits:2})}</div>
-                </div>
-                <i class="fas fa-chart-simple" style="font-size:1.6rem; opacity:0.7;"></i>
+            <div class="estadisticas-kpi-card destacada" style="margin-bottom:14px;">
+                <div class="estadisticas-kpi-label">Total vendido (todos los preventistas)</div>
+                <div class="estadisticas-kpi-value">${fmtMoney(totalGeneral)}</div>
             </div>
         `;
 
-        html += data.map(row => {
-            const nombre = row.cliente || row.preventista || 'Sin nombre';
-            const totalFila = Number(row.total_comprado ?? row.total_vendido ?? 0);
-            const cantidadPedidos = row.cantidad_pedidos || 0;
-            const porcentaje = maxValor > 0 ? Math.round((totalFila / maxValor) * 100) : 0;
+        html += data.map((row, i) => {
+            const total = Number(row.total_vendido || 0);
+            const porcentaje = Math.round((total / maxValor) * 100);
             return `
-                <div class="estadistica-row">
-                    <div class="estadistica-row-top">
-                        <div>
-                            <div class="estadistica-row-nombre">${nombre}</div>
-                            <div class="estadistica-row-meta">${cantidadPedidos} pedido${cantidadPedidos === 1 ? '' : 's'}</div>
+                <div class="estadistica-row" style="cursor:default;">
+                    <div class="estadistica-rank ${i===0?'top1':i===1?'top2':i===2?'top3':''}">${i+1}</div>
+                    <div class="estadistica-row-body">
+                        <div class="estadistica-row-top">
+                            <span class="estadistica-row-nombre">${row.preventista}</span>
+                            <span class="estadistica-row-total">${fmtMoney(total)}</span>
                         </div>
-                        <div class="estadistica-row-total">$${totalFila.toLocaleString('es-AR', {minimumFractionDigits:2})}</div>
+                        <div class="estadistica-row-meta">${row.cantidad_pedidos} pedido${row.cantidad_pedidos === 1 ? '' : 's'}</div>
+                        <div class="estadistica-bar-track"><div class="estadistica-bar-fill" style="width:${porcentaje}%;"></div></div>
                     </div>
-                    <div class="estadistica-bar-track"><div class="estadistica-bar-fill" style="width:${porcentaje}%;"></div></div>
                 </div>
             `;
         }).join('');
