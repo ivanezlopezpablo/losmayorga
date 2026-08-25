@@ -1310,6 +1310,20 @@
         }
         .cliente-picker-clear-btn:hover { background: rgba(22,101,52,0.15); }
 
+        /* BOTÓN "REPETIR ÚLTIMO PEDIDO" (aparece al elegir un cliente en el carrito) */
+        .btn-repetir-pedido {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            width: 100%; text-align: center;
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border: 1.5px dashed #93c5fd; color: #1e40af;
+            padding: 10px 12px; border-radius: 10px;
+            font-size: 0.76rem; font-weight: 800; cursor: pointer;
+            margin-bottom: 10px; line-height: 1.3;
+        }
+        .btn-repetir-pedido:hover { background: linear-gradient(135deg, #dbeafe, #bfdbfe); }
+        .btn-repetir-pedido i { flex-shrink: 0; }
+        .btn-repetir-pedido-loading { font-size: 0.72rem; color: var(--text-muted); text-align: center; margin-bottom: 10px; }
+
         /* FILA DE PRODUCTO DENTRO DEL CARRITO */
         .cart-item-row {
             display: flex; align-items: flex-start; gap: 10px;
@@ -2387,6 +2401,8 @@
         cartsByScope[newScopeKey] = cart;
         currentCartScope = newScopeKey;
         carritoClienteSeleccionado = null; // evita arrastrar el cliente elegido de un rol a otro
+        ultimoPedidoClienteCache = null;
+        ultimoPedidoBuscando = false;
     }
 
     let selectedMainCat = 'TODOS';
@@ -4766,11 +4782,18 @@
 
     function renderClientePickerHtml() {
         if (carritoClienteSeleccionado) {
+            const infoUltimoPedido = ultimoPedidoClienteCache ? `
+                <button type="button" class="btn-repetir-pedido" onclick="confirmarRepetirUltimoPedido()">
+                    <i class="fas fa-rotate-right"></i>
+                    Repetir su último pedido (${formatDateEs(new Date(ultimoPedidoClienteCache.creado_en))} · $${Number(ultimoPedidoClienteCache.total).toLocaleString('es-AR', {minimumFractionDigits:2})})
+                </button>
+            ` : (ultimoPedidoBuscando ? `<p class="btn-repetir-pedido-loading">Buscando pedidos anteriores...</p>` : '');
             return `
                 <div class="cliente-picker-locked">
                     <input type="text" id="client-name" class="form-control cliente-picker-locked-input" value="${carritoClienteSeleccionado.nombre_fantasia}" readonly required>
                     <button type="button" class="cliente-picker-clear-btn" onclick="limpiarClienteSeleccionadoCarrito()" title="Cambiar cliente"><i class="fas fa-times"></i></button>
                 </div>
+                ${infoUltimoPedido}
             `;
         }
         return `
@@ -4840,11 +4863,88 @@
         if (!c) return;
         carritoClienteSeleccionado = c;
         renderCartSummary();
+        buscarUltimoPedidoDeCliente(c);
     }
 
     function limpiarClienteSeleccionadoCarrito() {
         carritoClienteSeleccionado = null;
+        ultimoPedidoClienteCache = null;
+        ultimoPedidoBuscando = false;
         renderCartSummary();
+    }
+
+    // ---------- "Repetir pedido": reflota un pedido anterior en el carrito actual,
+    // pero usando los precios de HOY (no los precios congelados de ese pedido viejo) ----------
+    let ultimoPedidoClienteCache = null;
+    let ultimoPedidoBuscando = false;
+
+    async function buscarUltimoPedidoDeCliente(cliente) {
+        ultimoPedidoClienteCache = null;
+        if (!cliente.cuit) return;
+
+        const client = getSupabaseClient();
+        if (!client) return;
+
+        ultimoPedidoBuscando = true;
+        renderCartSummary();
+
+        const { data, error } = await client.rpc('estadisticas_ultimos_pedidos_cliente', {
+            p_clave: getStaffKeyForClientes(),
+            p_identidad: cliente.cuit,
+            p_limite: 1
+        });
+
+        ultimoPedidoBuscando = false;
+        // Si mientras buscaba el usuario ya cambió de cliente, no pisamos su selección actual
+        if (!carritoClienteSeleccionado || carritoClienteSeleccionado.cuit !== cliente.cuit) return;
+
+        if (!error && data && data.length > 0) {
+            ultimoPedidoClienteCache = data[0];
+        }
+        renderCartSummary();
+    }
+
+    function confirmarRepetirUltimoPedido() {
+        if (!ultimoPedidoClienteCache) return;
+        const cantidadItems = (ultimoPedidoClienteCache.items || []).length;
+        if (!confirm(`¿Agregar los ${cantidadItems} producto${cantidadItems===1?'':'s'} de ese pedido al carrito? Se usan los precios de hoy, no los de aquella vez.`)) return;
+        repetirPedidoEnCarrito(ultimoPedidoClienteCache.items);
+    }
+
+    // Busca cada producto del pedido viejo en el catálogo ACTUAL (por SKU, con respaldo
+    // por nombre) y lo agrega al carrito con el precio de hoy. Si algún producto ya no
+    // existe o está sin stock, se avisa cuáles quedaron afuera en vez de fallar en silencio.
+    function repetirPedidoEnCarrito(itemsHistoricos) {
+        if (!itemsHistoricos || itemsHistoricos.length === 0) return;
+
+        let agregados = 0;
+        const noEncontrados = [];
+
+        itemsHistoricos.forEach(item => {
+            let productoActual = null;
+            if (item.sku) {
+                productoActual = ALL_PRODUCTS.find(p => p.sku && p.sku === item.sku);
+            }
+            if (!productoActual) {
+                productoActual = ALL_PRODUCTS.find(p => p.title === item.nombre);
+            }
+
+            if (productoActual && !productoActual.isOutOfStock) {
+                if (!cart[productoActual.id]) cart[productoActual.id] = { product: productoActual, qty: 0 };
+                cart[productoActual.id].qty += item.cantidad;
+                agregados++;
+            } else {
+                noEncontrados.push(item.nombre);
+            }
+        });
+
+        updateCartFloatBar();
+        document.querySelectorAll('[data-product-id]').forEach(el => updateProductDisplay(el.dataset.productId));
+        renderCartSummary();
+
+        if (noEncontrados.length > 0) {
+            alert(`Se agregaron ${agregados} producto${agregados===1?'':'s'} con el precio de hoy.\n\nNo se pudieron agregar (ya no están disponibles o están sin stock):\n${noEncontrados.join('\n')}`);
+        }
     }
 
     // Cambia la cantidad de un producto DESDE el carrito (actualiza catálogo, badge y el propio carrito)
@@ -5674,7 +5774,22 @@
             <div style="margin-top:12px; display:flex; justify-content:space-between; font-size:0.85rem;"><span>Subtotal</span><span>$${Number(p.subtotal).toLocaleString('es-AR', {minimumFractionDigits:2})}</span></div>
             ${p.envio > 0 ? `<div style="display:flex; justify-content:space-between; font-size:0.85rem;"><span>Envío</span><span>$${Number(p.envio).toLocaleString('es-AR', {minimumFractionDigits:2})}</span></div>` : ''}
             <div style="margin-top:6px; display:flex; justify-content:space-between; font-weight:900; font-size:0.95rem;"><span>Total</span><span>$${Number(p.total).toLocaleString('es-AR', {minimumFractionDigits:2})}</span></div>
+
+            <button type="button" class="btn-repetir-pedido" style="margin-top:16px;" onclick="repetirPedidoDesdePanel(${p.id})">
+                <i class="fas fa-rotate-right"></i> Repetir este pedido (con precios de hoy)
+            </button>
         `;
+    }
+
+    // Repite un pedido puntual desde el panel de Pedidos: cierra el panel y carga esos
+    // productos en el carrito actualmente activo, con los precios de hoy.
+    function repetirPedidoDesdePanel(id) {
+        const p = pedidosListCache.find(x => x.id === id);
+        if (!p) return;
+        if (!confirm(`¿Agregar los productos de este pedido al carrito? Se usan los precios de hoy.`)) return;
+        closePedidosPanel();
+        repetirPedidoEnCarrito(p.items);
+        toggleCartModal(true);
     }
 
     // ==========================================================
