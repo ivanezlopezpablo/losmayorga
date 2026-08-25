@@ -698,73 +698,117 @@
 
         .mode-preventa .scroll-top-btn { background: linear-gradient(135deg, #FF6F00, #FF8C00); }
 
-        /* BOTÓN FLOTANTE DE WHATSAPP CON PREGUNTAS FRECUENTES (abajo a la izquierda,
-           para no pisarse con el carrito/subir-arriba que están a la derecha) */
-        .faq-whatsapp-btn {
-            position: fixed; left: 20px; bottom: 20px;
-            width: 62px; height: 62px;
-            background: linear-gradient(135deg, #1da851, var(--wa-green));
-            border-radius: 50%; border: none; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 6px 24px rgba(37,211,102,0.45);
-            z-index: 1498;
+        /* ========================================== */
+        /* WIDGET FLOTANTE DE WHATSAPP CON FAQ (estilo ventana de chat) */
+        /* ========================================== */
+        .ws-widget-container {
+            position: fixed; left: 20px; bottom: 20px; z-index: 1498;
+            display: flex; flex-direction: column; align-items: flex-start;
         }
-        .faq-whatsapp-btn i.fa-whatsapp { color: white; font-size: 1.7rem; }
-        .faq-whatsapp-crown {
+
+        .ws-chat-panel {
+            display: none;
+            width: 340px; max-width: calc(100vw - 40px);
+            background: #0f172a; border: 1px solid #1e293b;
+            border-radius: 22px; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            overflow: hidden; margin-bottom: 14px;
+        }
+        .ws-chat-panel.visible { display: flex; flex-direction: column; max-height: 70vh; animation: fadeInDown 0.25s ease; }
+
+        .ws-chat-header {
+            background: linear-gradient(135deg, #1da851, var(--wa-green));
+            padding: 14px 16px; display: flex; align-items: center; gap: 10px; color: white; flex-shrink: 0;
+        }
+        .ws-chat-avatar-wrap { position: relative; flex-shrink: 0; }
+        .ws-chat-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: #0f172a; border: 2px solid rgba(255,255,255,0.35);
+            display: flex; align-items: center; justify-content: center;
+            color: #ffd60a; font-size: 1.1rem;
+        }
+        .ws-chat-avatar-dot {
+            position: absolute; bottom: -1px; right: -1px;
+            width: 12px; height: 12px; border-radius: 50%;
+            background: #4ade80; border: 2px solid #0f172a;
+        }
+        .ws-chat-header-text { flex: 1; min-width: 0; }
+        .ws-chat-title { font-weight: 900; font-size: 0.88rem; }
+        .ws-chat-subtitle { font-size: 0.66rem; opacity: 0.9; display: flex; align-items: center; gap: 5px; margin-top: 1px; }
+        .ws-chat-status-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; animation: pulse 1.6s ease-in-out infinite; flex-shrink: 0; }
+        .ws-chat-close { background: none; border: none; color: white; font-size: 1rem; cursor: pointer; opacity: 0.85; }
+        .ws-chat-close:hover { opacity: 1; }
+
+        .ws-chat-messages {
+            overflow-y: auto; padding: 14px; background: #020617; flex: 1 1 auto;
+            scrollbar-width: thin;
+        }
+        .ws-chat-messages::-webkit-scrollbar { width: 4px; }
+        .ws-chat-messages::-webkit-scrollbar-track { background: rgba(15,23,42,0.6); }
+        .ws-chat-messages::-webkit-scrollbar-thumb { background: rgba(56,189,248,0.35); border-radius: 4px; }
+
+        .ws-msg-bot { display: flex; margin-bottom: 10px; }
+        .ws-bubble-bot {
+            background: #1e293b; color: #e2e8f0; border: 1px solid #334155;
+            padding: 10px 12px; border-radius: 14px 14px 14px 3px;
+            font-size: 0.76rem; line-height: 1.55; max-width: 92%;
+        }
+        .ws-msg-user { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+        .ws-bubble-user {
+            background: #0284c7; color: white; border: 1px solid #0369a1;
+            padding: 10px 12px; border-radius: 14px 14px 3px 14px;
+            font-size: 0.76rem; line-height: 1.5; max-width: 88%; font-weight: 600;
+        }
+
+        .ws-faq-label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.5px; color: #38bdf8; font-weight: 800; margin: 6px 0 8px 2px; }
+        .ws-faq-btn {
+            width: 100%; text-align: left; padding: 10px 12px; border-radius: 12px;
+            background: #0f172a; border: 1px solid #1e293b; color: #cbd5e1;
+            font-size: 0.74rem; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+            margin-bottom: 7px; transition: all 0.15s ease;
+        }
+        .ws-faq-btn:hover { background: #1e293b; border-color: #0ea5e9; color: white; }
+        .ws-faq-btn i { font-size: 0.65rem; color: #64748b; flex-shrink: 0; }
+
+        .ws-bubble-bot-link {
+            display: block; margin-top: 8px; padding-top: 8px; border-top: 1px solid #334155;
+            font-size: 0.68rem; color: #38bdf8; font-weight: 800; text-decoration: none;
+        }
+        .ws-bubble-bot-link:hover { text-decoration: underline; }
+
+        .ws-chat-footer { padding: 12px 14px; background: #0f172a; border-top: 1px solid #1e293b; flex-shrink: 0; }
+        .ws-chat-cta {
+            width: 100%; background: linear-gradient(135deg, #1da851, var(--wa-green));
+            color: white; border: none; padding: 11px; border-radius: 12px;
+            font-weight: 900; font-size: 0.8rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+
+        .ws-toggle-btn {
+            position: relative; width: 62px; height: 62px; border-radius: 50%;
+            background: linear-gradient(135deg, #1da851, var(--wa-green));
+            border: none; cursor: pointer; box-shadow: 0 6px 24px rgba(37,211,102,0.45);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .ws-toggle-btn i.fa-whatsapp { color: white; font-size: 1.7rem; }
+        .ws-toggle-crown {
             position: absolute; top: -9px; left: 14px;
-            color: #ffd60a; font-size: 0.95rem;
-            transform: rotate(-22deg);
+            color: #ffd60a; font-size: 0.95rem; transform: rotate(-22deg);
             text-shadow: 0 1px 2px rgba(0,0,0,0.35);
         }
-        .faq-whatsapp-online-dot {
+        .ws-toggle-dot {
             position: absolute; bottom: 2px; right: 2px;
             width: 15px; height: 15px; border-radius: 50%;
             background: #22c55e; border: 2.5px solid white;
             animation: pulse 1.6s ease-in-out infinite;
         }
-
-        /* PANEL DE PREGUNTAS FRECUENTES */
-        .faq-modal-card { max-width: 380px; padding: 0; display: flex; flex-direction: column; max-height: 80vh; }
-        .faq-header {
-            background: linear-gradient(135deg, #1da851, var(--wa-green));
-            color: white; padding: 18px 20px; border-radius: 20px 20px 0 0;
-            display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+        .ws-toggle-ping {
+            position: absolute; top: -2px; right: -2px;
+            width: 14px; height: 14px; border-radius: 50%;
+            background: rgba(34,197,94,0.65);
+            animation: ws-ping 1.8s cubic-bezier(0,0,0.2,1) infinite;
         }
-        .faq-header-icon {
-            width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.2);
-            display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;
-        }
-        .faq-header-text { flex: 1; }
-        .faq-header-title { font-weight: 900; font-size: 0.95rem; }
-        .faq-header-subtitle { font-size: 0.7rem; opacity: 0.9; display: flex; align-items: center; gap: 5px; }
-        .faq-header-subtitle .faq-status-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; animation: pulse 1.6s ease-in-out infinite; }
-        .faq-close-btn { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
-
-        .faq-body { overflow-y: auto; padding: 16px 18px; flex: 1 1 auto; scrollbar-width: none; }
-        .faq-body::-webkit-scrollbar { width: 0; display: none; }
-        .faq-intro { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px; }
-
-        .faq-item { border: 1.5px solid var(--border); border-radius: 12px; margin-bottom: 8px; overflow: hidden; }
-        .faq-question {
-            padding: 12px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
-            font-size: 0.82rem; font-weight: 700; color: var(--text-dark); gap: 10px;
-        }
-        .faq-question i.fa-chevron-down { font-size: 0.7rem; color: var(--text-muted); transition: transform 0.2s ease; flex-shrink: 0; }
-        .faq-item.open .faq-question i.fa-chevron-down { transform: rotate(180deg); }
-        .faq-answer {
-            max-height: 0; overflow: hidden; transition: max-height 0.25s ease;
-            font-size: 0.78rem; color: var(--text-muted); line-height: 1.5;
-        }
-        .faq-item.open .faq-answer { max-height: 260px; }
-        .faq-answer-inner { padding: 0 14px 14px; }
-
-        .faq-whatsapp-cta {
-            margin: 6px 18px 18px; flex-shrink: 0;
-            background: linear-gradient(135deg, #1da851, var(--wa-green));
-            color: white; border: none; padding: 13px; border-radius: 12px;
-            font-weight: 900; width: calc(100% - 36px); cursor: pointer; font-size: 0.85rem;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
+        @keyframes ws-ping { 75%, 100% { transform: scale(2.3); opacity: 0; } }
 
         .cart-icon-container { font-size: 2rem; color: white; position: relative; }
         .cart-badge {
@@ -1849,12 +1893,38 @@
         <button class="desktop-nav-btn" onclick="openAboutModal()"><i class="fas fa-info-circle"></i></button>
     </div>
 
-    <!-- BOTÓN FLOTANTE DE WHATSAPP CON PREGUNTAS FRECUENTES -->
-    <button class="faq-whatsapp-btn" id="faq-whatsapp-btn" onclick="openFaqPanel()" aria-label="Preguntas frecuentes por WhatsApp">
-        <i class="fab fa-whatsapp"></i>
-        <i class="fas fa-crown faq-whatsapp-crown"></i>
-        <span class="faq-whatsapp-online-dot"></span>
-    </button>
+    <!-- WIDGET FLOTANTE DE WHATSAPP CON PREGUNTAS FRECUENTES (estilo ventana de chat) -->
+    <div class="ws-widget-container">
+        <div class="ws-chat-panel" id="ws-chat-panel">
+            <div class="ws-chat-header">
+                <div class="ws-chat-avatar-wrap">
+                    <div class="ws-chat-avatar"><i class="fas fa-crown"></i></div>
+                    <span class="ws-chat-avatar-dot"></span>
+                </div>
+                <div class="ws-chat-header-text">
+                    <div class="ws-chat-title">Los Mayorga</div>
+                    <div class="ws-chat-subtitle"><span class="ws-chat-status-dot"></span> Respuesta inmediata</div>
+                </div>
+                <button class="ws-chat-close" onclick="closeFaqPanel()" aria-label="Cerrar"><i class="fas fa-xmark"></i></button>
+            </div>
+            <div class="ws-chat-messages" id="ws-chat-messages">
+                <div class="ws-msg-bot">
+                    <div class="ws-bubble-bot">👋 ¡Hola! Soy el asistente de <strong>Los Mayorga</strong>. ¿En qué puedo ayudarte hoy?</div>
+                </div>
+                <div id="ws-faq-options"></div>
+            </div>
+            <div class="ws-chat-footer">
+                <button class="ws-chat-cta" onclick="irAWhatsAppDesdeFaq()"><i class="fab fa-whatsapp"></i> Hablar con un Asesor</button>
+            </div>
+        </div>
+
+        <button class="ws-toggle-btn" id="faq-whatsapp-btn" onclick="toggleFaqPanel()" aria-label="Preguntas frecuentes por WhatsApp">
+            <span class="ws-toggle-ping"></span>
+            <i class="fab fa-whatsapp"></i>
+            <i class="fas fa-crown ws-toggle-crown"></i>
+            <span class="ws-toggle-dot"></span>
+        </button>
+    </div>
 
     <!-- CARRITO FLOTANTE -->
     <button class="scroll-top-btn" id="scroll-top-btn" onclick="scrollToTop()" aria-label="Subir arriba">
@@ -1977,25 +2047,6 @@
                 <div id="cart-suggestions" style="margin-bottom:6px;"></div>
             </div>
             <div class="cart-modal-footer" id="cart-checkout-form" style="display:none;"></div>
-        </div>
-    </div>
-
-    <!-- PANEL DE PREGUNTAS FRECUENTES (WhatsApp) -->
-    <div class="modal-overlay" id="faq-modal">
-        <div class="modal-card faq-modal-card">
-            <div class="faq-header">
-                <div class="faq-header-icon"><i class="fab fa-whatsapp"></i></div>
-                <div class="faq-header-text">
-                    <div class="faq-header-title">Los Mayorga</div>
-                    <div class="faq-header-subtitle"><span class="faq-status-dot"></span> En línea - Preguntas frecuentes</div>
-                </div>
-                <button class="faq-close-btn" onclick="closeFaqPanel()">✕</button>
-            </div>
-            <div class="faq-body">
-                <p class="faq-intro">Elegí una pregunta para ver la respuesta al instante, o escribinos directo por WhatsApp.</p>
-                <div id="faq-items-container"></div>
-            </div>
-            <button class="faq-whatsapp-cta" onclick="irAWhatsAppDesdeFaq()"><i class="fab fa-whatsapp"></i> Hablar por WhatsApp</button>
         </div>
     </div>
 
@@ -2328,31 +2379,67 @@
         }
     ];
 
+    function toggleFaqPanel() {
+        faqPanelAbierto ? closeFaqPanel() : openFaqPanel();
+    }
+
+    let faqPanelAbierto = false;
+
     function openFaqPanel() {
-        renderFaqItems();
-        document.getElementById('faq-modal').classList.add('active');
+        faqPanelAbierto = true;
+        renderFaqOptions();
+        document.getElementById('ws-chat-panel').classList.add('visible');
     }
 
     function closeFaqPanel() {
-        document.getElementById('faq-modal').classList.remove('active');
+        faqPanelAbierto = false;
+        document.getElementById('ws-chat-panel').classList.remove('visible');
     }
 
-    function renderFaqItems() {
-        const container = document.getElementById('faq-items-container');
-        container.innerHTML = FAQ_ITEMS.map((item, i) => `
-            <div class="faq-item" id="faq-item-${i}">
-                <div class="faq-question" onclick="toggleFaqItem(${i})">
+    // Los botones de consulta rápida se arman una sola vez (quedan siempre visibles
+    // arriba de la conversación, como en el diseño de referencia).
+    function renderFaqOptions() {
+        const container = document.getElementById('ws-faq-options');
+        if (!container || container.dataset.armado) return;
+        container.innerHTML = `
+            <p class="ws-faq-label">Consultas rápidas:</p>
+            ${FAQ_ITEMS.map((item, i) => `
+                <button type="button" class="ws-faq-btn" onclick="askFaqQuestion(${i})">
                     <span>${item.pregunta}</span>
-                    <i class="fas fa-chevron-down"></i>
-                </div>
-                <div class="faq-answer"><div class="faq-answer-inner">${item.respuesta}</div></div>
-            </div>
-        `).join('');
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            `).join('')}
+        `;
+        container.dataset.armado = '1';
     }
 
-    function toggleFaqItem(indice) {
-        const el = document.getElementById('faq-item-' + indice);
-        if (el) el.classList.toggle('open');
+    // Al tocar una pregunta rápida: aparece como si el usuario la hubiera escrito,
+    // y a los 550ms responde el "bot" con la info real + un link directo a WhatsApp
+    // sobre ese tema puntual (igual que la referencia que pasaste).
+    function askFaqQuestion(indice) {
+        const item = FAQ_ITEMS[indice];
+        if (!item) return;
+        const messages = document.getElementById('ws-chat-messages');
+
+        const userMsg = document.createElement('div');
+        userMsg.className = 'ws-msg-user';
+        userMsg.innerHTML = `<div class="ws-bubble-user">${item.pregunta}</div>`;
+        messages.appendChild(userMsg);
+        messages.scrollTop = messages.scrollHeight;
+
+        setTimeout(() => {
+            const botMsg = document.createElement('div');
+            botMsg.className = 'ws-msg-bot';
+            const linkTexto = encodeURIComponent(`Hola Los Mayorga! Te consulto sobre: ${item.pregunta}`);
+            botMsg.innerHTML = `
+                <div class="ws-bubble-bot">
+                    ${item.respuesta}
+                    <a class="ws-bubble-bot-link" href="https://wa.me/${PHONE_PUBLICO}?text=${linkTexto}" target="_blank">👉 Hablar con un asesor sobre esto</a>
+                </div>
+            `;
+            messages.appendChild(botMsg);
+            messages.scrollTop = messages.scrollHeight;
+        }, 550);
     }
 
     function irAWhatsAppDesdeFaq() {
