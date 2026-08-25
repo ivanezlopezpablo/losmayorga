@@ -1112,16 +1112,20 @@
             box-shadow: var(--shadow-lg); max-height: 220px; overflow-y: auto;
         }
         .cliente-picker-dropdown.visible { display: block; }
-        .mode-preventa .cliente-picker-dropdown { background: #1e293b; border-color: #334155; }
+        /* En modo oscuro (carrito de Preventista) el desplegable se deja CLARO a propósito,
+           para que se note bien separado del fondo oscuro del carrito y no se confunda. */
+        .mode-preventa .cliente-picker-dropdown { background: #ffffff; border-color: #cbd5e1; box-shadow: 0 12px 40px rgba(0,0,0,0.45); }
         .cliente-picker-option { padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--border); }
         .cliente-picker-option:last-child { border-bottom: none; }
         .cliente-picker-option:hover { background: #f0f4f8; }
-        .mode-preventa .cliente-picker-option { border-color: #334155; }
-        .mode-preventa .cliente-picker-option:hover { background: #334155; }
+        .mode-preventa .cliente-picker-option { border-color: #e2e8f0; }
+        .mode-preventa .cliente-picker-option:hover { background: #e0f2fe; }
         .cliente-picker-option-name { font-size: 0.82rem; font-weight: 800; color: var(--text-dark); }
-        .mode-preventa .cliente-picker-option-name { color: #f8fafc; }
+        .mode-preventa .cliente-picker-option-name { color: var(--text-dark); }
         .cliente-picker-option-meta { font-size: 0.66rem; color: var(--text-muted); margin-top: 2px; }
+        .mode-preventa .cliente-picker-option-meta { color: #64748b; }
         .cliente-picker-empty { padding: 12px; font-size: 0.76rem; color: var(--text-muted); text-align: center; }
+        .mode-preventa .cliente-picker-empty { color: #64748b; }
 
         .cliente-picker-locked { position: relative; margin-bottom: 10px; }
         .cliente-picker-locked-input {
