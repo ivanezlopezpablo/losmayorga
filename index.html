@@ -17,6 +17,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Los Mayorga">
+
+    <!-- Cliente JS de Supabase (para el panel de Clientes de Preventista/Administración) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     
     <style>
         :root {
@@ -759,23 +762,57 @@
         .btn-cart-toggle:hover { background: linear-gradient(135deg, #e2e8f0, #dbe4ee); }
         .mode-preventa .btn-cart-toggle { background: linear-gradient(135deg, #334155, #1e293b); border-color: #475569; color: #FF8C00; }
 
-        .modal-login-card { max-width: 380px; text-align: center; }
+        .modal-login-card { max-width: 400px; text-align: center; padding: 28px 26px; }
         .lock-icon-container {
-            width: 80px; height: 80px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;
+            width: 84px; height: 84px;
+            background: linear-gradient(145deg, var(--primary), var(--primary-light) 60%, #0284c7);
+            border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px;
+            box-shadow: 0 12px 30px rgba(0,31,84,0.3);
+            animation: float 3s ease-in-out infinite;
         }
-        .lock-icon-container i { font-size: 2.2rem; color: white; }
+        .lock-icon-container i { font-size: 2.1rem; color: white; }
+        .modal-login-card h2 { font-size: 1.25rem; font-weight: 900; color: var(--text-dark); margin-bottom: 4px; }
+        .login-subtitle { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 22px; }
+
+        .login-field-group { text-align: left; margin-bottom: 14px; }
+        .login-field-label {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 0.72rem; font-weight: 800; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px;
+        }
+        .login-field-group .form-control-enhanced { margin-bottom: 0; }
+
+        .login-password-wrap { position: relative; }
+        .login-password-wrap .form-control-enhanced { padding-right: 44px; }
+        .login-toggle-eye {
+            position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; color: var(--text-muted);
+            width: 32px; height: 32px; border-radius: 8px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; font-size: 0.95rem;
+        }
+        .login-toggle-eye:hover { background: #f0f4f8; color: var(--primary); }
+
+        .login-error-text {
+            display: flex; align-items: center; gap: 6px; justify-content: center;
+            color: var(--danger); font-size: 0.78rem; font-weight: 700;
+            background: #fef2f2; border-radius: 10px; padding: 8px 10px; margin: 4px 0 4px;
+        }
 
         .form-control-enhanced, .form-control {
             width: 100%; padding: 12px; border: 1.5px solid var(--border);
             border-radius: 12px; font-size: 0.9rem; outline: none; margin-bottom: 10px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .form-control-enhanced:focus, .form-control:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(2,132,199,0.12);
         }
 
         .btn-login-enhanced, .btn-whatsapp-send {
             background: linear-gradient(135deg, var(--primary), var(--primary-light));
             color: white; border: none; padding: 13px; border-radius: 12px;
             font-weight: 900; width: 100%; cursor: pointer; font-size: 0.95rem; margin-top: 8px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
 
         .btn-whatsapp-send { background: linear-gradient(135deg, var(--wa-green), #1da851); }
@@ -920,6 +957,66 @@
         .mode-preventa .tour-btn.primary { background: linear-gradient(135deg, #FF6F00, #FF8C00); }
         .tour-btn.secondary { background: #f0f4f8; color: var(--text-dark); flex: 0 0 auto; padding: 11px 16px; }
         .mode-preventa .tour-btn.secondary { background: #334155; color: #f8fafc; }
+
+        /* PANEL DE CLIENTES */
+        .clientes-modal-card { display: flex; flex-direction: column; padding: 0; max-width: 560px; max-height: 88vh; }
+        .clientes-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 22px 12px; flex-shrink: 0;
+        }
+        .clientes-header h2 { font-size: 1.1rem; font-weight: 900; color: var(--primary); }
+        .mode-preventa .clientes-header h2 { color: #FF8C00; }
+        #clientes-body { overflow-y: auto; padding: 0 22px 22px; flex: 1 1 auto; }
+
+        .clientes-search-box { position: relative; margin-bottom: 12px; }
+        .clientes-search-box i {
+            position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+            color: var(--text-muted); font-size: 0.85rem;
+        }
+        .clientes-search-box input {
+            width: 100%; padding: 10px 14px 10px 36px;
+            border-radius: 12px; border: 1.5px solid var(--border);
+            font-size: 0.85rem; outline: none; background: white; color: var(--text-dark);
+        }
+        .mode-preventa .clientes-search-box input { background: #1e293b; border-color: #334155; color: #f8fafc; }
+
+        .btn-nuevo-cliente {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            width: 100%; background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white; border: none; padding: 11px; border-radius: 12px;
+            font-weight: 800; font-size: 0.85rem; cursor: pointer; margin-bottom: 14px;
+        }
+        .mode-preventa .btn-nuevo-cliente { background: linear-gradient(135deg, #FF6F00, #FF8C00); }
+
+        .cliente-item {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding: 12px; border: 1.5px solid var(--border); border-radius: 12px;
+            margin-bottom: 8px; cursor: pointer; transition: all 0.2s ease;
+        }
+        .cliente-item:hover { border-color: var(--primary-light); box-shadow: var(--shadow-sm); }
+        .mode-preventa .cliente-item { border-color: #334155; }
+        .cliente-item-name { font-size: 0.85rem; font-weight: 800; color: var(--text-dark); }
+        .mode-preventa .cliente-item-name { color: #f8fafc; }
+        .cliente-item-meta { font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; }
+
+        .cliente-detail-row { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--border); }
+        .cliente-detail-label { flex: 0 0 130px; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); }
+        .cliente-detail-value { flex: 1; font-size: 0.82rem; color: var(--text-dark); }
+        .mode-preventa .cliente-detail-value { color: #f8fafc; }
+
+        .cliente-map-frame {
+            width: 100%; height: 200px; border: none; border-radius: 14px; margin: 14px 0;
+        }
+
+        .cliente-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .cliente-form-grid .form-control-enhanced { margin-bottom: 0; }
+        .cliente-form-full { grid-column: 1 / -1; }
+
+        .clientes-error {
+            background: #fef2f2; color: #dc2626; border: 1px solid #fca5a5;
+            border-radius: 10px; padding: 10px; font-size: 0.78rem; margin-bottom: 12px;
+        }
+        .clientes-loading { text-align: center; padding: 30px; color: var(--text-muted); font-size: 0.85rem; }
 
         /* FILA DE PRODUCTO DENTRO DEL CARRITO */
         .cart-item-row {
@@ -1341,7 +1438,9 @@
             display: flex; align-items: center; justify-content: space-between; gap: 10px;
             border: 1.5px solid var(--border); border-radius: 12px; padding: 10px; margin-bottom: 8px;
             transition: all 0.2s ease;
+            cursor: pointer;
         }
+        .venc-row:hover { border-color: var(--primary-light); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
         .venc-row.venc-expired { border-color: #ef4444; background: linear-gradient(135deg, #fff, #fef2f2); }
         .venc-row-info { display: flex; align-items: center; gap: 10px; min-width: 0; }
         .venc-row-info img { width: 46px; height: 46px; object-fit: contain; border-radius: 8px; background: #f8fafb; flex-shrink: 0; }
@@ -1430,6 +1529,7 @@
             <div class="side-menu-item" onclick="sideMenuConfiguracion()"><i class="fas fa-gear"></i> Configuración</div>
             <div class="side-menu-item" onclick="openContactModal()"><i class="fas fa-phone"></i> Contacto</div>
             <div class="side-menu-item" onclick="sideMenuAcercaDe()"><i class="fas fa-circle-info"></i> Acerca de</div>
+            <div class="side-menu-item" id="side-menu-clientes" style="display:none;" onclick="openClientesPanel()"><i class="fas fa-address-book"></i> Clientes</div>
             <div class="side-menu-item" onclick="openInstallModal()"><i class="fas fa-mobile-screen-button"></i> Instalar App</div>
             <div class="side-menu-item" id="side-menu-logout" style="display:none;" onclick="sideMenuLogout()"><i class="fas fa-right-from-bracket"></i> Cerrar Sesión</div>
         </nav>
@@ -1565,6 +1665,17 @@
         </div>
     </div>
 
+    <!-- MODAL AVISO PRECIO APROXIMADO (Quesos / Fiambres / Carnes) -->
+    <div class="modal-overlay" id="peso-variable-modal">
+        <div class="modal-card" style="text-align:center; max-width:380px;">
+            <div style="display:flex; justify-content:flex-end;"><button class="btn-close" onclick="closePesoVariableModal()">✕</button></div>
+            <div style="font-size:2.6rem; margin-bottom:8px;">⚖️</div>
+            <h2 style="color:#b45309; font-size:1.1rem; margin-bottom:10px;">Precio aproximado</h2>
+            <p style="font-size:0.86rem; color:var(--text-dark); line-height:1.5; margin-bottom:18px;" id="peso-variable-texto"></p>
+            <button onclick="closePesoVariableModal()" class="btn-login-enhanced">Entendido</button>
+        </div>
+    </div>
+
     <!-- MODAL POPUP DE OFERTAS -->
     <div class="modal-overlay" id="promo-popup-modal">
         <div class="modal-card promo-popup-card">
@@ -1593,18 +1704,34 @@
         </div>
     </div>
 
-    <!-- MODAL LOGIN PREVENTISTA -->
+    <!-- MODAL LOGIN PREVENTISTA / COMERCIOS -->
     <div class="modal-overlay" id="login-modal">
         <div class="modal-card modal-login-card">
             <div style="display:flex; justify-content:flex-end;">
                 <button class="btn-close" onclick="closeLoginModal()">✕</button>
             </div>
-            <div class="lock-icon-container"><i class="fas fa-lock"></i></div>
-            <h2>Acceso Preventistas</h2>
-            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">Ingresa tu clave exclusiva de acceso</p>
-            <input type="password" id="pass-input" class="form-control-enhanced" placeholder="Ingresa tu clave...">
-            <p id="login-error" style="color:var(--danger); font-size:0.8rem; display:none; margin-bottom:12px;">Clave incorrecta. Intenta nuevamente.</p>
-            <button onclick="loginPreventa()" class="btn-login-enhanced">Ingresar Seguro</button>
+            <div class="lock-icon-container"><i class="fas fa-user-shield"></i></div>
+            <h2>Acceso Exclusivo</h2>
+            <p class="login-subtitle">Preventistas, Distribuidora, Administración o Comercios</p>
+
+            <div class="login-field-group">
+                <label class="login-field-label" for="user-input"><i class="fas fa-user"></i> Usuario</label>
+                <input type="text" id="user-input" class="form-control-enhanced" placeholder="Tu nombre (opcional)" autocomplete="username">
+            </div>
+
+            <div class="login-field-group">
+                <label class="login-field-label" for="pass-input"><i class="fas fa-key"></i> Clave / CUIT</label>
+                <div class="login-password-wrap">
+                    <input type="password" id="pass-input" class="form-control-enhanced" placeholder="Tu clave de acceso, o tu CUIT si sos Comercio" autocomplete="current-password" onkeydown="if(event.key==='Enter')loginPreventa()">
+                    <button type="button" class="login-toggle-eye" onclick="toggleLoginPasswordVisibility()" id="login-toggle-eye-btn" aria-label="Mostrar u ocultar clave">
+                        <i class="fas fa-eye" id="login-eye-icon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <p id="login-error" class="login-error-text" style="display:none;"><i class="fas fa-triangle-exclamation"></i> Clave o CUIT incorrecto. Intentá nuevamente.</p>
+
+            <button onclick="loginPreventa()" class="btn-login-enhanced"><i class="fas fa-right-to-bracket"></i> Ingresar</button>
         </div>
     </div>
 
@@ -1699,6 +1826,17 @@
         </div>
     </div>
 
+    <!-- PANEL DE CLIENTES (Preventista/Distribuidora/Administración) -->
+    <div class="modal-overlay" id="clientes-modal">
+        <div class="modal-card clientes-modal-card">
+            <div class="clientes-header">
+                <h2><i class="fas fa-address-book"></i> Clientes</h2>
+                <button class="btn-close" onclick="closeClientesPanel()">✕</button>
+            </div>
+            <div id="clientes-body"></div>
+        </div>
+    </div>
+
     <!-- RECORRIDO GUIADO: bloqueador + resaltado (spotlight) + tarjeta de navegación -->
     <div class="tour-overlay" id="tour-overlay">
         <div class="tour-blocker"></div>
@@ -1737,13 +1875,39 @@
 
     const PHONE_PUBLICO = "5492994051600";
     const PHONE_PREVENTA = "5492994836067";
+
+    // ==========================================================
+    //  REGISTRO DE VENTAS (Google Apps Script) y SUPABASE (comercios/clientes)
+    //  PASOS PENDIENTES DE TU LADO - ver instrucciones en el chat:
+    //  1) VENTAS_WEBHOOK_URL: pegar la URL del Apps Script ya deployado
+    //  2) SUPABASE_URL / SUPABASE_ANON_KEY: pegar los datos de tu proyecto Supabase
+    // ==========================================================
+    const VENTAS_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxoHOg6qk5r2Y1Ps45urjIZ7i6UFkX3dTYk6U95HdFh4gi0iPsIq6iTglNNCiyAmMZw/exec';
+    const SUPABASE_URL = 'https://gubhsggjagfyanwhsewx.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_gDV9Xr73auf5ODx2o6J3FQ_T3aBCIwC';
+    const ADMIN_KEY = "ADMIN2026";
+
+    // Envía una copia del pedido al Google Sheet de "Registro de Ventas", además de
+    // WhatsApp. Es "fire and forget": si falla (por ejemplo, si todavía no pegaste la
+    // URL) no rompe el envío del pedido, solo no queda registrado ese respaldo.
+    function logVentaEnSheet(orderData) {
+        if (!VENTAS_WEBHOOK_URL || VENTAS_WEBHOOK_URL.indexOf('PEGAR_ACA') !== -1) return;
+        fetch(VENTAS_WEBHOOK_URL, {
+            method: 'POST',
+            mode: 'no-cors', // Apps Script no da headers CORS; no-cors evita el bloqueo del navegador
+            headers: { 'Content-Type': 'text/plain' }, // text/plain evita el preflight OPTIONS
+            body: JSON.stringify(orderData)
+        }).catch(() => { /* silencioso: no interrumpe el pedido si falla el registro */ });
+    }
+
     let COSTO_ENVIO = 2000;
 
     const PREVENTA_KEYS = {
         "PREV2026A": "Iván",
         "PREV2026B": "Ulises",
         "PREV2026C": "Directo a la Distribuidora",
-        "COM2026": "Comercios"
+        "COM2026": "Comercios",
+        "ADMIN2026": "Administración"
     };
     const COMERCIOS_KEY = "COM2026";
 
@@ -1758,6 +1922,28 @@
     let ALL_PRODUCTS = [];
     let FILTERED_PRODUCTS = [];
     let cart = {};
+    // Carritos independientes: Público (Mayorista), Preventista/Distribuidora, y Comercios
+    // cada uno con el suyo propio. Cambiar de rol NO mezcla ni vacía el carrito del otro,
+    // solo guarda el actual a un costado y carga el que corresponda.
+    let cartsByScope = { PUBLICO: {}, PREVENTA_STAFF: {}, COMERCIOS: {} };
+    let currentCartScope = 'PUBLICO';
+
+    function getCartScopeKey() {
+        if (currentRole === 'PREVENTA') {
+            return activePreventaKey === COMERCIOS_KEY ? 'COMERCIOS' : 'PREVENTA_STAFF';
+        }
+        return 'PUBLICO';
+    }
+
+    // Se llama en cada cambio de rol (login/logout/restauración de sesión): guarda el
+    // carrito actual en su escala, y carga (o crea) el de la escala nueva.
+    function switchCartScope(newScopeKey) {
+        cartsByScope[currentCartScope] = cart;
+        cart = cartsByScope[newScopeKey] || {};
+        cartsByScope[newScopeKey] = cart;
+        currentCartScope = newScopeKey;
+    }
+
     let selectedMainCat = 'TODOS';
     let selectedTagFilter = 'TODOS';
     let selectedCategoryBucket = null; // usado por "Buscar por Marca" > "Todos los Productos"
@@ -2701,6 +2887,7 @@
         let matches = p.title.toLowerCase().includes(q)
             || (p.sku && p.sku.toLowerCase().includes(q))
             || (p.brand && p.brand.toLowerCase().includes(q))
+            || (p.mainCategory && p.mainCategory.toLowerCase().includes(q))
             || (p.caracteristicasBulto && p.caracteristicasBulto.toLowerCase().includes(q));
 
         if (!matches && p.isSinTacc) {
@@ -2847,13 +3034,43 @@
         }).join('');
     }
 
+    // Aviso de precio aproximado para productos que se venden por peso variable
+    // (Quesos, Fiambres/Embutidos, Carnes): se muestra una sola vez por categoría y por
+    // sesión, la primera vez que se agrega un producto de esa categoría al carrito.
+    let categoriasPesoVariableAvisadas = new Set();
+
+    function esCategoriaPesoVariable(mainCategory) {
+        const c = (mainCategory || '').toLowerCase();
+        return c.includes('queso') || c.includes('fiambre') || c.includes('embutido') || c.includes('carne');
+    }
+
+    function mostrarAvisoPesoVariableSiCorresponde(product) {
+        if (!esCategoriaPesoVariable(product.mainCategory)) return;
+        if (categoriasPesoVariableAvisadas.has(product.mainCategory)) return;
+        categoriasPesoVariableAvisadas.add(product.mainCategory);
+
+        document.getElementById('peso-variable-texto').textContent =
+            `Los precios de "${product.mainCategory}" son aproximados, ya que varían según el peso real de cada pieza. Una vez que desde la Distribuidora armen tu pedido, te vamos a informar el precio final exacto.`;
+        document.getElementById('peso-variable-modal').classList.add('active');
+    }
+
+    function closePesoVariableModal() {
+        document.getElementById('peso-variable-modal').classList.remove('active');
+    }
+
     function updateQty(id, delta) {
         const product = ALL_PRODUCTS.find(p => p.id === id);
         if (!product || product.isOutOfStock) return;
 
+        const eraNuevoEnCarrito = !cart[id] || cart[id].qty === 0;
+
         if (!cart[id]) cart[id] = { product, qty: 0 };
         cart[id].qty += delta;
         if (cart[id].qty <= 0) delete cart[id];
+
+        if (eraNuevoEnCarrito && delta > 0 && cart[id]) {
+            mostrarAvisoPesoVariableSiCorresponde(product);
+        }
 
         updateProductDisplay(id);
         updateCartFloatBar();
@@ -3024,18 +3241,41 @@
 
     function openLoginModal() {
         document.getElementById('pass-input').value = "";
+        document.getElementById('user-input').value = "";
         document.getElementById('login-error').style.display = 'none';
+        resetLoginPasswordVisibility();
         document.getElementById('login-modal').classList.add('active');
     }
 
     function closeLoginModal() { document.getElementById('login-modal').classList.remove('active'); }
 
+    function toggleLoginPasswordVisibility() {
+        const input = document.getElementById('pass-input');
+        const icon = document.getElementById('login-eye-icon');
+        const showing = input.type === 'text';
+        input.type = showing ? 'password' : 'text';
+        icon.className = showing ? 'fas fa-eye' : 'fas fa-eye-slash';
+    }
+
+    function resetLoginPasswordVisibility() {
+        const input = document.getElementById('pass-input');
+        const icon = document.getElementById('login-eye-icon');
+        if (input) input.type = 'password';
+        if (icon) icon.className = 'fas fa-eye';
+    }
+
     const SESSION_STORAGE_KEY = 'mayorga-session';
+
+    function getRoleSubtitleText() {
+        if (activePreventaKey === COMERCIOS_KEY) return 'Comercios - Precios Especiales';
+        if (activePreventaKey === ADMIN_KEY) return 'Administración';
+        return `Preventa - ${activePreventista}`;
+    }
 
     function applyPreventaLoginUI() {
         document.body.classList.add('mode-preventa');
         document.getElementById('preventa-banner').style.display = 'block';
-        document.getElementById('app-subtitle').innerText = activePreventaKey === COMERCIOS_KEY ? 'Comercios - Precios Especiales' : `Preventa - ${activePreventista}`;
+        document.getElementById('app-subtitle').innerText = getRoleSubtitleText();
 
         const btn = document.getElementById('auth-btn');
         btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Salir';
@@ -3048,8 +3288,15 @@
     function updateSideMenuAuthUI() {
         const subtitleEl = document.getElementById('side-menu-subtitle');
         const logoutEl = document.getElementById('side-menu-logout');
+        const clientesEl = document.getElementById('side-menu-clientes');
+        // "Clientes" es visible para cualquier staff (Iván, Ulises, Distribuidora,
+        // Administración), pero NUNCA para Comercios (por eso está gestionado por
+        // funciones RPC del lado de Supabase, no solo por este ocultamiento visual).
+        const vePanelClientes = currentRole === "PREVENTA" && activePreventaKey !== COMERCIOS_KEY;
+        if (clientesEl) clientesEl.style.display = vePanelClientes ? 'flex' : 'none';
+
         if (currentRole === "PREVENTA") {
-            if (subtitleEl) subtitleEl.textContent = activePreventaKey === COMERCIOS_KEY ? 'Comercios - Precios Especiales' : `Preventa - ${activePreventista}`;
+            if (subtitleEl) subtitleEl.textContent = getRoleSubtitleText();
             if (logoutEl) logoutEl.style.display = 'flex';
         } else {
             if (subtitleEl) subtitleEl.textContent = 'Distribuidora Mayorista';
@@ -3068,46 +3315,73 @@
                 currentRole = "PREVENTA";
                 activePreventaKey = data.key;
                 activePreventista = PREVENTA_KEYS[data.key];
+                switchCartScope(getCartScopeKey());
                 applyPreventaLoginUI();
             }
         } catch (e) { /* Sesión corrupta o localStorage no disponible: se ignora y arranca como público */ }
     }
 
-    function loginPreventa() {
+    async function loginPreventa() {
         const key = document.getElementById('pass-input').value.trim();
+        const usuarioTipeado = document.getElementById('user-input').value.trim();
+
         if (PREVENTA_KEYS[key]) {
-            currentRole = "PREVENTA";
-            activePreventaKey = key;
-            activePreventista = PREVENTA_KEYS[key];
-            applyPreventaLoginUI();
-
-            try {
-                localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({
-                    key: key, user: activePreventista, role: 'PREVENTA', timestamp: Date.now()
-                }));
-            } catch (e) { /* localStorage no disponible: la sesión no persiste al recargar, pero funciona igual */ }
-
-            closeLoginModal();
-            // El catálogo activo pasa a ser el de Distribuidora (precio = Precio Distribuidora x Unidades)
-            rebuildActiveCatalog();
-            selectedMainCat = 'TODOS';
-            selectedCategoryBucket = null;
-            selectedTagFilter = 'TODOS';
-            document.querySelectorAll('.tag-chip').forEach(c => c.classList.remove('active'));
-            document.querySelector('.tag-chip.todos').classList.add('active');
-            filterProducts();
-            updateCartFloatBar();
-            // Sección interna de vencimientos: cualquier Preventista (no Comercios)
-            refreshDistribuidoraAlert();
-        } else {
-            document.getElementById('login-error').style.display = 'block';
+            // Si escribió su nombre en "Usuario", se usa ese (útil sobre todo con las
+            // claves compartidas de Distribuidora/Administración); si lo dejó vacío,
+            // se usa el nombre por defecto de esa clave, como siempre.
+            const nombreAMostrar = usuarioTipeado || PREVENTA_KEYS[key];
+            loginComoStaff(key, nombreAMostrar);
+            return;
         }
+
+        // No es una clave de staff conocida: probamos si es el CUIT de un Comercio
+        // dado de alta por algún preventista (login individual por cliente).
+        const client = getSupabaseClient();
+        if (client && key.length >= 6) {
+            const errorEl = document.getElementById('login-error');
+            errorEl.style.display = 'none';
+            const { data, error } = await client.rpc('validar_cuit_comercio', { p_cuit: key });
+            if (!error && data && data.length > 0) {
+                loginComoStaff(COMERCIOS_KEY, data[0].nombre_fantasia);
+                return;
+            }
+        }
+
+        document.getElementById('login-error').style.display = 'block';
+    }
+
+    // Aplica el login (usado tanto por clave de staff como por CUIT de Comercio validado)
+    function loginComoStaff(key, nombreMostrado) {
+        currentRole = "PREVENTA";
+        activePreventaKey = key;
+        activePreventista = nombreMostrado;
+        switchCartScope(getCartScopeKey());
+        applyPreventaLoginUI();
+
+        try {
+            localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({
+                key: key, user: activePreventista, role: 'PREVENTA', timestamp: Date.now()
+            }));
+        } catch (e) { /* localStorage no disponible: la sesión no persiste al recargar, pero funciona igual */ }
+
+        closeLoginModal();
+        rebuildActiveCatalog();
+        selectedMainCat = 'TODOS';
+        selectedCategoryBucket = null;
+        selectedTagFilter = 'TODOS';
+        document.querySelectorAll('.tag-chip').forEach(c => c.classList.remove('active'));
+        document.querySelector('.tag-chip.todos').classList.add('active');
+        filterProducts();
+        updateCartFloatBar();
+        // Sección interna de vencimientos: cualquier Preventista (no Comercios)
+        refreshDistribuidoraAlert();
     }
 
     function logoutPreventa() {
         currentRole = "PUBLICO";
         activePreventista = "";
         activePreventaKey = "";
+        switchCartScope('PUBLICO');
         document.body.classList.remove('mode-preventa');
         document.getElementById('preventa-banner').style.display = 'none';
         document.getElementById('app-subtitle').innerText = "Distribuidora Mayorista - Rincón";
@@ -3160,9 +3434,14 @@
             : 'Sin vencimientos próximos por ahora';
     }
 
+    // Solo se listan productos con Fecha Vencimiento (columna "Fecha Vencimiento" del
+    // Sheet) que venzan dentro de los próximos 30 días, o que ya estén vencidos (son los
+    // más urgentes). Si la fecha está a más de 30 días, no se muestra, aunque esté cargada.
+    const DIAS_VENTANA_VENCIMIENTOS = 30;
     function getExpiringProducts(limit) {
+        const umbral = Date.now() + DIAS_VENTANA_VENCIMIENTOS * 24 * 60 * 60 * 1000;
         return ALL_PRODUCTS
-            .filter(p => p.expirationDate instanceof Date)
+            .filter(p => p.expirationDate instanceof Date && p.expirationDate.getTime() <= umbral)
             .sort((a, b) => a.expirationDate - b.expirationDate)
             .slice(0, limit || 9999);
     }
@@ -3181,22 +3460,34 @@
         return `${days}d ${pad(hours)}:${pad(mins)}:${pad(secs)}`;
     }
 
+    const VENC_VISIBLE_ITEMS = 6;
+    let vencimientosExpanded = false;
+
     function renderVencimientosPanel() {
+        vencimientosExpanded = false;
+        renderVencimientosList();
+    }
+
+    function renderVencimientosList() {
         const container = document.getElementById('vencimientos-list');
         const products = getExpiringProducts(80);
 
         if (products.length === 0) {
-            container.innerHTML = `<p style="text-align:center; padding:20px; color:#999;">No hay productos con fecha de vencimiento cargada.</p>`;
+            container.innerHTML = `<p style="text-align:center; padding:20px; color:#999;">No hay productos venciendo en los próximos ${DIAS_VENTANA_VENCIMIENTOS} días.</p>`;
             return;
         }
 
-        container.innerHTML = products.map(p => `
-            <div class="venc-row" data-expiry="${p.expirationDate.getTime()}">
+        const visibles = vencimientosExpanded ? products : products.slice(0, VENC_VISIBLE_ITEMS);
+        const restantes = products.length - visibles.length;
+
+        let html = visibles.map(p => `
+            <div class="venc-row" data-expiry="${p.expirationDate.getTime()}" data-product-search="${p.title.replace(/"/g, '&quot;')}" onclick="irAlProductoDesdeVencimiento(this)">
                 <div class="venc-row-info">
                     <img src="${p.image}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/60?text=Sin+Foto'">
                     <div>
                         <div class="venc-row-title">${p.title}</div>
                         <div class="venc-row-meta">${p.brand} · ${p.sku || 'S/SKU'} · ${p.mainCategory}</div>
+                        <div class="venc-row-meta">${p.caracteristicasBulto || 'Unidad'} · $${p.finalPrice.toLocaleString('es-AR', {minimumFractionDigits:2})}</div>
                         <div class="venc-row-date">Vence: ${formatDateEs(p.expirationDate)}</div>
                     </div>
                 </div>
@@ -3207,7 +3498,55 @@
             </div>
         `).join('');
 
+        if (restantes > 0) {
+            html += `
+                <button type="button" class="btn-cart-toggle" onclick="toggleVencimientosExpand()">
+                    <i class="fas fa-chevron-down"></i> Ver ${restantes} producto${restantes > 1 ? 's' : ''} más
+                </button>
+            `;
+        } else if (vencimientosExpanded && products.length > VENC_VISIBLE_ITEMS) {
+            html += `
+                <button type="button" class="btn-cart-toggle" onclick="toggleVencimientosExpand()">
+                    <i class="fas fa-chevron-up"></i> Ver menos
+                </button>
+            `;
+        }
+
+        container.innerHTML = html;
         updateVencimientosCountdowns();
+    }
+
+    function toggleVencimientosExpand() {
+        vencimientosExpanded = !vencimientosExpanded;
+        renderVencimientosList();
+    }
+
+    // Clic en un producto de la lista de vencimientos: cierra el panel y lo busca/muestra
+    // directo en el catálogo (mismo mecanismo que el resto de las búsquedas de la app).
+    function scrollToCatalog() {
+        const el = document.getElementById('main-categories-bar');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function resetToTodosTag() {
+        selectedTagFilter = 'TODOS';
+        document.querySelectorAll('.tag-chip').forEach(c => c.classList.remove('active'));
+        const todosChip = document.querySelector('.tag-chip.todos');
+        if (todosChip) todosChip.classList.add('active');
+    }
+
+    function irAlProductoDesdeVencimiento(rowEl) {
+        const titulo = rowEl.dataset.productSearch;
+        closeVencimientosPanel();
+        closeMarcasInline();
+        selectedMainCat = 'TODOS';
+        selectedCategoryBucket = null;
+        resetToTodosTag();
+        const searchInput = document.getElementById('search-input');
+        searchInput.value = titulo;
+        toggleSearchClearBtn();
+        filterProducts();
+        scrollToCatalog();
     }
 
     function updateVencimientosCountdowns() {
@@ -3850,19 +4189,40 @@
 
         container.innerHTML = html;
 
-        // Preserva lo que el usuario ya escribió (nombre/dirección) al re-renderizar
-        // (por ejemplo al tocar "Ver más" o al agregar una sugerencia)
+        // Preserva lo que el usuario ya escribió al re-renderizar (por ejemplo al tocar
+        // "Ver más" o al agregar una sugerencia), incluyendo los campos nuevos del Mayorista.
         const prevName = document.getElementById('client-name') ? document.getElementById('client-name').value : '';
         const prevAddress = document.getElementById('client-address') ? document.getElementById('client-address').value : '';
+        const prevPayment = document.getElementById('client-payment') ? document.getElementById('client-payment').value : '';
+        const prevAddressDetails = document.getElementById('client-address-details') ? document.getElementById('client-address-details').value : '';
+
+        // Medio de pago y características del domicilio: solo para el carrito de
+        // Público (Mayorista). Preventista/Comercios ya coordinan esto directo con
+        // su preventista, no hace falta pedírselo acá.
+        const camposExtraMayorista = currentRole === "PUBLICO" ? `
+            <select id="client-payment" class="form-control" required>
+                <option value="">Medio de pago *</option>
+                <option value="Efectivo">💵 Efectivo</option>
+                <option value="Transferencia">🏦 Transferencia</option>
+                <option value="Mercado Pago">📲 Mercado Pago</option>
+                <option value="Tarjeta">💳 Tarjeta (débito/crédito)</option>
+            </select>
+            <input type="text" id="client-address-details" class="form-control" placeholder="Características del domicilio (color de casa, portón, referencias) *" required>
+        ` : '';
 
         form.innerHTML = `
-            <input type="text" id="client-name" class="form-control" placeholder="Nombre *" required>
+            <input type="text" id="client-name" class="form-control" placeholder="Nombre y Apellido *" required>
             <input type="text" id="client-address" class="form-control" placeholder="Dirección *" required>
+            ${camposExtraMayorista}
             <button class="btn-whatsapp-send" onclick="sendWhatsAppOrder()"><i class="fab fa-whatsapp"></i> Enviar por WhatsApp</button>
             <button type="button" class="btn-clear-cart" onclick="clearCart()"><i class="fas fa-trash"></i> Vaciar carrito</button>
         `;
         document.getElementById('client-name').value = prevName;
         document.getElementById('client-address').value = prevAddress;
+        if (currentRole === "PUBLICO") {
+            document.getElementById('client-payment').value = prevPayment;
+            document.getElementById('client-address-details').value = prevAddressDetails;
+        }
 
         renderCartSuggestions();
     }
@@ -3886,6 +4246,7 @@
         if (Object.keys(cart).length === 0) return;
         if (!confirm('¿Vaciar todo el carrito? Esta acción no se puede deshacer.')) return;
         cart = {};
+        cartsByScope[currentCartScope] = cart;
         cartListExpanded = false;
         renderCartSummary();
         updateCartFloatBar();
@@ -3895,7 +4256,20 @@
     function sendWhatsAppOrder() {
         const name = document.getElementById('client-name').value.trim();
         const address = document.getElementById('client-address').value.trim();
-        if (!name || !address) return alert("Completa los datos");
+
+        // Medio de pago y características del domicilio: obligatorios solo en el
+        // carrito de Público (Mayorista).
+        let paymentMethod = '';
+        let addressDetails = '';
+        if (currentRole === "PUBLICO") {
+            paymentMethod = document.getElementById('client-payment').value.trim();
+            addressDetails = document.getElementById('client-address-details').value.trim();
+            if (!name || !address || !paymentMethod || !addressDetails) {
+                return alert("Completá todos los datos: Nombre, Dirección, Medio de pago y Características del domicilio.");
+            }
+        } else {
+            if (!name || !address) return alert("Completa los datos");
+        }
 
         let subtotal = 0;
         const itemIds = Object.keys(cart);
@@ -3915,14 +4289,42 @@
 
         let msg = `*PEDIDO DE COMPRA*\n\n_Productos:_\n${itemsFormatted}\n\n_Resumen:_\nSubtotal: $${subtotal.toLocaleString('es-AR')}\n`;
         if (currentRole === "PUBLICO") msg += `Envío: $${shipping.toLocaleString('es-AR')}\n`;
-        msg += `*Total: $${total.toLocaleString('es-AR')}*\n\nCliente: ${name}${clienteLabel}\nDirección: ${address}\nFecha: ${fecha}`;
+        msg += `*Total: $${total.toLocaleString('es-AR')}*\n\nCliente: ${name}${clienteLabel}\nDirección: ${address}`;
+        if (currentRole === "PUBLICO") {
+            msg += `\nCaracterísticas del domicilio: ${addressDetails}\nMedio de pago: ${paymentMethod}`;
+        }
+        msg += `\nFecha: ${fecha}`;
 
         let phone = (currentRole === "PREVENTA") ? PHONE_PREVENTA : PHONE_PUBLICO;
         window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
 
+        // Respaldo del pedido en el Google Sheet de "Registro de Ventas" (Administración
+        // lo puede revisar ahí siempre, incluso si el mensaje de WhatsApp llega cortado).
+        logVentaEnSheet({
+            rol: currentRole === "PREVENTA" ? (activePreventaKey === COMERCIOS_KEY ? 'Comercios' : 'Preventa') : 'Público',
+            preventista: currentRole === "PREVENTA" ? activePreventista : '',
+            cliente: name,
+            direccion: address,
+            caracteristicasDomicilio: addressDetails,
+            medioPago: paymentMethod,
+            items: itemIds.map(id => ({
+                cantidad: cart[id].qty,
+                nombre: cart[id].product.title,
+                marca: cart[id].product.brand,
+                sku: cart[id].product.sku,
+                precioUnitario: cart[id].product.finalPrice,
+                subtotal: cart[id].product.finalPrice * cart[id].qty
+            })),
+            cantidadItems: itemIds.reduce((sum, id) => sum + cart[id].qty, 0),
+            subtotal: subtotal,
+            envio: shipping,
+            total: total
+        });
+
         // Limpia el carrito automáticamente después de enviar el pedido
         setTimeout(() => {
             cart = {};
+            cartsByScope[currentCartScope] = cart;
             cartListExpanded = false;
             updateCartFloatBar();
             document.querySelectorAll('[data-product-id]').forEach(el => updateProductDisplay(el.dataset.productId));
@@ -4144,6 +4546,240 @@
             pendingPromoPopupAfterTour = false;
             setTimeout(maybeShowPromoPopup, 500);
         }
+    }
+
+    // ==========================================================
+    //  PANEL DE CLIENTES (Comercios) - conectado a Supabase
+    //  Visible para cualquier staff (Iván, Ulises, Distribuidora, Administración).
+    //  Requiere SUPABASE_URL / SUPABASE_ANON_KEY completados arriba del archivo,
+    //  y haber corrido el SQL de Supabase_Clientes_Schema.sql en el proyecto.
+    // ==========================================================
+    let supabaseClient = null;
+    function getSupabaseClient() {
+        if (supabaseClient) return supabaseClient;
+        if (!SUPABASE_URL || SUPABASE_URL.indexOf('PEGAR_ACA') !== -1) return null;
+        if (typeof supabase === 'undefined') return null;
+        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        return supabaseClient;
+    }
+
+    function getStaffKeyForClientes() {
+        return activePreventaKey || '';
+    }
+
+    let clientesSearchQuery = '';
+    let clientesSelected = null;
+    let clientesFormMode = 'new';
+    let clientesListCache = [];
+
+    function openClientesPanel() {
+        closeSideMenu();
+        clientesSearchQuery = '';
+        clientesSelected = null;
+        document.getElementById('clientes-modal').classList.add('active');
+        renderClientesList();
+    }
+
+    function closeClientesPanel() {
+        document.getElementById('clientes-modal').classList.remove('active');
+    }
+
+    function renderClientesList() {
+        const body = document.getElementById('clientes-body');
+        body.innerHTML = `
+            <div class="clientes-search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="clientes-search-input" placeholder="Buscar por nombre, CUIT o localidad..." oninput="onClientesSearchInput()">
+            </div>
+            <button class="btn-nuevo-cliente" onclick="openClienteForm('new')"><i class="fas fa-plus-circle"></i> Nuevo Cliente</button>
+            <div id="clientes-list-container"><div class="clientes-loading">Cargando clientes...</div></div>
+        `;
+        const input = document.getElementById('clientes-search-input');
+        if (input) input.value = clientesSearchQuery;
+        loadClientesList();
+    }
+
+    function onClientesSearchInput() {
+        const input = document.getElementById('clientes-search-input');
+        clientesSearchQuery = input ? input.value : '';
+        loadClientesList();
+    }
+
+    async function loadClientesList() {
+        const container = document.getElementById('clientes-list-container');
+        if (!container) return;
+
+        const client = getSupabaseClient();
+        if (!client) {
+            container.innerHTML = `<div class="clientes-error"><i class="fas fa-triangle-exclamation"></i> Todavía no está conectado Supabase. Falta completar SUPABASE_URL y SUPABASE_ANON_KEY.</div>`;
+            return;
+        }
+
+        const { data, error } = await client.rpc('listar_clientes', {
+            p_clave: getStaffKeyForClientes(),
+            p_busqueda: clientesSearchQuery.trim()
+        });
+
+        if (error) {
+            container.innerHTML = `<div class="clientes-error"><i class="fas fa-triangle-exclamation"></i> No se pudo cargar la lista: ${error.message}</div>`;
+            return;
+        }
+
+        clientesListCache = data || [];
+
+        if (clientesListCache.length === 0) {
+            container.innerHTML = `<p style="text-align:center; color:#999; padding:20px 0;">Sin clientes cargados${clientesSearchQuery ? ' para esa búsqueda' : ' todavía'}.</p>`;
+            return;
+        }
+
+        container.innerHTML = clientesListCache.map(c => `
+            <div class="cliente-item" onclick="openClienteDetail('${c.id}')">
+                <div>
+                    <div class="cliente-item-name">${c.nombre_fantasia}</div>
+                    <div class="cliente-item-meta">${c.nombre_dueño || '-'} · CUIT ${c.cuit} · ${c.localidad || 'Sin localidad'}</div>
+                </div>
+                <i class="fas fa-chevron-right" style="color:var(--text-muted);"></i>
+            </div>
+        `).join('');
+    }
+
+    function openClienteDetail(id) {
+        const c = clientesListCache.find(x => x.id === id);
+        if (!c) return;
+        clientesSelected = c;
+        renderClienteDetail();
+    }
+
+    function renderClienteDetail() {
+        const c = clientesSelected;
+        const body = document.getElementById('clientes-body');
+        const direccionCompleta = [c.direccion, c.localidad, c.provincia].filter(Boolean).join(', ');
+        const mapaSrc = direccionCompleta ? `https://www.google.com/maps?q=${encodeURIComponent(direccionCompleta)}&output=embed` : '';
+
+        body.innerHTML = `
+            <button type="button" class="marcas-back-btn" onclick="renderClientesList()"><i class="fas fa-arrow-left"></i> Volver</button>
+            <h3 style="font-size:1.05rem; font-weight:900; margin-bottom:10px;">${c.nombre_fantasia}</h3>
+
+            ${mapaSrc ? `<iframe class="cliente-map-frame" src="${mapaSrc}" loading="lazy"></iframe>` : '<p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:10px;">Sin dirección cargada para mostrar en el mapa.</p>'}
+
+            <div class="cliente-detail-row"><div class="cliente-detail-label">Dueño</div><div class="cliente-detail-value">${c.nombre_dueño || '-'}</div></div>
+            <div class="cliente-detail-row"><div class="cliente-detail-label">CUIT</div><div class="cliente-detail-value">${c.cuit}</div></div>
+            <div class="cliente-detail-row"><div class="cliente-detail-label">WhatsApp</div><div class="cliente-detail-value">${c.celular_whatsapp || '-'}</div></div>
+            <div class="cliente-detail-row"><div class="cliente-detail-label">Dirección</div><div class="cliente-detail-value">${c.direccion || '-'}</div></div>
+            <div class="cliente-detail-row"><div class="cliente-detail-label">Localidad</div><div class="cliente-detail-value">${c.localidad || '-'}</div></div>
+            <div class="cliente-detail-row"><div class="cliente-detail-label">Provincia</div><div class="cliente-detail-value">${c.provincia || '-'}</div></div>
+            <div class="cliente-detail-row"><div class="cliente-detail-label">Email</div><div class="cliente-detail-value">${c.email || '-'}</div></div>
+            <div class="cliente-detail-row"><div class="cliente-detail-label">Rubro</div><div class="cliente-detail-value">${c.rubro || '-'}</div></div>
+            <div class="cliente-detail-row"><div class="cliente-detail-label">Tipo de Registro</div><div class="cliente-detail-value">${c.tipo_registro || '-'}</div></div>
+            <div class="cliente-detail-row"><div class="cliente-detail-label">Zona de reparto</div><div class="cliente-detail-value">${c.zona_reparto || '-'}</div></div>
+            <div class="cliente-detail-row"><div class="cliente-detail-label">Notas</div><div class="cliente-detail-value">${c.notas || '-'}</div></div>
+            <div class="cliente-detail-row"><div class="cliente-detail-label">Alta</div><div class="cliente-detail-value">${c.fecha_alta ? new Date(c.fecha_alta).toLocaleDateString('es-AR') : '-'} · ${c.dado_de_alta_por || '-'}</div></div>
+
+            <div style="display:flex; gap:10px; margin-top:16px;">
+                <button class="tour-btn primary" style="flex:1;" onclick="openClienteForm('edit')"><i class="fas fa-pen"></i> Editar</button>
+                <button class="btn-clear-cart" style="flex:1; margin-top:0;" onclick="confirmarEliminarCliente()"><i class="fas fa-trash"></i> Eliminar</button>
+            </div>
+        `;
+    }
+
+    const RUBROS_COMERCIO = ['Almacén / Kiosco', 'Supermercado', 'Restaurante / Bar', 'Panadería', 'Verdulería / Frutería', 'Carnicería', 'Farmacia', 'Ferretería', 'Otro'];
+    const TIPOS_REGISTRO_FISCAL = ['Monotributista', 'Responsable Inscripto', 'Exento', 'Consumidor Final', 'Otro'];
+
+    function buildSelectOptions(options, selectedValue) {
+        return `<option value="">Seleccionar...</option>` + options.map(opt =>
+            `<option value="${opt}" ${opt === selectedValue ? 'selected' : ''}>${opt}</option>`
+        ).join('');
+    }
+
+    function openClienteForm(mode) {
+        clientesFormMode = mode;
+        const c = mode === 'edit' ? clientesSelected : {};
+        const body = document.getElementById('clientes-body');
+        const volverFn = mode === 'edit' ? 'renderClienteDetail()' : 'renderClientesList()';
+
+        body.innerHTML = `
+            <button type="button" class="marcas-back-btn" onclick="${volverFn}"><i class="fas fa-arrow-left"></i> Volver</button>
+            <h3 style="font-size:1.05rem; font-weight:900; margin-bottom:12px;">${mode === 'edit' ? 'Editar Cliente' : 'Nuevo Cliente'}</h3>
+            <div id="cliente-form-error"></div>
+            <div class="cliente-form-grid">
+                <input type="text" id="cf-nombre-fantasia" class="form-control-enhanced" placeholder="Nombre de Fantasía del Negocio *" value="${c.nombre_fantasia || ''}">
+                <input type="text" id="cf-nombre-dueño" class="form-control-enhanced" placeholder="Nombre y Apellido del Dueño" value="${c.nombre_dueño || ''}">
+                <input type="text" id="cf-cuit" class="form-control-enhanced" placeholder="CUIT *" value="${c.cuit || ''}">
+                <input type="text" id="cf-celular" class="form-control-enhanced" placeholder="Celular / WhatsApp (Teléfono)" value="${c.celular_whatsapp || ''}">
+                <input type="text" id="cf-direccion" class="form-control-enhanced cliente-form-full" placeholder="Dirección del Negocio" value="${c.direccion || ''}">
+                <input type="text" id="cf-localidad" class="form-control-enhanced" placeholder="Localidad" value="${c.localidad || ''}">
+                <input type="text" id="cf-provincia" class="form-control-enhanced" placeholder="Provincia" value="${c.provincia || ''}">
+                <input type="email" id="cf-email" class="form-control-enhanced" placeholder="Email" value="${c.email || ''}">
+                <select id="cf-rubro" class="form-control-enhanced">${buildSelectOptions(RUBROS_COMERCIO, c.rubro)}</select>
+                <select id="cf-tipo-registro" class="form-control-enhanced">${buildSelectOptions(TIPOS_REGISTRO_FISCAL, c.tipo_registro)}</select>
+                <input type="text" id="cf-zona" class="form-control-enhanced cliente-form-full" placeholder="Zona de reparto" value="${c.zona_reparto || ''}">
+                <textarea id="cf-notas" class="form-control-enhanced cliente-form-full" placeholder="Notas internas" rows="2">${c.notas || ''}</textarea>
+            </div>
+            <button class="btn-whatsapp-send" style="margin-top:14px;" onclick="guardarCliente()"><i class="fas fa-check"></i> Guardar</button>
+        `;
+    }
+
+    async function guardarCliente() {
+        const nombreFantasia = document.getElementById('cf-nombre-fantasia').value.trim();
+        const cuit = document.getElementById('cf-cuit').value.trim();
+        const errorBox = document.getElementById('cliente-form-error');
+        errorBox.innerHTML = '';
+
+        if (!nombreFantasia || !cuit) {
+            errorBox.innerHTML = `<div class="clientes-error">Nombre de Fantasía y CUIT son obligatorios.</div>`;
+            return;
+        }
+
+        const client = getSupabaseClient();
+        if (!client) {
+            errorBox.innerHTML = `<div class="clientes-error">Supabase todavía no está conectado.</div>`;
+            return;
+        }
+
+        const payloadBase = {
+            p_clave: getStaffKeyForClientes(),
+            p_nombre_fantasia: nombreFantasia,
+            p_nombre_dueño: document.getElementById('cf-nombre-dueño').value.trim(),
+            p_cuit: cuit,
+            p_celular: document.getElementById('cf-celular').value.trim(),
+            p_direccion: document.getElementById('cf-direccion').value.trim(),
+            p_localidad: document.getElementById('cf-localidad').value.trim(),
+            p_provincia: document.getElementById('cf-provincia').value.trim(),
+            p_email: document.getElementById('cf-email').value.trim(),
+            p_rubro: document.getElementById('cf-rubro').value.trim(),
+            p_tipo_registro: document.getElementById('cf-tipo-registro').value.trim(),
+            p_zona_reparto: document.getElementById('cf-zona').value.trim(),
+            p_notas: document.getElementById('cf-notas').value.trim()
+        };
+
+        let result;
+        if (clientesFormMode === 'edit') {
+            result = await client.rpc('actualizar_cliente', { ...payloadBase, p_id: clientesSelected.id });
+        } else {
+            result = await client.rpc('crear_cliente', { ...payloadBase, p_dado_de_alta_por: activePreventista || '' });
+        }
+
+        if (result.error) {
+            errorBox.innerHTML = `<div class="clientes-error">No se pudo guardar: ${result.error.message}</div>`;
+            return;
+        }
+
+        clientesSelected = result.data;
+        renderClienteDetail();
+    }
+
+    function confirmarEliminarCliente() {
+        if (!confirm(`¿Eliminar a "${clientesSelected.nombre_fantasia}"? No borra su historial de pedidos, solo lo saca de la lista de clientes activos.`)) return;
+        eliminarClienteConfirmado();
+    }
+
+    async function eliminarClienteConfirmado() {
+        const client = getSupabaseClient();
+        if (!client) return;
+        const { error } = await client.rpc('eliminar_cliente', { p_clave: getStaffKeyForClientes(), p_id: clientesSelected.id });
+        if (error) { alert('No se pudo eliminar: ' + error.message); return; }
+        clientesSelected = null;
+        renderClientesList();
     }
 
     function sideMenuGoHome() {
