@@ -590,6 +590,49 @@
             margin-bottom: 8px;
         }
 
+        .product-ver-mas {
+            font-size: 0.66rem; font-weight: 800; color: var(--primary);
+            display: flex; align-items: center; gap: 4px; cursor: pointer;
+            margin-bottom: 8px; width: fit-content;
+        }
+        .product-ver-mas:hover { text-decoration: underline; }
+        .mode-preventa .product-ver-mas { color: #FF8C00; }
+
+        /* MODAL DE DETALLE DE PRODUCTO (con zoom de imagen) */
+        .producto-detalle-modal-card { max-width: 420px; padding: 0; max-height: 90vh; display: flex; flex-direction: column; }
+        .producto-detalle-img-wrap {
+            position: relative; width: 100%; aspect-ratio: 1/1; overflow: hidden;
+            background: #f8fafb; border-radius: 20px 20px 0 0; flex-shrink: 0; cursor: zoom-in;
+        }
+        .producto-detalle-img-wrap.zoomed { cursor: zoom-out; }
+        .producto-detalle-img-wrap img {
+            width: 100%; height: 100%; object-fit: contain; transition: transform 0.3s ease;
+        }
+        .producto-detalle-img-wrap.zoomed img { transform: scale(2); }
+        .producto-detalle-zoom-hint {
+            position: absolute; bottom: 10px; right: 10px;
+            background: rgba(0,0,0,0.6); color: white; font-size: 0.65rem; font-weight: 700;
+            padding: 5px 10px; border-radius: 20px; display: flex; align-items: center; gap: 5px;
+            pointer-events: none;
+        }
+        .producto-detalle-close {
+            position: absolute; top: 10px; right: 10px; z-index: 5;
+            width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.9);
+            border: none; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 1rem; color: var(--text-dark);
+        }
+        .producto-detalle-body { padding: 18px 20px 22px; overflow-y: auto; }
+        .producto-detalle-badges { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+        .producto-detalle-titulo { font-size: 1.05rem; font-weight: 900; color: var(--text-dark); margin-bottom: 4px; }
+        .producto-detalle-marca { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px; }
+        .producto-detalle-precio { font-size: 1.4rem; font-weight: 900; color: var(--primary); margin-bottom: 14px; }
+        .mode-preventa .producto-detalle-precio { color: #FF8C00; }
+        .producto-detalle-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px dashed var(--border); font-size: 0.82rem; }
+        .producto-detalle-row:last-child { border-bottom: none; }
+        .producto-detalle-row-label { color: var(--text-muted); font-weight: 700; }
+        .producto-detalle-row-value { color: var(--text-dark); font-weight: 700; text-align: right; }
+        .producto-detalle-badges .producto-detalle-badge-item { position: static; display: inline-flex; }
+
         /* Leyenda legal obligatoria en productos de Bebidas Alcohólicas */
         .alcohol-warning {
             font-size: 0.52rem;
@@ -922,6 +965,24 @@
             box-shadow: 0 0 0 3px rgba(2,132,199,0.12);
         }
 
+        /* CONFIRMACIÓN DE ACCIONES (reemplaza al confirm() nativo, con doble paso) */
+        .confirm-modal-card { max-width: 360px; text-align: center; }
+        .confirm-modal-icon {
+            width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 14px;
+            background: #fef3c7; color: #d97706; font-size: 1.5rem;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .confirm-modal-icon.paso2 { background: #fee2e2; color: #dc2626; }
+        .confirm-modal-title { font-size: 1.05rem; font-weight: 900; color: var(--text-dark); margin-bottom: 6px; }
+        .confirm-modal-text { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 18px; }
+        .confirm-modal-actions { display: flex; gap: 10px; }
+        .confirm-modal-btn {
+            flex: 1; padding: 11px; border-radius: 12px; font-weight: 800; font-size: 0.82rem;
+            cursor: pointer; border: none;
+        }
+        .confirm-modal-btn.cancelar { background: #f0f4f8; color: var(--text-dark); }
+        .confirm-modal-btn.confirmar { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
+
         .btn-login-enhanced, .btn-whatsapp-send {
             background: linear-gradient(135deg, var(--primary), var(--primary-light));
             color: white; border: none; padding: 13px; border-radius: 12px;
@@ -1142,6 +1203,26 @@
         .cliente-item:hover { border-color: var(--primary-light); box-shadow: var(--shadow-sm); }
         .cliente-item-name { font-size: 0.85rem; font-weight: 800; color: var(--text-dark); }
         .cliente-item-meta { font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; }
+
+        /* PANEL DE PREVENTISTAS */
+        .preventista-item {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding: 12px; border: 1.5px solid var(--border); border-radius: 12px; margin-bottom: 8px;
+        }
+        .preventista-item-name { font-size: 0.85rem; font-weight: 800; color: var(--text-dark); }
+        .preventista-item-meta { font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; }
+        .preventista-rol-badge {
+            display: inline-block; padding: 2px 8px; border-radius: 8px;
+            font-size: 0.6rem; font-weight: 900; text-transform: uppercase;
+            background: #dbeafe; color: #1e40af; margin-top: 3px;
+        }
+        .preventista-rol-badge.rol-administracion { background: #fef3c7; color: #92400e; }
+        .preventista-rol-badge.rol-distribuidora { background: #fce7f3; color: #9d174d; }
+        .preventista-item-delete {
+            background: none; border: 1.5px solid #fca5a5; color: #dc2626;
+            width: 34px; height: 34px; border-radius: 10px; cursor: pointer; flex-shrink: 0;
+        }
+        .preventista-item-delete:hover { background: #fef2f2; }
 
         .cliente-detail-row { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--border); }
         .cliente-detail-label { flex: 0 0 130px; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); }
@@ -1882,6 +1963,7 @@
             <div class="side-menu-item" id="side-menu-clientes" style="display:none;" onclick="openClientesPanel()"><i class="fas fa-address-book"></i> Clientes</div>
             <div class="side-menu-item" id="side-menu-pedidos" style="display:none;" onclick="openPedidosPanel()"><i class="fas fa-receipt"></i> Pedidos</div>
             <div class="side-menu-item" id="side-menu-estadisticas" style="display:none;" onclick="openEstadisticasPanel()"><i class="fas fa-chart-column"></i> Estadísticas</div>
+            <div class="side-menu-item" id="side-menu-preventistas" style="display:none;" onclick="openPreventistasPanel()"><i class="fas fa-user-tie"></i> Preventistas</div>
             <div class="side-menu-item" onclick="openInstallModal()"><i class="fas fa-mobile-screen-button"></i> Instalar App</div>
             <div class="side-menu-item" id="side-menu-logout" style="display:none;" onclick="sideMenuLogout()"><i class="fas fa-right-from-bracket"></i> Cerrar Sesión</div>
         </nav>
@@ -2047,6 +2129,31 @@
                 <div id="cart-suggestions" style="margin-bottom:6px;"></div>
             </div>
             <div class="cart-modal-footer" id="cart-checkout-form" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- CONFIRMACIÓN DE ACCIONES (doble paso, reemplaza confirm() nativo) -->
+    <div class="modal-overlay" id="confirm-modal">
+        <div class="modal-card confirm-modal-card">
+            <div class="confirm-modal-icon" id="confirm-modal-icon"><i class="fas fa-triangle-exclamation"></i></div>
+            <div class="confirm-modal-title" id="confirm-modal-title">¿Estás seguro?</div>
+            <div class="confirm-modal-text" id="confirm-modal-text"></div>
+            <div class="confirm-modal-actions">
+                <button type="button" class="confirm-modal-btn cancelar" onclick="cancelarConfirmacion()">Cancelar</button>
+                <button type="button" class="confirm-modal-btn confirmar" id="confirm-modal-btn-confirmar" onclick="avanzarConfirmacion()">Sí, continuar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DETALLE DE PRODUCTO (con zoom de imagen y características completas) -->
+    <div class="modal-overlay" id="producto-detalle-modal">
+        <div class="modal-card producto-detalle-modal-card">
+            <div class="producto-detalle-img-wrap" id="producto-detalle-img-wrap" onclick="toggleZoomProductoDetalle()">
+                <img id="producto-detalle-img" src="" alt="">
+                <span class="producto-detalle-zoom-hint" id="producto-detalle-zoom-hint"><i class="fas fa-magnifying-glass-plus"></i> Tocá para acercar</span>
+                <button type="button" class="producto-detalle-close" onclick="event.stopPropagation(); closeProductoDetalle()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="producto-detalle-body" id="producto-detalle-body"></div>
         </div>
     </div>
 
@@ -2244,6 +2351,17 @@
         </div>
     </div>
 
+    <!-- PANEL DE PREVENTISTAS (solo Administración): alta y baja de cuentas de staff -->
+    <div class="modal-overlay" id="preventistas-modal">
+        <div class="modal-card clientes-modal-card">
+            <div class="clientes-header">
+                <h2><i class="fas fa-user-tie"></i> Preventistas</h2>
+                <button class="btn-close" onclick="closePreventistasPanel()">✕</button>
+            </div>
+            <div id="preventistas-body"></div>
+        </div>
+    </div>
+
     <!-- RECORRIDO GUIADO: bloqueador + resaltado (spotlight) + tarjeta de navegación -->
     <div class="tour-overlay" id="tour-overlay">
         <div class="tour-blocker"></div>
@@ -2345,6 +2463,64 @@
     }
 
     let COSTO_ENVIO = 2000;
+
+    // ==========================================================
+    //  CONFIRMACIÓN DE ACCIONES EN 2 PASOS (agregar/eliminar/modificar, etc.)
+    //  Reemplaza al confirm() nativo del navegador por un cartel propio, y pide
+    //  confirmar dos veces antes de ejecutar la acción.
+    //  Uso: confirmarAccion({ titulo, texto, alConfirmar: function() {...} })
+    // ==========================================================
+    let confirmacionPasoActual = 1;
+    let confirmacionCallback = null;
+    let confirmacionConfig = null;
+
+    function confirmarAccion(config) {
+        confirmacionConfig = config;
+        confirmacionCallback = config.alConfirmar;
+        confirmacionPasoActual = 1;
+        renderPasoConfirmacion();
+        document.getElementById('confirm-modal').classList.add('active');
+    }
+
+    function renderPasoConfirmacion() {
+        const icono = document.getElementById('confirm-modal-icon');
+        const titulo = document.getElementById('confirm-modal-title');
+        const texto = document.getElementById('confirm-modal-text');
+        const btnConfirmar = document.getElementById('confirm-modal-btn-confirmar');
+
+        if (confirmacionPasoActual === 1) {
+            icono.className = 'confirm-modal-icon';
+            icono.innerHTML = '<i class="fas fa-triangle-exclamation"></i>';
+            titulo.textContent = confirmacionConfig.titulo || '¿Estás seguro?';
+            texto.textContent = confirmacionConfig.texto || 'Esta acción no se puede deshacer.';
+            btnConfirmar.textContent = 'Sí, continuar';
+        } else {
+            icono.className = 'confirm-modal-icon paso2';
+            icono.innerHTML = '<i class="fas fa-shield-halved"></i>';
+            titulo.textContent = 'Confirmá una vez más';
+            texto.textContent = confirmacionConfig.textoPaso2 || 'Última confirmación antes de aplicar el cambio.';
+            btnConfirmar.textContent = 'Confirmar definitivamente';
+        }
+    }
+
+    function avanzarConfirmacion() {
+        if (confirmacionPasoActual === 1) {
+            confirmacionPasoActual = 2;
+            renderPasoConfirmacion();
+            return;
+        }
+        document.getElementById('confirm-modal').classList.remove('active');
+        const callback = confirmacionCallback;
+        confirmacionCallback = null;
+        confirmacionConfig = null;
+        if (callback) callback();
+    }
+
+    function cancelarConfirmacion() {
+        document.getElementById('confirm-modal').classList.remove('active');
+        confirmacionCallback = null;
+        confirmacionConfig = null;
+    }
 
     // ==========================================================
     //  PREGUNTAS FRECUENTES (botón flotante de WhatsApp)
@@ -2880,26 +3056,39 @@
     async function loadProductsFromSheets() {
         const splashStartTime = Date.now();
         try {
-            const [respPublico, respMarcas, respMenu, respSubmenu] = await Promise.all([
-                fetch(CSV_URL_PUBLICO),
+            // Productos: primero se intenta Supabase (mucho más rápido, sin exportar CSV de
+            // Google ni parsear miles de líneas en el navegador). Si Supabase todavía no está
+            // conectado, la tabla está vacía, o falla por cualquier motivo, cae automáticamente
+            // al CSV de siempre -- así el catálogo NUNCA desaparece por un problema de Supabase.
+            const [productosSupabase, respMarcas, respMenu, respSubmenu] = await Promise.all([
+                cargarProductosDesdeSupabase().catch(() => null),
                 fetch(CSV_URL_MARCAS),
                 fetch(CSV_URL_MENU),
                 fetch(CSV_URL_SUBMENU)
             ]);
 
-            const csvPublico = respPublico.ok ? await respPublico.text() : '';
+            if (productosSupabase) {
+                PRODUCTS_PUBLICO = productosSupabase.publico;
+                PRODUCTS_PREVENTA_EXTRA = productosSupabase.preventa;
+                console.log('[Productos] Cargados desde Supabase:', PRODUCTS_PUBLICO.length + PRODUCTS_PREVENTA_EXTRA.length, 'variantes.');
+            } else {
+                console.warn('[Productos] Supabase no devolvió datos, usando el CSV de respaldo.');
+                const respPublico = await fetch(CSV_URL_PUBLICO);
+                const csvPublico = respPublico.ok ? await respPublico.text() : '';
+                if (csvPublico) {
+                    const parsed = parseUnifiedCatalogCSV(csvPublico);
+                    PRODUCTS_PUBLICO = parsed.publico;
+                    PRODUCTS_PREVENTA_EXTRA = parsed.preventa;
+                } else {
+                    PRODUCTS_PUBLICO = [];
+                    PRODUCTS_PREVENTA_EXTRA = [];
+                }
+            }
+
             const csvMarcas = respMarcas.ok ? await respMarcas.text() : '';
             const csvMenu = respMenu.ok ? await respMenu.text() : '';
             const csvSubmenu = respSubmenu.ok ? await respSubmenu.text() : '';
 
-            if (csvPublico) {
-                const parsed = parseUnifiedCatalogCSV(csvPublico);
-                PRODUCTS_PUBLICO = parsed.publico;
-                PRODUCTS_PREVENTA_EXTRA = parsed.preventa;
-            } else {
-                PRODUCTS_PUBLICO = [];
-                PRODUCTS_PREVENTA_EXTRA = [];
-            }
             BRAND_LOGOS = csvMarcas ? parseBrandLogosCSV(csvMarcas) : [];
             MENU_ITEMS = csvMenu ? parseMenuCSV(csvMenu) : [];
             SUBMENU_ITEMS = csvSubmenu ? parseSubmenuCSV(csvSubmenu) : [];
@@ -3165,6 +3354,80 @@
     // "Ambos" con los dos precios cargados juntos: en ambos casos, cada fila puede generar
     // un producto para el catálogo público (precio = columna L) y/o uno para el catálogo de
     // Preventista/Comercios (precio = columna M x columna N), según qué precio venga cargado.
+    // Normaliza variantes de "Almacen"/"Almacén" (con y sin tilde) a un único valor,
+    // para que nunca aparezcan como 2 categorías distintas en Preventista/Comercios.
+    function normalizarCategoriaPreventa(cat) {
+        const c = (cat || '').trim().toLowerCase();
+        if (c === 'almacen' || c === 'almacén') return 'Almacén';
+        if (c === 'limpieza') return 'Limpieza';
+        if (c === 'refrigerados') return 'Refrigerados';
+        return cat;
+    }
+
+    // Lógica compartida: arma 0, 1 o 2 productos (Público/Preventa) a partir de una fila con
+    // claves en español (mismos nombres del CSV). La reutilizan tanto el parser del CSV como
+    // el cargador desde Supabase, para que nunca queden desalineados entre sí.
+    function construirProductosDesdeFila(row, i, publico, preventa) {
+        const disabledVal = (row['Desactivar'] || '').toString().trim().toLowerCase();
+        if (['desactivar', '1', 'si', 'true'].includes(disabledVal)) return;
+
+        const sinStockVal = (row['Sin Stock'] || '').toString().trim().toLowerCase();
+        const isOutOfStock = ['sin stock', '1', 'si', 'true'].includes(sinStockVal);
+
+        const sku = row['SKU'] || '';
+        const title = row['Producto'] || 'Producto sin nombre';
+        const mainCategory = row['Subcategoría'] || 'Almacén';
+        const brand = row['Marca'] || 'Otras';
+        const characteristics = row['Características del Producto'] || '';
+        const unidadesTexto = row['Unidades'] || '';
+
+        // Columna "Empresa / Distribuidora": proveedor al que Los Mayorga le compra ese
+        // producto para reponer stock. Es SOLO para estadística interna futura: nunca se
+        // muestra en ninguna pantalla (ni Público, ni Preventista, ni Comercios).
+        const proveedor = row['Empresa / Distribuidora'] || '';
+
+        // Una sola columna maneja Ofertas y Nuevos ("Etiqueta (Ofertas - Nuevos)")
+        const etiqueta = (row['Etiqueta (Ofertas - Nuevos)'] || '').toString().trim().toUpperCase();
+        const isNew = etiqueta.includes('NUEVO');
+        const isPromo = !isNew && (etiqueta.includes('OFERTA') || etiqueta.includes('PROMO'));
+
+        const glutenCol = (row['Sin Gluten / Sin Tacc'] || '').toString().trim().toUpperCase();
+        const isSinTacc = glutenCol.includes('GLUTEN') || glutenCol.includes('TACC') || glutenCol === 'SI' || glutenCol === 'SÍ'
+            || title.toLowerCase().includes('sin tacc') || title.toLowerCase().includes('sin gluten');
+
+        const expiration = row['Fecha Vencimiento'] || '';
+        const expirationDate = parseSpanishDate(expiration);
+        const normalImage = formatDriveUrl(row['Imagen del Producto']);
+
+        const visibilidad = (row['Público (Mayorista, Distribuidora o Ambos)'] || '').trim().toLowerCase();
+        const permiteMayorista = visibilidad.includes('mayorista') || visibilidad.includes('ambos');
+        const permiteDistribuidora = visibilidad.includes('distribuidora') || visibilidad.includes('ambos');
+
+        // Ahora hay UNA sola lista de precios ("Precio General"): se usa tal cual, sin
+        // multiplicar por unidades, tanto para Público como para Preventista/Comercios.
+        const precioGeneral = cleanPrice(row['Precio General']);
+        if (precioGeneral <= 0) return;
+
+        const packInfo = unidadesTexto || characteristics || 'Unidad';
+
+        const baseFields = {
+            sku, mainCategory, subCategory: '', title, brand, proveedor,
+            packInfo, caracteristicasBulto: packInfo,
+            priceNormal: precioGeneral, pricePromoVal: 0, finalPrice: precioGeneral,
+            isPromo, isNew, isSinTacc, image: normalImage, isOutOfStock,
+            expiration, expirationDate, rowOrder: i
+        };
+
+        if (permiteMayorista) {
+            publico.push({ ...baseFields, id: 'PU-' + (sku ? sku : i), source: 'publico' });
+        }
+        if (permiteDistribuidora) {
+            // Normaliza "Almacen"/"Almacén" (con y sin tilde) a un único valor consistente,
+            // así no aparecen como 2 categorías distintas en la barra de Preventista/Comercios.
+            preventa.push({ ...baseFields, mainCategory: normalizarCategoriaPreventa(mainCategory), id: 'PV-' + (sku ? sku : i), source: 'preventa' });
+        }
+    }
+
     function parseUnifiedCatalogCSV(csvText) {
         const lines = csvText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
         if (lines.length < 2) return { publico: [], preventa: [] };
@@ -3185,64 +3448,48 @@
                 row[headers[j]] = currentline[j] ? currentline[j].trim().replace(/^"|"$/g, '') : '';
             }
 
-            const disabledVal = (row['Desactivar'] || '').toString().trim().toLowerCase();
-            if (['desactivar', '1', 'si', 'true'].includes(disabledVal)) continue;
-
-            const sinStockVal = (row['Sin Stock'] || '').toString().trim().toLowerCase();
-            const isOutOfStock = ['sin stock', '1', 'si', 'true'].includes(sinStockVal);
-
-            const sku = row['SKU'] || '';
-            const title = row['Producto'] || 'Producto sin nombre';
-            const mainCategory = row['Subcategoría'] || 'Almacén';
-            const brand = row['Marca'] || 'Otras';
-            const characteristics = row['Características del Producto'] || '';
-            const unidadesTexto = row['Unidades'] || '';
-
-            // Columna "Empresa / Distribuidora": proveedor al que Los Mayorga le compra ese
-            // producto para reponer stock. Es SOLO para estadística interna futura: nunca se
-            // muestra en ninguna pantalla (ni Público, ni Preventista, ni Comercios).
-            const proveedor = row['Empresa / Distribuidora'] || '';
-
-            // Una sola columna maneja Ofertas y Nuevos ("Etiqueta (Ofertas - Nuevos)")
-            const etiqueta = (row['Etiqueta (Ofertas - Nuevos)'] || '').toString().trim().toUpperCase();
-            const isNew = etiqueta.includes('NUEVO');
-            const isPromo = !isNew && (etiqueta.includes('OFERTA') || etiqueta.includes('PROMO'));
-
-            const glutenCol = (row['Sin Gluten / Sin Tacc'] || '').toString().trim().toUpperCase();
-            const isSinTacc = glutenCol.includes('GLUTEN') || glutenCol.includes('TACC') || glutenCol === 'SI' || glutenCol === 'SÍ'
-                || title.toLowerCase().includes('sin tacc') || title.toLowerCase().includes('sin gluten');
-
-            const expiration = row['Fecha Vencimiento'] || '';
-            const expirationDate = parseSpanishDate(expiration);
-            const normalImage = formatDriveUrl(row['Imagen del Producto']);
-
-            const visibilidad = (row['Público (Mayorista, Distribuidora o Ambos)'] || '').trim().toLowerCase();
-            const permiteMayorista = visibilidad.includes('mayorista') || visibilidad.includes('ambos');
-            const permiteDistribuidora = visibilidad.includes('distribuidora') || visibilidad.includes('ambos');
-
-            // Ahora hay UNA sola lista de precios ("Precio General"): se usa tal cual, sin
-            // multiplicar por unidades, tanto para Público como para Preventista/Comercios.
-            const precioGeneral = cleanPrice(row['Precio General']);
-            if (precioGeneral <= 0) continue;
-
-            const packInfo = unidadesTexto || characteristics || 'Unidad';
-
-            const baseFields = {
-                sku, mainCategory, subCategory: '', title, brand, proveedor,
-                packInfo, caracteristicasBulto: packInfo,
-                priceNormal: precioGeneral, pricePromoVal: 0, finalPrice: precioGeneral,
-                isPromo, isNew, isSinTacc, image: normalImage, isOutOfStock,
-                expiration, expirationDate, rowOrder: i
-            };
-
-            if (permiteMayorista) {
-                publico.push({ ...baseFields, id: 'PU-' + (sku ? sku : i), source: 'publico' });
-            }
-            if (permiteDistribuidora) {
-                preventa.push({ ...baseFields, id: 'PV-' + (sku ? sku : i), source: 'preventa' });
-            }
+            construirProductosDesdeFila(row, i, publico, preventa);
         }
 
+        return { publico, preventa };
+    }
+
+    // Carga el catálogo desde la tabla "productos" de Supabase (mucho más rápido que el CSV:
+    // sin exportación de Google ni parseo de miles de líneas en el navegador). Traduce las
+    // columnas de Supabase a las mismas claves en español que ya usa construirProductosDesdeFila,
+    // así no hay que duplicar ninguna regla de negocio.
+    async function cargarProductosDesdeSupabase() {
+        const client = getSupabaseClient();
+        if (!client) return null;
+
+        const { data, error } = await client.from('productos').select('*');
+        if (error || !data || data.length === 0) return null;
+
+        const publico = [];
+        const preventa = [];
+
+        data.forEach((fila, i) => {
+            const row = {
+                'Producto': fila.producto || '',
+                'Empresa / Distribuidora': fila.empresa_distribuidora || '',
+                'Etiqueta (Ofertas - Nuevos)': fila.etiqueta || '',
+                'Subcategoría': fila.subcategoria || '',
+                'Desactivar': fila.desactivar || '',
+                'Sin Stock': fila.sin_stock || '',
+                'Fecha Vencimiento': fila.fecha_vencimiento || '',
+                'Sin Gluten / Sin Tacc': fila.sin_gluten_tacc || '',
+                'Marca': fila.marca || '',
+                'Características del Producto': fila.caracteristicas || '',
+                'Público (Mayorista, Distribuidora o Ambos)': fila.publico || '',
+                'SKU': fila.sku || '',
+                'Precio General': fila.precio_general || '',
+                'Unidades': fila.unidades || '',
+                'Imagen del Producto': fila.imagen || ''
+            };
+            construirProductosDesdeFila(row, i, publico, preventa);
+        });
+
+        if (publico.length === 0 && preventa.length === 0) return null;
         return { publico, preventa };
     }
 
@@ -3270,8 +3517,21 @@
         }
     }
 
+    const ORDEN_CATEGORIAS_PREVENTA = ['Almacén', 'Limpieza', 'Refrigerados'];
+
     function renderMainCategoriesFlat() {
-        const mainCats = ['TODOS', ...new Set(ALL_PRODUCTS.map(p => p.mainCategory))];
+        const categoriasUnicas = [...new Set(ALL_PRODUCTS.map(p => p.mainCategory))];
+        // Orden fijo (Almacén, Limpieza, Refrigerados) y cualquier categoría nueva que
+        // aparezca en el futuro se agrega al final, alfabéticamente, sin romper nada.
+        categoriasUnicas.sort((a, b) => {
+            const ia = ORDEN_CATEGORIAS_PREVENTA.indexOf(a);
+            const ib = ORDEN_CATEGORIAS_PREVENTA.indexOf(b);
+            if (ia !== -1 && ib !== -1) return ia - ib;
+            if (ia !== -1) return -1;
+            if (ib !== -1) return 1;
+            return a.localeCompare(b);
+        });
+        const mainCats = ['TODOS', ...categoriasUnicas];
         const container = document.getElementById('main-categories-bar');
         if (!mainCats.includes(selectedMainCat)) selectedMainCat = 'TODOS';
         container.innerHTML = mainCats.map(cat => `
@@ -3542,6 +3802,7 @@
                     <div class="product-brand">${p.brand}</div>
                     <div class="product-title">${p.title}</div>
                     <div class="product-pack-info"><i class="fas fa-box-open"></i> ${p.caracteristicasBulto}</div>
+                    <div class="product-ver-mas" onclick="event.stopPropagation(); abrirDetalleProducto('${p.id}')"><i class="fas fa-magnifying-glass-plus"></i> Ver más</div>
                     ${getAlcoholWarningHtml(p)}
                 </div>
                 <div>
@@ -3567,6 +3828,70 @@
                 </div>
             </div>
         `;
+    }
+
+    // ---------- Detalle de producto: zoom de imagen + características completas ----------
+    let productoDetalleZoomActivo = false;
+
+    function abrirDetalleProducto(id) {
+        const p = ALL_PRODUCTS.find(x => x.id === id);
+        if (!p) return;
+
+        productoDetalleZoomActivo = false;
+        const imgWrap = document.getElementById('producto-detalle-img-wrap');
+        imgWrap.classList.remove('zoomed');
+
+        const img = document.getElementById('producto-detalle-img');
+        img.src = p.image;
+        img.alt = p.title;
+        img.onerror = function () { this.src = 'https://via.placeholder.com/400?text=Sin+Foto'; };
+
+        const badgesHtml = getProductBadgeHtml(p).replace('product-badge', 'product-badge producto-detalle-badge-item');
+
+        const body = document.getElementById('producto-detalle-body');
+        body.innerHTML = `
+            <div class="producto-detalle-badges">${badgesHtml}</div>
+            <div class="producto-detalle-titulo">${p.title}</div>
+            <div class="producto-detalle-marca"><i class="fas fa-tag"></i> ${p.brand}</div>
+            <div class="producto-detalle-precio">$${p.finalPrice.toLocaleString('es-AR', {minimumFractionDigits:2})}</div>
+            ${getAlcoholWarningHtml(p)}
+
+            <div class="producto-detalle-row"><span class="producto-detalle-row-label">SKU</span><span class="producto-detalle-row-value">${p.sku || 'Sin SKU'}</span></div>
+            <div class="producto-detalle-row"><span class="producto-detalle-row-label">Categoría</span><span class="producto-detalle-row-value">${p.mainCategory}</span></div>
+            <div class="producto-detalle-row"><span class="producto-detalle-row-label">Presentación / Características</span><span class="producto-detalle-row-value">${p.caracteristicasBulto}</span></div>
+            ${p.isSinTacc ? `<div class="producto-detalle-row"><span class="producto-detalle-row-label">Sin Gluten / Sin TACC</span><span class="producto-detalle-row-value">Sí</span></div>` : ''}
+            <div class="producto-detalle-row"><span class="producto-detalle-row-label">Disponibilidad</span><span class="producto-detalle-row-value">${p.isOutOfStock ? 'Sin stock' : 'Disponible'}</span></div>
+
+            <div data-product-id="${p.id}" style="margin-top:16px;">
+                ${p.isOutOfStock ? `
+                    <button class="btn-add-cart" disabled><i class="fas fa-ban"></i> Sin Stock</button>
+                ` : (cart[p.id] ? cart[p.id].qty : 0) === 0 ? `
+                    <button class="btn-add-cart" onclick="updateQty('${p.id}', 1); abrirDetalleProducto('${p.id}');"><i class="fas fa-plus-circle"></i> Agregar</button>
+                ` : `
+                    <div class="qty-controls-card">
+                        <button class="btn-qty-card" onclick="updateQty('${p.id}', -1); abrirDetalleProducto('${p.id}');">−</button>
+                        <span style="font-size:0.85rem; font-weight:800;">${cart[p.id].qty}</span>
+                        <button class="btn-qty-card" onclick="updateQty('${p.id}', 1); abrirDetalleProducto('${p.id}');">+</button>
+                    </div>
+                `}
+            </div>
+        `;
+
+        document.getElementById('producto-detalle-modal').classList.add('active');
+    }
+
+    function closeProductoDetalle() {
+        document.getElementById('producto-detalle-modal').classList.remove('active');
+    }
+
+    function toggleZoomProductoDetalle() {
+        productoDetalleZoomActivo = !productoDetalleZoomActivo;
+        const wrap = document.getElementById('producto-detalle-img-wrap');
+        const hint = document.getElementById('producto-detalle-zoom-hint');
+        wrap.classList.toggle('zoomed', productoDetalleZoomActivo);
+        hint.innerHTML = productoDetalleZoomActivo
+            ? '<i class="fas fa-magnifying-glass-minus"></i> Tocá para alejar'
+            : '<i class="fas fa-magnifying-glass-plus"></i> Tocá para acercar';
     }
 
     function renderProductsGrid(products) {
@@ -3844,13 +4169,21 @@
         const vePanelClientes = currentRole === "PREVENTA" && activePreventaKey !== COMERCIOS_KEY;
         if (clientesEl) clientesEl.style.display = vePanelClientes ? 'flex' : 'none';
 
-        // "Pedidos" (ventas realizadas) es más sensible: solo Distribuidora y
-        // Administración, no Iván/Ulises ni Comercios.
-        const vePanelPedidos = currentRole === "PREVENTA" && (activePreventaKey === ADMIN_KEY || activePreventaKey === DISTRIBUIDORA_KEY);
-        if (pedidosEl) pedidosEl.style.display = vePanelPedidos ? 'flex' : 'none';
+        // "Pedidos": cualquier preventista lo ve (para poder repetir sus propios pedidos
+        // sin perder tiempo buscando productos de nuevo). Admin/Distribuidora ven TODOS los
+        // pedidos con filtros; Iván/Ulises entran viendo por defecto solo los suyos.
+        const esStaffNoComercios = currentRole === "PREVENTA" && activePreventaKey !== COMERCIOS_KEY;
+        if (pedidosEl) pedidosEl.style.display = esStaffNoComercios ? 'flex' : 'none';
 
+        // "Estadísticas" sigue siendo más sensible: solo Distribuidora y Administración.
+        const vePanelEstadisticas = currentRole === "PREVENTA" && (activePreventaKey === ADMIN_KEY || activePreventaKey === DISTRIBUIDORA_KEY);
         const estadisticasEl = document.getElementById('side-menu-estadisticas');
-        if (estadisticasEl) estadisticasEl.style.display = vePanelPedidos ? 'flex' : 'none';
+        if (estadisticasEl) estadisticasEl.style.display = vePanelEstadisticas ? 'flex' : 'none';
+
+        // "Preventistas" (dar de alta o eliminar cuentas de staff): SOLO Administración.
+        const vePanelPreventistas = currentRole === "PREVENTA" && activePreventaKey === ADMIN_KEY;
+        const preventistasEl = document.getElementById('side-menu-preventistas');
+        if (preventistasEl) preventistasEl.style.display = vePanelPreventistas ? 'flex' : 'none';
 
         if (currentRole === "PREVENTA") {
             if (subtitleEl) subtitleEl.textContent = getRoleSubtitleText();
@@ -4994,8 +5327,12 @@
     function confirmarRepetirUltimoPedido() {
         if (!ultimoPedidoClienteCache) return;
         const cantidadItems = (ultimoPedidoClienteCache.items || []).length;
-        if (!confirm(`¿Agregar los ${cantidadItems} producto${cantidadItems===1?'':'s'} de ese pedido al carrito? Se usan los precios de hoy, no los de aquella vez.`)) return;
-        repetirPedidoEnCarrito(ultimoPedidoClienteCache.items);
+        confirmarAccion({
+            titulo: 'Repetir último pedido',
+            texto: `Se van a agregar ${cantidadItems} producto${cantidadItems===1?'':'s'} al carrito con los precios de hoy (no los de aquella vez).`,
+            textoPaso2: 'Confirmá para agregarlos al carrito.',
+            alConfirmar: () => repetirPedidoEnCarrito(ultimoPedidoClienteCache.items)
+        });
     }
 
     // Busca cada producto del pedido viejo en el catálogo ACTUAL (por SKU, con respaldo
@@ -5051,13 +5388,19 @@
 
     function clearCart() {
         if (Object.keys(cart).length === 0) return;
-        if (!confirm('¿Vaciar todo el carrito? Esta acción no se puede deshacer.')) return;
-        cart = {};
-        cartsByScope[currentCartScope] = cart;
-        cartListExpanded = false;
-        renderCartSummary();
-        updateCartFloatBar();
-        document.querySelectorAll('[data-product-id]').forEach(el => updateProductDisplay(el.dataset.productId));
+        confirmarAccion({
+            titulo: 'Vaciar el carrito',
+            texto: 'Se van a borrar todos los productos que agregaste. Esta acción no se puede deshacer.',
+            textoPaso2: 'Confirmá para vaciar el carrito definitivamente.',
+            alConfirmar: () => {
+                cart = {};
+                cartsByScope[currentCartScope] = cart;
+                cartListExpanded = false;
+                renderCartSummary();
+                updateCartFloatBar();
+                document.querySelectorAll('[data-product-id]').forEach(el => updateProductDisplay(el.dataset.productId));
+            }
+        });
     }
 
     function sendWhatsAppOrder() {
@@ -5410,6 +5753,153 @@
         return supabaseClient;
     }
 
+    // Cliente de Supabase APARTE (nunca el principal): se usa exclusivamente para crear
+    // cuentas nuevas (preventistas, y más adelante clientes) mientras Administración sigue
+    // logueada. Si se usara el cliente principal, "signUp" reemplazaría automáticamente la
+    // sesión activa por la de la cuenta recién creada -- esto lo evita por completo.
+    function getSupabaseClientDescartable() {
+        if (!SUPABASE_URL || SUPABASE_URL.indexOf('PEGAR_ACA') !== -1) return null;
+        if (typeof supabase === 'undefined') return null;
+        return supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+
+    // ==========================================================
+    //  PANEL DE PREVENTISTAS (solo Administración): alta y baja de cuentas de staff.
+    //  Eliminar un preventista NUNCA borra pedidos ni estadísticas -- esos guardan el
+    //  nombre como texto plano en el momento de la venta, sin vínculo a la cuenta.
+    // ==========================================================
+    let preventistasListCache = [];
+
+    function openPreventistasPanel() {
+        closeSideMenu();
+        document.getElementById('preventistas-modal').classList.add('active');
+        renderPreventistasList();
+    }
+
+    function closePreventistasPanel() {
+        document.getElementById('preventistas-modal').classList.remove('active');
+    }
+
+    async function renderPreventistasList() {
+        const body = document.getElementById('preventistas-body');
+        body.innerHTML = `
+            <button class="btn-nuevo-cliente" onclick="openPreventistaForm()"><i class="fas fa-user-plus"></i> Nuevo Preventista</button>
+            <div id="preventistas-list-container"><div class="clientes-loading">Cargando...</div></div>
+        `;
+
+        const client = getSupabaseClient();
+        const container = document.getElementById('preventistas-list-container');
+        if (!client) {
+            container.innerHTML = `<div class="clientes-error"><i class="fas fa-triangle-exclamation"></i> Todavía no está conectado Supabase.</div>`;
+            return;
+        }
+
+        const { data, error } = await client.rpc('listar_preventistas', { p_clave: activePreventaKey });
+        if (error) {
+            container.innerHTML = `<div class="clientes-error"><i class="fas fa-triangle-exclamation"></i> ${error.message}</div>`;
+            return;
+        }
+
+        preventistasListCache = data || [];
+        if (preventistasListCache.length === 0) {
+            container.innerHTML = `<p style="text-align:center; color:#999; padding:20px 0;">Todavía no hay preventistas con cuenta real cargados.</p>`;
+            return;
+        }
+
+        const rolLabels = { preventista: 'Preventista', distribuidora: 'Distribuidora', administracion: 'Administración' };
+        container.innerHTML = preventistasListCache.map(p => `
+            <div class="preventista-item">
+                <div>
+                    <div class="preventista-item-name">${p.nombre}</div>
+                    <div class="preventista-rol-badge rol-${p.rol}">${rolLabels[p.rol] || p.rol}</div>
+                </div>
+                <button type="button" class="preventista-item-delete" onclick="confirmarEliminarPreventista('${p.id}', '${p.nombre.replace(/'/g, "\\'")}')" title="Eliminar"><i class="fas fa-trash"></i></button>
+            </div>
+        `).join('');
+    }
+
+    function openPreventistaForm() {
+        const body = document.getElementById('preventistas-body');
+        body.innerHTML = `
+            <button type="button" class="marcas-back-btn" onclick="renderPreventistasList()"><i class="fas fa-arrow-left"></i> Volver</button>
+            <h3 style="font-size:1.05rem; font-weight:900; margin-bottom:12px;">Nuevo Preventista</h3>
+            <div id="preventista-form-error"></div>
+            <input type="text" id="pf-nombre" class="form-control-enhanced" placeholder="Nombre y Apellido *">
+            <input type="email" id="pf-email" class="form-control-enhanced" placeholder="Email (para ingresar a la app) *">
+            <input type="password" id="pf-password" class="form-control-enhanced" placeholder="Contraseña (mínimo 6 caracteres) *">
+            <select id="pf-rol" class="form-control-enhanced">
+                <option value="preventista">Preventista</option>
+                <option value="distribuidora">Distribuidora</option>
+                <option value="administracion">Administración</option>
+            </select>
+            <button class="btn-whatsapp-send" onclick="guardarNuevoPreventista()"><i class="fas fa-check"></i> Crear cuenta</button>
+        `;
+    }
+
+    async function guardarNuevoPreventista() {
+        const nombre = document.getElementById('pf-nombre').value.trim();
+        const email = document.getElementById('pf-email').value.trim();
+        const password = document.getElementById('pf-password').value;
+        const rol = document.getElementById('pf-rol').value;
+        const errorBox = document.getElementById('preventista-form-error');
+        errorBox.innerHTML = '';
+
+        if (!nombre || !email || !password) {
+            errorBox.innerHTML = `<div class="clientes-error">Completá nombre, email y contraseña.</div>`;
+            return;
+        }
+        if (password.length < 6) {
+            errorBox.innerHTML = `<div class="clientes-error">La contraseña tiene que tener al menos 6 caracteres.</div>`;
+            return;
+        }
+
+        const clienteDescartable = getSupabaseClientDescartable();
+        if (!clienteDescartable) {
+            errorBox.innerHTML = `<div class="clientes-error">Supabase todavía no está conectado.</div>`;
+            return;
+        }
+
+        // 1) Crea la cuenta de acceso (con un cliente aparte, para no pisar la sesión actual)
+        const { data: authData, error: authError } = await clienteDescartable.auth.signUp({ email, password });
+        if (authError || !authData.user) {
+            errorBox.innerHTML = `<div class="clientes-error">No se pudo crear la cuenta: ${authError ? authError.message : 'error desconocido'}. Revisá que en Supabase → Authentication → Settings esté desactivada la confirmación por email.</div>`;
+            return;
+        }
+
+        // 2) Vincula esa cuenta a un perfil con nombre y rol (esto sí con el cliente principal, ya logueado como Admin)
+        const client = getSupabaseClient();
+        const { error: perfilError } = await client.rpc('crear_perfil_preventista', {
+            p_clave: activePreventaKey,
+            p_auth_id: authData.user.id,
+            p_nombre: nombre,
+            p_rol: rol
+        });
+
+        if (perfilError) {
+            errorBox.innerHTML = `<div class="clientes-error">La cuenta se creó, pero no se pudo vincular el perfil: ${perfilError.message}</div>`;
+            return;
+        }
+
+        renderPreventistasList();
+    }
+
+    function confirmarEliminarPreventista(id, nombre) {
+        confirmarAccion({
+            titulo: 'Eliminar preventista',
+            texto: `¿Eliminar a "${nombre}"? Ya no va a poder ingresar a la app, pero todos sus pedidos y estadísticas anteriores quedan intactos para siempre.`,
+            textoPaso2: 'Confirmá para eliminarlo definitivamente.',
+            alConfirmar: () => eliminarPreventistaConfirmado(id)
+        });
+    }
+
+    async function eliminarPreventistaConfirmado(id) {
+        const client = getSupabaseClient();
+        if (!client) return;
+        const { error } = await client.rpc('eliminar_perfil_preventista', { p_clave: activePreventaKey, p_perfil_id: id });
+        if (error) { alert('No se pudo eliminar: ' + error.message); return; }
+        renderPreventistasList();
+    }
+
     function getStaffKeyForClientes() {
         return activePreventaKey || '';
     }
@@ -5654,8 +6144,12 @@
     }
 
     function confirmarEliminarCliente() {
-        if (!confirm(`¿Eliminar a "${clientesSelected.nombre_fantasia}"? No borra su historial de pedidos, solo lo saca de la lista de clientes activos.`)) return;
-        eliminarClienteConfirmado();
+        confirmarAccion({
+            titulo: 'Eliminar cliente',
+            texto: `¿Eliminar a "${clientesSelected.nombre_fantasia}"? No borra su historial de pedidos, solo lo saca de la lista de clientes activos.`,
+            textoPaso2: 'Confirmá para eliminarlo definitivamente de la lista activa.',
+            alConfirmar: eliminarClienteConfirmado
+        });
     }
 
     async function eliminarClienteConfirmado() {
@@ -5687,8 +6181,11 @@
     function openPedidosPanel() {
         closeSideMenu();
         pedidosFiltroRol = '';
-        pedidosBusqueda = '';
         pedidosListExpanded = false;
+        // Iván/Ulises entran viendo por defecto solo sus propios pedidos (buscados por su
+        // nombre); Admin/Distribuidora ven todos, sin filtro de por medio.
+        const esVerTodos = activePreventaKey === ADMIN_KEY || activePreventaKey === DISTRIBUIDORA_KEY;
+        pedidosBusqueda = esVerTodos ? '' : activePreventista;
         document.getElementById('pedidos-modal').classList.add('active');
         renderPedidosList();
     }
@@ -5873,10 +6370,16 @@
     function repetirPedidoDesdePanel(id) {
         const p = pedidosListCache.find(x => x.id === id);
         if (!p) return;
-        if (!confirm(`¿Agregar los productos de este pedido al carrito? Se usan los precios de hoy.`)) return;
-        closePedidosPanel();
-        repetirPedidoEnCarrito(p.items);
-        toggleCartModal(true);
+        confirmarAccion({
+            titulo: 'Repetir este pedido',
+            texto: 'Se van a agregar sus productos al carrito con los precios de hoy.',
+            textoPaso2: 'Confirmá para agregarlos al carrito.',
+            alConfirmar: () => {
+                closePedidosPanel();
+                repetirPedidoEnCarrito(p.items);
+                toggleCartModal(true);
+            }
+        });
     }
 
     // ==========================================================
