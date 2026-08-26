@@ -1,1 +1,21 @@
+name: Mantener Supabase activo
 
+# Corre solo (cada 3 días) + se puede disparar manualmente desde la pestaña "Actions" de GitHub
+on:
+  schedule:
+    - cron: '0 9 */3 * *'   # cada 3 días, a las 9:00 UTC (~6am Argentina)
+  workflow_dispatch:
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Consulta liviana a la tabla pública de productos
+        run: |
+          CODIGO=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://gubhsggjagfyanwhsewx.supabase.co/rest/v1/productos?select=id&limit=1" \
+            -H "apikey: sb_publishable_gDV9Xr73auf5ODx2o6J3FQ_T3aBCIwC")
+          echo "Respuesta de Supabase: HTTP $CODIGO"
+          if [ "$CODIGO" -ge 400 ]; then
+            echo "::warning::Supabase respondió con error $CODIGO, revisar manualmente."
+          fi
