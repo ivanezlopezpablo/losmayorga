@@ -328,6 +328,24 @@
             box-shadow: var(--shadow-sm);
         }
 
+        /* SELECTOR DE VISTA DE CATÁLOGO (solo Vendedor en Comercio / Depósito):
+           atienden presencialmente con precios de Mayorista, pero a veces necesitan
+           ver también la vista de Distribuidora -- este switch les deja elegir. */
+        .vendedor-vista-toggle {
+            display: none;
+            gap: 8px; padding: 10px 12px;
+            background: #1e293b; border-bottom: 1px solid #334155;
+        }
+        .vendedor-vista-toggle.visible { display: flex; }
+        .vendedor-vista-btn {
+            flex: 1; padding: 9px; border-radius: 10px; border: 1.5px solid #475569;
+            background: #0f172a; color: #94a3b8; font-size: 0.76rem; font-weight: 800;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .vendedor-vista-btn.active {
+            background: linear-gradient(135deg, #FF6F00, #FF8C00); border-color: #FF8C00; color: white;
+        }
+
         /* HERO BANNER */
         .hero-banner-slider {
             position: relative;
@@ -1278,6 +1296,7 @@
         .pedido-rol-badge.rol-publico { background: #dbeafe; color: #1e40af; }
         .pedido-rol-badge.rol-preventa { background: #fef3c7; color: #92400e; }
         .pedido-rol-badge.rol-comercios { background: #dcfce7; color: #166534; }
+        .pedido-rol-badge.rol-local { background: #ede9fe; color: #5b21b6; }
 
         .pedido-detail-item-row {
             display: flex; justify-content: space-between; gap: 10px;
@@ -2032,6 +2051,16 @@
         <i class="fas fa-user-tie"></i> MODO PREVENTA ACTIVO - Catálogo Exclusivo
     </div>
 
+    <!-- Solo Vendedor en Comercio / Depósito: elegir con qué catálogo/precios trabajar -->
+    <div id="vendedor-vista-toggle" class="vendedor-vista-toggle">
+        <button type="button" class="vendedor-vista-btn" id="vendedor-vista-btn-mayorista" onclick="cambiarVistaCatalogoVendedor('mayorista')">
+            <i class="fas fa-store"></i> Vista Mayorista
+        </button>
+        <button type="button" class="vendedor-vista-btn" id="vendedor-vista-btn-distribuidora" onclick="cambiarVistaCatalogoVendedor('distribuidora')">
+            <i class="fas fa-truck"></i> Vista Distribuidora
+        </button>
+    </div>
+
     <!-- BARRA INTERNA - visible para cualquier Preventista (no Comercios) -->
     <div id="distribuidora-alert-bar" class="distribuidora-alert-bar">
         <span><i class="fas fa-hourglass-half"></i> <span id="distribuidora-alert-text">Productos por vencer</span></span>
@@ -2466,6 +2495,8 @@
     const SUPABASE_URL = 'https://gubhsggjagfyanwhsewx.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_gDV9Xr73auf5ODx2o6J3FQ_T3aBCIwC';
     const ADMIN_KEY = "ADMIN2026";
+    const VENDEDOR_LOCAL_KEY = "VEND2026"; // vendedor presencial en el local (tablet)
+    const DEPOSITO_KEY = "DEPO2026";       // prepara/controla los pedidos tomados en el local
 
     // Envía una copia del pedido al Google Sheet de "Registro de Ventas", además de
     // WhatsApp. Es "fire and forget": si falla (por ejemplo, si todavía no pegaste la
@@ -3343,8 +3374,16 @@
     // Arma el catálogo ALL_PRODUCTS según el rol actual y refresca filtros/marcas/categorías.
     // Ya no se concatena público + preventa: la hoja unificada ya declara explícitamente,
     // fila por fila, en qué canal(es) debe aparecer cada producto (columna J).
+    // Vendedor en Comercio / Depósito pueden elegir con qué catálogo trabajar
+    // ("mayorista" por defecto, ya que así atienden presencialmente casi siempre).
+    let vistaCatalogoVendedorLocal = 'mayorista';
+
     function rebuildActiveCatalog() {
-        if (currentRole === "PREVENTA") {
+        const esVendedorODeposito = currentRole === "PREVENTA" && (activePreventaKey === VENDEDOR_LOCAL_KEY || activePreventaKey === DEPOSITO_KEY);
+
+        if (esVendedorODeposito) {
+            ALL_PRODUCTS = vistaCatalogoVendedorLocal === 'mayorista' ? PRODUCTS_PUBLICO : PRODUCTS_PREVENTA_EXTRA;
+        } else if (currentRole === "PREVENTA") {
             ALL_PRODUCTS = PRODUCTS_PREVENTA_EXTRA;
         } else {
             ALL_PRODUCTS = PRODUCTS_PUBLICO;
@@ -4211,6 +4250,37 @@
 
         updateSideMenuAuthUI();
         refreshMarcasChipVisibility();
+        actualizarVisibilidadToggleVendedor();
+    }
+
+    // Muestra/oculta el selector de vista Mayorista/Distribuidora, solo para
+    // Vendedor en Comercio y Depósito.
+    function actualizarVisibilidadToggleVendedor() {
+        const toggle = document.getElementById('vendedor-vista-toggle');
+        if (!toggle) return;
+        const esVendedorODeposito = currentRole === "PREVENTA" && (activePreventaKey === VENDEDOR_LOCAL_KEY || activePreventaKey === DEPOSITO_KEY);
+        toggle.classList.toggle('visible', esVendedorODeposito);
+        if (esVendedorODeposito) renderBotonesVistaVendedor();
+    }
+
+    function renderBotonesVistaVendedor() {
+        document.getElementById('vendedor-vista-btn-mayorista').classList.toggle('active', vistaCatalogoVendedorLocal === 'mayorista');
+        document.getElementById('vendedor-vista-btn-distribuidora').classList.toggle('active', vistaCatalogoVendedorLocal === 'distribuidora');
+    }
+
+    function cambiarVistaCatalogoVendedor(vista) {
+        if (vista === vistaCatalogoVendedorLocal) return;
+        vistaCatalogoVendedorLocal = vista;
+        renderBotonesVistaVendedor();
+
+        // Al cambiar de catálogo, se resetea la categoría/subcategoría elegida (las
+        // categorías de Mayorista y Distribuidora no son las mismas) y se recarga todo.
+        selectedMainCat = 'TODOS';
+        selectedCategoryBucket = null;
+        rebuildActiveCatalog();
+        filterProducts();
+        refreshMarcasChipVisibility();
+        closeMarcasInline();
     }
 
     function updateSideMenuAuthUI() {
@@ -4351,6 +4421,8 @@
 
         const claveInterna = perfil.rol === 'administracion' ? ADMIN_KEY
             : perfil.rol === 'distribuidora' ? DISTRIBUIDORA_KEY
+            : perfil.rol === 'vendedor_local' ? VENDEDOR_LOCAL_KEY
+            : perfil.rol === 'deposito' ? DEPOSITO_KEY
             : 'PREV2026A'; // preventista: internamente da lo mismo cuál (mismos permisos), el nombre real es perfil.nombre
 
         loginComoStaff(claveInterna, perfil.nombre);
@@ -4425,9 +4497,11 @@
         activePreventaKey = "";
         comercioAutenticadoData = null;
         comercioTieneCuentaReal = false;
+        vistaCatalogoVendedorLocal = 'mayorista';
         switchCartScope('PUBLICO');
         document.body.classList.remove('mode-preventa');
         document.getElementById('preventa-banner').style.display = 'none';
+        document.getElementById('vendedor-vista-toggle').classList.remove('visible');
         document.getElementById('app-subtitle').innerText = "Distribuidora Mayorista - Rincón";
 
         // Si había entrado con email/contraseña real (Supabase Auth), cierra esa sesión también.
@@ -5278,10 +5352,17 @@
             `;
         }
 
+        // El Vendedor en Comercio (venta presencial con tablet) no manda WhatsApp: carga
+        // la solicitud directo como venta real del sistema.
+        const esVendedorLocal = activePreventaKey === VENDEDOR_LOCAL_KEY;
+        const botonEnvioHtml = esVendedorLocal
+            ? `<button class="btn-whatsapp-send" onclick="cargarSolicitudPedido()"><i class="fas fa-clipboard-check"></i> Cargar Solicitud de Pedido</button>`
+            : `<button class="btn-whatsapp-send" onclick="sendWhatsAppOrder()"><i class="fab fa-whatsapp"></i> Enviar por WhatsApp</button>`;
+
         form.innerHTML = `
             ${camposClienteHtml}
             ${camposExtraMayorista}
-            <button class="btn-whatsapp-send" onclick="sendWhatsAppOrder()"><i class="fab fa-whatsapp"></i> Enviar por WhatsApp</button>
+            ${botonEnvioHtml}
             <button type="button" class="btn-clear-cart" onclick="clearCart()"><i class="fas fa-trash"></i> Vaciar carrito</button>
         `;
 
@@ -5632,6 +5713,69 @@
         }, 1000);
     }
 
+    // Vendedor en Comercio (venta presencial con tablet): en vez de mandar WhatsApp,
+    // carga la solicitud directo como una venta real del sistema -- cuenta en
+    // Pedidos y Estadísticas igual que cualquier otra venta, y la ve Depósito para
+    // prepararla/controlarla. Reutiliza toda la validación de sendWhatsAppOrder,
+    // solo que no abre WhatsApp y avisa en pantalla en vez de eso.
+    function cargarSolicitudPedido() {
+        const name = document.getElementById('client-name').value.trim();
+        const fichaClienteOrigen = esStaffParaBusquedaCliente() && carritoClienteSeleccionado ? carritoClienteSeleccionado : null;
+        const addressInput = document.getElementById('client-address');
+        const address = fichaClienteOrigen ? (fichaClienteOrigen.direccion || '') : (addressInput ? addressInput.value.trim() : '');
+
+        if (!name || !address) return alert("Completá los datos del cliente antes de cargar la solicitud.");
+        if (Object.keys(cart).length === 0) return alert("El carrito está vacío.");
+
+        let subtotal = 0;
+        const itemIds = Object.keys(cart);
+        itemIds.forEach(id => { subtotal += cart[id].product.finalPrice * cart[id].qty; });
+        const total = subtotal;
+
+        const datosPedido = {
+            rol: 'Local', // venta presencial en el local (distinto de Público/Preventa/Comercios)
+            preventista: activePreventista,
+            cliente: name,
+            direccion: address,
+            caracteristicasDomicilio: '',
+            medioPago: '',
+            items: itemIds.map(id => ({
+                cantidad: cart[id].qty,
+                nombre: cart[id].product.title,
+                marca: cart[id].product.brand,
+                sku: cart[id].product.sku,
+                precioUnitario: cart[id].product.finalPrice,
+                subtotal: cart[id].product.finalPrice * cart[id].qty
+            })),
+            cantidadItems: itemIds.reduce((sum, id) => sum + cart[id].qty, 0),
+            subtotal: subtotal,
+            envio: 0,
+            total: total
+        };
+
+        if (fichaClienteOrigen) {
+            const c = fichaClienteOrigen;
+            datosPedido.clienteDueño = c.nombre_dueño || '';
+            datosPedido.clienteCuit = c.cuit || '';
+            datosPedido.clienteTelefono = c.celular_whatsapp || '';
+            datosPedido.clienteRubro = c.rubro || '';
+            datosPedido.clientePreventistaAsignado = c.preventista_asignado || '';
+        }
+
+        logVentaEnSheet(datosPedido);
+        logVentaEnSupabase(datosPedido);
+
+        alert(`✅ Solicitud cargada para "${name}" por $${total.toLocaleString('es-AR', {minimumFractionDigits:2})}. Ya la puede ver Depósito para prepararla.`);
+
+        cart = {};
+        cartsByScope[currentCartScope] = cart;
+        cartListExpanded = false;
+        carritoClienteSeleccionado = null;
+        updateCartFloatBar();
+        document.querySelectorAll('[data-product-id]').forEach(el => updateProductDisplay(el.dataset.productId));
+        toggleCartModal(false);
+    }
+
     function openAboutModal() { document.getElementById('about-modal').classList.add('active'); }
     function closeAboutModal() { document.getElementById('about-modal').classList.remove('active'); }
     function openLocationModal() { document.getElementById('location-modal').classList.add('active'); }
@@ -5916,12 +6060,11 @@
             return;
         }
 
-        const rolLabels = { preventista: 'Preventista', distribuidora: 'Distribuidora', administracion: 'Administración' };
         container.innerHTML = preventistasListCache.map(p => `
             <div class="preventista-item">
                 <div style="cursor:pointer;" onclick="openPreventistaForm('${p.id}')">
                     <div class="preventista-item-name">${p.nombre}</div>
-                    <div class="preventista-rol-badge rol-${p.rol}">${rolLabels[p.rol] || p.rol}</div>
+                    <div class="preventista-rol-badge rol-${p.rol}">${ROL_LABELS_STAFF[p.rol] || p.rol}</div>
                 </div>
                 <div style="display:flex; gap:6px;">
                     <button type="button" class="preventista-item-delete" onclick="openPreventistaForm('${p.id}')" title="Editar" style="border-color:#93c5fd; color:#1e40af;"><i class="fas fa-pen"></i></button>
@@ -5931,14 +6074,18 @@
         `).join('');
     }
 
+    const ROL_LABELS_STAFF = {
+        preventista: 'Preventista', distribuidora: 'Distribuidora', administracion: 'Administración',
+        vendedor_local: 'Vendedor en Comercio', deposito: 'Depósito'
+    };
+
     function openPreventistaForm(idAEditar) {
         const editando = idAEditar ? preventistasListCache.find(p => p.id === idAEditar) : null;
         const body = document.getElementById('preventistas-body');
 
-        const rolOptions = ['preventista', 'distribuidora', 'administracion'].map(r => {
-            const labels = { preventista: 'Preventista', distribuidora: 'Distribuidora', administracion: 'Administración' };
+        const rolOptions = Object.keys(ROL_LABELS_STAFF).map(r => {
             const seleccionado = editando && editando.rol === r ? 'selected' : '';
-            return `<option value="${r}" ${seleccionado}>${labels[r]}</option>`;
+            return `<option value="${r}" ${seleccionado}>${ROL_LABELS_STAFF[r]}</option>`;
         }).join('');
 
         body.innerHTML = `
@@ -6653,7 +6800,8 @@
         { valor: '', label: 'Todos' },
         { valor: 'Público', label: 'Mayorista' },
         { valor: 'Preventa', label: 'Preventista' },
-        { valor: 'Comercios', label: 'Comercios' }
+        { valor: 'Comercios', label: 'Comercios' },
+        { valor: 'Local', label: 'Venta en Local' }
     ];
 
     function openPedidosPanel() {
@@ -6662,7 +6810,7 @@
         pedidosListExpanded = false;
         // Iván/Ulises entran viendo por defecto solo sus propios pedidos (buscados por su
         // nombre); Admin/Distribuidora ven todos, sin filtro de por medio.
-        const esVerTodos = activePreventaKey === ADMIN_KEY || activePreventaKey === DISTRIBUIDORA_KEY;
+        const esVerTodos = activePreventaKey === ADMIN_KEY || activePreventaKey === DISTRIBUIDORA_KEY || activePreventaKey === DEPOSITO_KEY;
         pedidosBusqueda = esVerTodos ? '' : activePreventista;
         document.getElementById('pedidos-modal').classList.add('active');
         renderPedidosList();
@@ -6718,10 +6866,12 @@
     function getRolBadgeClass(rol) {
         if (rol === 'Público') return 'rol-publico';
         if (rol === 'Comercios') return 'rol-comercios';
+        if (rol === 'Local') return 'rol-local';
         return 'rol-preventa';
     }
     function getRolLabel(rol) {
         if (rol === 'Público') return 'Mayorista';
+        if (rol === 'Local') return 'Venta en Local';
         return rol;
     }
 
@@ -6891,7 +7041,8 @@
         { valor: '', label: 'Todos los canales' },
         { valor: 'Público', label: 'Mayorista' },
         { valor: 'Preventa', label: 'Preventista' },
-        { valor: 'Comercios', label: 'Comercios' }
+        { valor: 'Comercios', label: 'Comercios' },
+        { valor: 'Local', label: 'Venta en Local' }
     ];
 
     function openEstadisticasPanel() {
