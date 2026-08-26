@@ -965,7 +965,12 @@
             box-shadow: 0 0 0 3px rgba(2,132,199,0.12);
         }
 
-        /* CONFIRMACIÓN DE ACCIONES (reemplaza al confirm() nativo, con doble paso) */
+        /* CONFIRMACIÓN DE ACCIONES (reemplaza al confirm() nativo, con doble paso).
+           z-index más alto que el resto de los modales (3000 > 2000) a propósito:
+           tiene que verse siempre por encima, incluso si se abre con otro popup abierto
+           detrás (ej: confirmar "Eliminar cliente" con el panel de Clientes abierto). */
+        #confirm-modal { z-index: 3000; }
+        #completar-perfil-modal { z-index: 3000; }
         .confirm-modal-card { max-width: 360px; text-align: center; }
         .confirm-modal-icon {
             width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 14px;
@@ -1148,7 +1153,7 @@
 
         /* Antes solo #clientes-body tenía este padding: #pedidos-body y
            #estadisticas-body quedaban con el contenido pegado a los bordes. */
-        #clientes-body, #pedidos-body, #estadisticas-body {
+        #clientes-body, #pedidos-body, #estadisticas-body, #preventistas-body, #alta-clientes-body, #mis-compras-body, #mis-estadisticas-body {
             overflow-y: auto; flex: 1 1 auto;
             padding: 18px 24px 26px;
             /* Firefox: oculta la barra de scroll visible mantenendo el scroll funcional */
@@ -1162,7 +1167,7 @@
         /* PC / Tablet: el popup se agranda para aprovechar mejor el espacio */
         @media (min-width: 700px) {
             .clientes-modal-card { max-width: 680px; max-height: 82vh; }
-            #clientes-body, #pedidos-body, #estadisticas-body { padding: 22px 32px 32px; }
+            #clientes-body, #pedidos-body, #estadisticas-body, #preventistas-body, #alta-clientes-body, #mis-compras-body, #mis-estadisticas-body { padding: 22px 32px 32px; }
         }
         @media (min-width: 1024px) {
             .clientes-modal-card { max-width: 760px; }
@@ -1171,7 +1176,7 @@
         /* Celular angosto: que no quede pegado a los bordes de la pantalla */
         @media (max-width: 420px) {
             .clientes-modal-card { width: 94vw; max-height: 90vh; }
-            #clientes-body, #pedidos-body, #estadisticas-body { padding: 14px 16px 22px; }
+            #clientes-body, #pedidos-body, #estadisticas-body, #preventistas-body, #alta-clientes-body, #mis-compras-body, #mis-estadisticas-body { padding: 14px 16px 22px; }
             .clientes-header { padding: 16px 16px 12px; }
         }
 
@@ -1964,6 +1969,9 @@
             <div class="side-menu-item" id="side-menu-pedidos" style="display:none;" onclick="openPedidosPanel()"><i class="fas fa-receipt"></i> Pedidos</div>
             <div class="side-menu-item" id="side-menu-estadisticas" style="display:none;" onclick="openEstadisticasPanel()"><i class="fas fa-chart-column"></i> Estadísticas</div>
             <div class="side-menu-item" id="side-menu-preventistas" style="display:none;" onclick="openPreventistasPanel()"><i class="fas fa-user-tie"></i> Preventistas</div>
+            <div class="side-menu-item" id="side-menu-alta-clientes" style="display:none;" onclick="openAltaClientesPanel()"><i class="fas fa-user-plus"></i> Alta de Clientes</div>
+            <div class="side-menu-item" id="side-menu-mis-compras" style="display:none;" onclick="openMisComprasPanel()"><i class="fas fa-receipt"></i> Mis Compras</div>
+            <div class="side-menu-item" id="side-menu-mis-estadisticas" style="display:none;" onclick="openMisEstadisticasPanel()"><i class="fas fa-chart-column"></i> Mis Estadísticas</div>
             <div class="side-menu-item" onclick="openInstallModal()"><i class="fas fa-mobile-screen-button"></i> Instalar App</div>
             <div class="side-menu-item" id="side-menu-logout" style="display:none;" onclick="sideMenuLogout()"><i class="fas fa-right-from-bracket"></i> Cerrar Sesión</div>
         </nav>
@@ -2129,6 +2137,20 @@
                 <div id="cart-suggestions" style="margin-bottom:6px;"></div>
             </div>
             <div class="cart-modal-footer" id="cart-checkout-form" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- COMPLETAR PERFIL (obligatorio en el primer ingreso de un Comercio con cuenta real) -->
+    <div class="modal-overlay" id="completar-perfil-modal">
+        <div class="modal-card" style="max-width:420px;">
+            <div style="text-align:center; margin-bottom:14px;">
+                <div style="font-size:2.2rem;">📋</div>
+                <h2 style="font-size:1.1rem; font-weight:900; color:var(--primary);">Completá tus datos</h2>
+                <p style="font-size:0.8rem; color:var(--text-muted);">Antes de seguir, confirmá que estos datos son correctos (o completalos si falta algo). Es un paso único.</p>
+            </div>
+            <div id="completar-perfil-error"></div>
+            <div class="cliente-form-grid" id="completar-perfil-form-fields"></div>
+            <button class="btn-whatsapp-send" onclick="guardarCompletarPerfil()"><i class="fas fa-check"></i> Confirmar y continuar</button>
         </div>
     </div>
 
@@ -2359,6 +2381,39 @@
                 <button class="btn-close" onclick="closePreventistasPanel()">✕</button>
             </div>
             <div id="preventistas-body"></div>
+        </div>
+    </div>
+
+    <!-- PANEL "ALTA DE CLIENTES" (solo Administración) -->
+    <div class="modal-overlay" id="alta-clientes-modal">
+        <div class="modal-card clientes-modal-card">
+            <div class="clientes-header">
+                <h2><i class="fas fa-user-plus"></i> Alta de Clientes</h2>
+                <button class="btn-close" onclick="closeAltaClientesPanel()">✕</button>
+            </div>
+            <div id="alta-clientes-body"></div>
+        </div>
+    </div>
+
+    <!-- PANEL "MIS COMPRAS" (cliente logueado con cuenta real) -->
+    <div class="modal-overlay" id="mis-compras-modal">
+        <div class="modal-card clientes-modal-card">
+            <div class="clientes-header">
+                <h2><i class="fas fa-receipt"></i> Mis Compras</h2>
+                <button class="btn-close" onclick="closeMisComprasPanel()">✕</button>
+            </div>
+            <div id="mis-compras-body"></div>
+        </div>
+    </div>
+
+    <!-- PANEL "MIS ESTADÍSTICAS" (cliente logueado con cuenta real) -->
+    <div class="modal-overlay" id="mis-estadisticas-modal">
+        <div class="modal-card clientes-modal-card">
+            <div class="clientes-header">
+                <h2><i class="fas fa-chart-column"></i> Mis Estadísticas</h2>
+                <button class="btn-close" onclick="closeMisEstadisticasPanel()">✕</button>
+            </div>
+            <div id="mis-estadisticas-body"></div>
         </div>
     </div>
 
@@ -4180,10 +4235,20 @@
         const estadisticasEl = document.getElementById('side-menu-estadisticas');
         if (estadisticasEl) estadisticasEl.style.display = vePanelEstadisticas ? 'flex' : 'none';
 
-        // "Preventistas" (dar de alta o eliminar cuentas de staff): SOLO Administración.
+        // "Preventistas" y "Alta de Clientes": SOLO Administración.
         const vePanelPreventistas = currentRole === "PREVENTA" && activePreventaKey === ADMIN_KEY;
         const preventistasEl = document.getElementById('side-menu-preventistas');
         if (preventistasEl) preventistasEl.style.display = vePanelPreventistas ? 'flex' : 'none';
+        const altaClientesEl = document.getElementById('side-menu-alta-clientes');
+        if (altaClientesEl) altaClientesEl.style.display = vePanelPreventistas ? 'flex' : 'none';
+
+        // "Mis Compras" / "Mis Estadísticas": solo el propio Comercio logueado con
+        // cuenta real (CUIT + contraseña), nunca staff ni el CUIT-solo de siempre.
+        const esComercioConCuenta = activePreventaKey === COMERCIOS_KEY && comercioTieneCuentaReal;
+        const misComprasEl = document.getElementById('side-menu-mis-compras');
+        if (misComprasEl) misComprasEl.style.display = esComercioConCuenta ? 'flex' : 'none';
+        const misEstadisticasEl = document.getElementById('side-menu-mis-estadisticas');
+        if (misEstadisticasEl) misEstadisticasEl.style.display = esComercioConCuenta ? 'flex' : 'none';
 
         if (currentRole === "PREVENTA") {
             if (subtitleEl) subtitleEl.textContent = getRoleSubtitleText();
@@ -4233,10 +4298,18 @@
             return;
         }
 
+        // Usuario = CUIT + Clave = contraseña real (cliente con cuenta dada de alta por
+        // Administración). Se prueba antes que el CUIT-solo de siempre.
+        if (usuarioTipeado && key) {
+            const ok = await intentarLoginConCuitYPassword(usuarioTipeado, key);
+            if (ok) return;
+        }
+
         // No es una clave de staff conocida: probamos si es el CUIT de un Comercio
-        // dado de alta por algún preventista (login individual por cliente).
+        // dado de alta por algún preventista (login individual por cliente, sin
+        // contraseña -- forma "de siempre", para los que todavía no tienen cuenta real).
         const client = getSupabaseClient();
-        if (client && key.length >= 6) {
+        if (client && !usuarioTipeado && key.length >= 6) {
             const errorEl = document.getElementById('login-error');
             errorEl.style.display = 'none';
             const { data, error } = await client.rpc('validar_cuit_comercio', { p_cuit: key });
@@ -4284,6 +4357,41 @@
         return true;
     }
 
+    // Los clientes con cuenta real no tienen email de verdad -- Supabase Auth necesita
+    // uno igual, así que se arma uno "de mentira" a partir del CUIT, siempre igual para
+    // el mismo CUIT. Nunca se muestra ni se usa para mandar mails de ningún tipo.
+    function emailSinteticoCliente(cuit) {
+        return (cuit || '').replace(/[^0-9]/g, '') + '@clientes.losmayorga.local';
+    }
+
+    async function intentarLoginConCuitYPassword(cuit, password) {
+        const client = getSupabaseClient();
+        if (!client) return false;
+
+        const { data: authData, error: authError } = await client.auth.signInWithPassword({
+            email: emailSinteticoCliente(cuit), password
+        });
+        if (authError || !authData.user) return false;
+
+        const { data: miCliente, error: errCliente } = await client.rpc('obtener_mi_cliente');
+        if (errCliente || !miCliente || miCliente.length === 0) {
+            try { await client.auth.signOut(); } catch (e) {}
+            return false;
+        }
+
+        comercioAutenticadoData = miCliente[0];
+        comercioTieneCuentaReal = true;
+        loginComoStaff(COMERCIOS_KEY, comercioAutenticadoData.nombre_fantasia);
+
+        // Si todavía no confirmó/completó sus datos, se le pide ANTES de dejarlo usar
+        // el resto de la app (no se puede cerrar este cartel sin completarlo).
+        if (!comercioAutenticadoData.perfil_completo) {
+            abrirCompletarPerfilCliente();
+        }
+
+        return true;
+    }
+
     // Aplica el login (usado tanto por clave de staff como por CUIT de Comercio validado)
     function loginComoStaff(key, nombreMostrado) {
         currentRole = "PREVENTA";
@@ -4316,6 +4424,7 @@
         activePreventista = "";
         activePreventaKey = "";
         comercioAutenticadoData = null;
+        comercioTieneCuentaReal = false;
         switchCartScope('PUBLICO');
         document.body.classList.remove('mode-preventa');
         document.getElementById('preventa-banner').style.display = 'none';
@@ -5193,6 +5302,7 @@
     // Ficha completa del propio Comercio autenticado por CUIT (se completa sola al loguearse,
     // así arma su pedido con sus datos reales sin tener que volver a escribirlos).
     let comercioAutenticadoData = null;
+    let comercioTieneCuentaReal = false; // true solo si entró con CUIT+contraseña real (no el CUIT-solo de siempre)
     let carritoClienteResultadosCache = [];
     let carritoClienteSearchTimeout = null;
 
@@ -5809,31 +5919,67 @@
         const rolLabels = { preventista: 'Preventista', distribuidora: 'Distribuidora', administracion: 'Administración' };
         container.innerHTML = preventistasListCache.map(p => `
             <div class="preventista-item">
-                <div>
+                <div style="cursor:pointer;" onclick="openPreventistaForm('${p.id}')">
                     <div class="preventista-item-name">${p.nombre}</div>
                     <div class="preventista-rol-badge rol-${p.rol}">${rolLabels[p.rol] || p.rol}</div>
                 </div>
-                <button type="button" class="preventista-item-delete" onclick="confirmarEliminarPreventista('${p.id}', '${p.nombre.replace(/'/g, "\\'")}')" title="Eliminar"><i class="fas fa-trash"></i></button>
+                <div style="display:flex; gap:6px;">
+                    <button type="button" class="preventista-item-delete" onclick="openPreventistaForm('${p.id}')" title="Editar" style="border-color:#93c5fd; color:#1e40af;"><i class="fas fa-pen"></i></button>
+                    <button type="button" class="preventista-item-delete" onclick="confirmarEliminarPreventista('${p.id}', '${p.nombre.replace(/'/g, "\\'")}')" title="Eliminar"><i class="fas fa-trash"></i></button>
+                </div>
             </div>
         `).join('');
     }
 
-    function openPreventistaForm() {
+    function openPreventistaForm(idAEditar) {
+        const editando = idAEditar ? preventistasListCache.find(p => p.id === idAEditar) : null;
         const body = document.getElementById('preventistas-body');
+
+        const rolOptions = ['preventista', 'distribuidora', 'administracion'].map(r => {
+            const labels = { preventista: 'Preventista', distribuidora: 'Distribuidora', administracion: 'Administración' };
+            const seleccionado = editando && editando.rol === r ? 'selected' : '';
+            return `<option value="${r}" ${seleccionado}>${labels[r]}</option>`;
+        }).join('');
+
         body.innerHTML = `
             <button type="button" class="marcas-back-btn" onclick="renderPreventistasList()"><i class="fas fa-arrow-left"></i> Volver</button>
-            <h3 style="font-size:1.05rem; font-weight:900; margin-bottom:12px;">Nuevo Preventista</h3>
+            <h3 style="font-size:1.05rem; font-weight:900; margin-bottom:12px;">${editando ? 'Editar Preventista' : 'Nuevo Preventista'}</h3>
             <div id="preventista-form-error"></div>
-            <input type="text" id="pf-nombre" class="form-control-enhanced" placeholder="Nombre y Apellido *">
-            <input type="email" id="pf-email" class="form-control-enhanced" placeholder="Email (para ingresar a la app) *">
-            <input type="password" id="pf-password" class="form-control-enhanced" placeholder="Contraseña (mínimo 6 caracteres) *">
-            <select id="pf-rol" class="form-control-enhanced">
-                <option value="preventista">Preventista</option>
-                <option value="distribuidora">Distribuidora</option>
-                <option value="administracion">Administración</option>
-            </select>
-            <button class="btn-whatsapp-send" onclick="guardarNuevoPreventista()"><i class="fas fa-check"></i> Crear cuenta</button>
+            <input type="text" id="pf-nombre" class="form-control-enhanced" placeholder="Nombre y Apellido *" value="${editando ? editando.nombre : ''}">
+            ${!editando ? `
+                <input type="email" id="pf-email" class="form-control-enhanced" placeholder="Email (para ingresar a la app) *">
+                <input type="password" id="pf-password" class="form-control-enhanced" placeholder="Contraseña (mínimo 6 caracteres) *">
+            ` : `
+                <p style="font-size:0.72rem; color:var(--text-muted); margin:-4px 0 10px;"><i class="fas fa-circle-info"></i> El email y la contraseña no se pueden cambiar desde acá. Para eso, eliminá la cuenta y creá una nueva.</p>
+            `}
+            <select id="pf-rol" class="form-control-enhanced">${rolOptions}</select>
+            <button class="btn-whatsapp-send" onclick="${editando ? `guardarEdicionPreventista('${editando.id}')` : 'guardarNuevoPreventista()'}"><i class="fas fa-check"></i> ${editando ? 'Guardar cambios' : 'Crear cuenta'}</button>
         `;
+    }
+
+    async function guardarEdicionPreventista(id) {
+        const nombre = document.getElementById('pf-nombre').value.trim();
+        const rol = document.getElementById('pf-rol').value;
+        const errorBox = document.getElementById('preventista-form-error');
+        errorBox.innerHTML = '';
+
+        if (!nombre) {
+            errorBox.innerHTML = `<div class="clientes-error">Completá el nombre.</div>`;
+            return;
+        }
+
+        const client = getSupabaseClient();
+        if (!client) return;
+
+        const { error } = await client.rpc('actualizar_perfil_preventista', {
+            p_clave: activePreventaKey, p_perfil_id: id, p_nombre: nombre, p_rol: rol
+        });
+
+        if (error) {
+            errorBox.innerHTML = `<div class="clientes-error">No se pudo guardar: ${error.message}</div>`;
+            return;
+        }
+        renderPreventistasList();
     }
 
     async function guardarNuevoPreventista() {
@@ -5898,6 +6044,331 @@
         const { error } = await client.rpc('eliminar_perfil_preventista', { p_clave: activePreventaKey, p_perfil_id: id });
         if (error) { alert('No se pudo eliminar: ' + error.message); return; }
         renderPreventistasList();
+    }
+
+    // ==========================================================
+    //  COMPLETAR PERFIL DEL CLIENTE (obligatorio en el primer ingreso)
+    // ==========================================================
+    function abrirCompletarPerfilCliente() {
+        const c = comercioAutenticadoData || {};
+        const container = document.getElementById('completar-perfil-form-fields');
+        container.innerHTML = `
+            <input type="text" id="cp-nombre-fantasia" class="form-control-enhanced" placeholder="Nombre de Fantasía del Negocio *" value="${c.nombre_fantasia || ''}">
+            <input type="text" id="cp-nombre-dueño" class="form-control-enhanced" placeholder="Nombre y Apellido del Dueño" value="${c.nombre_dueño || ''}">
+            <input type="text" id="cp-celular" class="form-control-enhanced" placeholder="Celular / WhatsApp" value="${c.celular_whatsapp || ''}">
+            <input type="text" id="cp-direccion" class="form-control-enhanced cliente-form-full" placeholder="Dirección del Negocio" value="${c.direccion || ''}">
+            <input type="text" id="cp-localidad" class="form-control-enhanced" placeholder="Localidad" value="${c.localidad || ''}">
+            <input type="text" id="cp-provincia" class="form-control-enhanced" placeholder="Provincia" value="${c.provincia || ''}">
+            <input type="email" id="cp-email" class="form-control-enhanced" placeholder="Email" value="${c.email || ''}">
+            <select id="cp-rubro" class="form-control-enhanced">${buildSelectOptions(RUBROS_COMERCIO, c.rubro, 'Tipo de Comercio...')}</select>
+            <select id="cp-tipo-registro" class="form-control-enhanced cliente-form-full">${buildSelectOptions(TIPOS_REGISTRO_FISCAL, c.tipo_registro, 'Tipo de Registro Fiscal...')}</select>
+        `;
+        document.getElementById('completar-perfil-modal').classList.add('active');
+    }
+
+    async function guardarCompletarPerfil() {
+        const nombreFantasia = document.getElementById('cp-nombre-fantasia').value.trim();
+        const errorBox = document.getElementById('completar-perfil-error');
+        errorBox.innerHTML = '';
+
+        if (!nombreFantasia) {
+            errorBox.innerHTML = `<div class="clientes-error">El nombre del negocio es obligatorio.</div>`;
+            return;
+        }
+
+        const client = getSupabaseClient();
+        if (!client) return;
+
+        const { error } = await client.rpc('completar_mi_perfil', {
+            p_nombre_fantasia: nombreFantasia,
+            p_nombre_dueño: document.getElementById('cp-nombre-dueño').value.trim(),
+            p_celular: document.getElementById('cp-celular').value.trim(),
+            p_direccion: document.getElementById('cp-direccion').value.trim(),
+            p_localidad: document.getElementById('cp-localidad').value.trim(),
+            p_provincia: document.getElementById('cp-provincia').value.trim(),
+            p_email: document.getElementById('cp-email').value.trim(),
+            p_rubro: document.getElementById('cp-rubro').value.trim(),
+            p_tipo_registro: document.getElementById('cp-tipo-registro').value.trim()
+        });
+
+        if (error) {
+            errorBox.innerHTML = `<div class="clientes-error">No se pudo guardar: ${error.message}</div>`;
+            return;
+        }
+
+        comercioAutenticadoData.perfil_completo = true;
+        comercioAutenticadoData.nombre_fantasia = nombreFantasia;
+        activePreventista = nombreFantasia;
+        document.getElementById('app-subtitle').innerText = nombreFantasia;
+        document.getElementById('completar-perfil-modal').classList.remove('active');
+    }
+
+    // ==========================================================
+    //  "MIS COMPRAS" Y "MIS ESTADÍSTICAS" (panel propio del cliente logueado
+    //  con cuenta real -- ve su historial completo: compras propias + las
+    //  que le cargó su preventista, todo identificado por su CUIT).
+    // ==========================================================
+    function openMisComprasPanel() {
+        closeSideMenu();
+        document.getElementById('mis-compras-modal').classList.add('active');
+        renderMisComprasList();
+    }
+    function closeMisComprasPanel() {
+        document.getElementById('mis-compras-modal').classList.remove('active');
+    }
+
+    async function renderMisComprasList() {
+        const body = document.getElementById('mis-compras-body');
+        body.innerHTML = `<div class="clientes-loading">Cargando...</div>`;
+
+        const client = getSupabaseClient();
+        if (!client) { body.innerHTML = `<div class="clientes-error">Todavía no está conectado Supabase.</div>`; return; }
+
+        const { data, error } = await client.rpc('mis_pedidos', { p_limite: 30 });
+        if (error) { body.innerHTML = `<div class="clientes-error">${error.message}</div>`; return; }
+
+        misComprasCache = data || [];
+        if (misComprasCache.length === 0) {
+            body.innerHTML = `<p style="text-align:center; color:#999; padding:20px 0;">Todavía no hiciste ninguna compra.</p>`;
+            return;
+        }
+
+        body.innerHTML = misComprasCache.map(p => {
+            const fecha = new Date(p.creado_en);
+            const fechaTexto = fecha.toLocaleDateString('es-AR') + ' ' + fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+            return `
+                <div class="pedido-item" onclick="verDetalleMiCompra(${p.id})">
+                    <div class="pedido-item-top">
+                        <span class="pedido-item-cliente">${fechaTexto}</span>
+                        <span class="pedido-item-total">$${Number(p.total).toLocaleString('es-AR', {minimumFractionDigits:2})}</span>
+                    </div>
+                    <div class="pedido-item-meta">
+                        <span class="pedido-rol-badge ${getRolBadgeClass(p.rol)}">${p.rol === 'Preventa' ? 'Cargado por preventista' : 'Compra propia'}</span>
+                        <span>· ${p.cantidad_items} ítem${p.cantidad_items === 1 ? '' : 's'}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    let misComprasCache = [];
+
+    function verDetalleMiCompra(id) {
+        const p = misComprasCache.find(x => x.id === id);
+        if (!p) return;
+        const body = document.getElementById('mis-compras-body');
+        const fecha = new Date(p.creado_en);
+        const items = Array.isArray(p.items) ? p.items : [];
+        const itemsHtml = items.map(it => `
+            <div class="pedido-detail-item-row">
+                <div><strong>${it.cantidad}x ${it.nombre}</strong></div>
+                <div>$${Number(it.subtotal).toLocaleString('es-AR', {minimumFractionDigits:2})}</div>
+            </div>
+        `).join('');
+
+        body.innerHTML = `
+            <button type="button" class="marcas-back-btn" onclick="renderMisComprasList()"><i class="fas fa-arrow-left"></i> Volver</button>
+            <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:10px;">${fecha.toLocaleDateString('es-AR')} ${fecha.toLocaleTimeString('es-AR', {hour:'2-digit',minute:'2-digit'})}</div>
+            <div style="margin-bottom:8px; font-weight:800; font-size:0.85rem;">Productos</div>
+            ${itemsHtml}
+            <div style="margin-top:12px; display:flex; justify-content:space-between; font-weight:900; font-size:0.95rem;"><span>Total</span><span>$${Number(p.total).toLocaleString('es-AR', {minimumFractionDigits:2})}</span></div>
+            <button type="button" class="btn-repetir-pedido" style="margin-top:16px;" onclick="repetirMiCompra(${p.id})">
+                <i class="fas fa-rotate-right"></i> Repetir esta compra (con precios de hoy)
+            </button>
+        `;
+    }
+
+    function repetirMiCompra(id) {
+        const p = misComprasCache.find(x => x.id === id);
+        if (!p) return;
+        confirmarAccion({
+            titulo: 'Repetir esta compra',
+            texto: 'Se van a agregar sus productos al carrito con los precios de hoy.',
+            textoPaso2: 'Confirmá para agregarlos al carrito.',
+            alConfirmar: () => {
+                closeMisComprasPanel();
+                repetirPedidoEnCarrito(p.items);
+                toggleCartModal(true);
+            }
+        });
+    }
+
+    function openMisEstadisticasPanel() {
+        closeSideMenu();
+        document.getElementById('mis-estadisticas-modal').classList.add('active');
+        renderMisEstadisticas();
+    }
+    function closeMisEstadisticasPanel() {
+        document.getElementById('mis-estadisticas-modal').classList.remove('active');
+    }
+
+    async function renderMisEstadisticas() {
+        const body = document.getElementById('mis-estadisticas-body');
+        body.innerHTML = `<div class="clientes-loading">Cargando...</div>`;
+
+        const client = getSupabaseClient();
+        if (!client) { body.innerHTML = `<div class="clientes-error">Todavía no está conectado Supabase.</div>`; return; }
+
+        const { data, error } = await client.rpc('mis_estadisticas');
+        if (error) { body.innerHTML = `<div class="clientes-error">${error.message}</div>`; return; }
+
+        const e = (data && data[0]) || { cantidad_pedidos: 0, total_comprado: 0, ticket_promedio: 0, primera_compra: null, ultima_compra: null };
+
+        let frecuenciaTexto = 'Todavía no hay suficientes compras.';
+        if (e.cantidad_pedidos > 1 && e.primera_compra && e.ultima_compra) {
+            const dias = Math.round((new Date(e.ultima_compra) - new Date(e.primera_compra)) / (1000*60*60*24) / (e.cantidad_pedidos - 1));
+            frecuenciaTexto = dias <= 0 ? 'Varias compras el mismo día' : `Comprás en promedio cada ${dias} día${dias===1?'':'s'}`;
+        } else if (e.cantidad_pedidos === 1) {
+            frecuenciaTexto = 'Hiciste 1 compra hasta ahora.';
+        }
+
+        body.innerHTML = `
+            <div class="estadisticas-kpi-grid">
+                <div class="estadisticas-kpi-card destacada">
+                    <div class="estadisticas-kpi-label">Total Comprado</div>
+                    <div class="estadisticas-kpi-value">$${Number(e.total_comprado).toLocaleString('es-AR', {minimumFractionDigits:2})}</div>
+                </div>
+                <div class="estadisticas-kpi-card">
+                    <div class="estadisticas-kpi-label">Cantidad de Compras</div>
+                    <div class="estadisticas-kpi-value">${e.cantidad_pedidos}</div>
+                </div>
+                <div class="estadisticas-kpi-card">
+                    <div class="estadisticas-kpi-label">Ticket Promedio</div>
+                    <div class="estadisticas-kpi-value">$${Number(e.ticket_promedio).toLocaleString('es-AR', {minimumFractionDigits:2})}</div>
+                </div>
+            </div>
+            <p style="font-size:0.82rem; color:var(--text-muted); text-align:center;"><i class="fas fa-repeat"></i> ${frecuenciaTexto}</p>
+        `;
+    }
+
+    // ==========================================================
+    //  ALTA DE CLIENTES (solo Administración): busca por CUIT, y según el caso
+    //  vincula un cliente ya cargado por un preventista, o crea uno de cero.
+    // ==========================================================
+    function openAltaClientesPanel() {
+        closeSideMenu();
+        document.getElementById('alta-clientes-modal').classList.add('active');
+        renderAltaClientesBusqueda();
+    }
+    function closeAltaClientesPanel() {
+        document.getElementById('alta-clientes-modal').classList.remove('active');
+    }
+
+    function renderAltaClientesBusqueda() {
+        const body = document.getElementById('alta-clientes-body');
+        body.innerHTML = `
+            <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">Buscá por CUIT para ver si el comercio ya está cargado (por algún preventista) y darle su usuario y contraseña.</p>
+            <input type="text" id="ac-cuit-busqueda" class="form-control-enhanced" placeholder="CUIT del comercio *">
+            <button class="btn-whatsapp-send" onclick="buscarClienteParaAlta()"><i class="fas fa-search"></i> Buscar</button>
+            <div id="alta-clientes-resultado" style="margin-top:14px;"></div>
+        `;
+    }
+
+    async function buscarClienteParaAlta() {
+        const cuit = document.getElementById('ac-cuit-busqueda').value.trim();
+        const resultado = document.getElementById('alta-clientes-resultado');
+        if (!cuit) { resultado.innerHTML = `<div class="clientes-error">Escribí un CUIT.</div>`; return; }
+
+        resultado.innerHTML = `<div class="clientes-loading">Buscando...</div>`;
+        const client = getSupabaseClient();
+        if (!client) return;
+
+        const { data, error } = await client.rpc('buscar_cliente_para_alta', { p_clave: activePreventaKey, p_cuit: cuit });
+        if (error) { resultado.innerHTML = `<div class="clientes-error">${error.message}</div>`; return; }
+
+        if (!data || data.length === 0) {
+            resultado.innerHTML = `
+                <div class="clientes-error" style="background:#eff6ff; border-color:#93c5fd; color:#1e40af;">
+                    <i class="fas fa-circle-info"></i> No hay ningún cliente con ese CUIT todavía. Podés crearlo de cero.
+                </div>
+                <input type="text" id="ac-nombre-nuevo" class="form-control-enhanced" placeholder="Nombre de Fantasía del Negocio *">
+                <input type="password" id="ac-password-nuevo" class="form-control-enhanced" placeholder="Contraseña (mínimo 6 caracteres) *">
+                <button class="btn-whatsapp-send" onclick="crearClienteYCuentaNueva('${cuit.replace(/'/g, "\\'")}')"><i class="fas fa-user-plus"></i> Crear cliente y darle usuario</button>
+            `;
+            return;
+        }
+
+        const cliente = data[0];
+        if (cliente.usuario_auth_id) {
+            resultado.innerHTML = `
+                <div class="clientes-error" style="background:#fef3c7; border-color:#fbbf24; color:#92400e;">
+                    <i class="fas fa-triangle-exclamation"></i> "${cliente.nombre_fantasia}" ya tiene una cuenta con usuario y contraseña. No se puede crear otra para el mismo CUIT.
+                </div>
+            `;
+            return;
+        }
+
+        resultado.innerHTML = `
+            <div class="clientes-error" style="background:#eef7f0; border-color:#86efac; color:#166534;">
+                <i class="fas fa-circle-check"></i> Encontrado: <strong>${cliente.nombre_fantasia}</strong> (cargado por un preventista, todavía sin usuario).
+            </div>
+            <input type="password" id="ac-password-existente" class="form-control-enhanced" placeholder="Contraseña para este cliente (mínimo 6 caracteres) *">
+            <button class="btn-whatsapp-send" onclick="vincularClienteExistente('${cliente.id}', '${cuit.replace(/'/g, "\\'")}')"><i class="fas fa-key"></i> Generar usuario y contraseña</button>
+        `;
+    }
+
+    async function crearClienteYCuentaNueva(cuit) {
+        const nombre = document.getElementById('ac-nombre-nuevo').value.trim();
+        const password = document.getElementById('ac-password-nuevo').value;
+        const resultado = document.getElementById('alta-clientes-resultado');
+
+        if (!nombre || !password || password.length < 6) {
+            resultado.insertAdjacentHTML('afterbegin', `<div class="clientes-error">Completá el nombre y una contraseña de al menos 6 caracteres.</div>`);
+            return;
+        }
+
+        const clienteDescartable = getSupabaseClientDescartable();
+        if (!clienteDescartable) return;
+
+        const { data: authData, error: authError } = await clienteDescartable.auth.signUp({
+            email: emailSinteticoCliente(cuit), password
+        });
+        if (authError || !authData.user) {
+            resultado.insertAdjacentHTML('afterbegin', `<div class="clientes-error">No se pudo crear la cuenta: ${authError ? authError.message : 'error desconocido'}. Revisá que en Supabase → Authentication → Settings esté desactivada la confirmación por email.</div>`);
+            return;
+        }
+
+        const client = getSupabaseClient();
+        const { error } = await client.rpc('crear_cliente_con_usuario', {
+            p_clave: activePreventaKey, p_auth_id: authData.user.id, p_nombre_fantasia: nombre, p_cuit: cuit
+        });
+        if (error) {
+            resultado.insertAdjacentHTML('afterbegin', `<div class="clientes-error">La cuenta se creó, pero no se pudo vincular: ${error.message}</div>`);
+            return;
+        }
+
+        resultado.innerHTML = `<div class="clientes-error" style="background:#eef7f0; border-color:#86efac; color:#166534;"><i class="fas fa-circle-check"></i> Listo. "${nombre}" ya puede entrar poniendo el CUIT ${cuit} en "Usuario" y la contraseña que pusiste en "Clave".</div>`;
+    }
+
+    async function vincularClienteExistente(clienteId, cuit) {
+        const password = document.getElementById('ac-password-existente').value;
+        const resultado = document.getElementById('alta-clientes-resultado');
+
+        if (!password || password.length < 6) {
+            resultado.insertAdjacentHTML('afterbegin', `<div class="clientes-error">La contraseña tiene que tener al menos 6 caracteres.</div>`);
+            return;
+        }
+
+        const clienteDescartable = getSupabaseClientDescartable();
+        if (!clienteDescartable) return;
+
+        const { data: authData, error: authError } = await clienteDescartable.auth.signUp({
+            email: emailSinteticoCliente(cuit), password
+        });
+        if (authError || !authData.user) {
+            resultado.insertAdjacentHTML('afterbegin', `<div class="clientes-error">No se pudo crear la cuenta: ${authError ? authError.message : 'error desconocido'}</div>`);
+            return;
+        }
+
+        const client = getSupabaseClient();
+        const { error } = await client.rpc('vincular_cliente_a_usuario', {
+            p_clave: activePreventaKey, p_cliente_id: clienteId, p_auth_id: authData.user.id
+        });
+        if (error) {
+            resultado.insertAdjacentHTML('afterbegin', `<div class="clientes-error">La cuenta se creó, pero no se pudo vincular: ${error.message}</div>`);
+            return;
+        }
+
+        resultado.innerHTML = `<div class="clientes-error" style="background:#eef7f0; border-color:#86efac; color:#166534;"><i class="fas fa-circle-check"></i> Listo. Puede entrar con el CUIT ${cuit} en "Usuario" y la contraseña que pusiste en "Clave". La primera vez, le vamos a pedir que confirme sus datos.</div>`;
     }
 
     function getStaffKeyForClientes() {
@@ -6054,7 +6525,14 @@
         `;
     }
 
-    const RUBROS_COMERCIO = ['Almacén / Kiosco', 'Supermercado', 'Restaurante / Bar', 'Panadería', 'Verdulería / Frutería', 'Carnicería', 'Farmacia', 'Ferretería', 'Otro'];
+    const RUBROS_COMERCIO = [
+        'Almacén / Kiosco', 'Autoservicio', 'Despensa', 'Polirrubro', 'Supermercado',
+        'Restaurante', 'Comedor / Cantina', 'Bar / Pub', 'Rotisería', 'Pizzería',
+        'Panadería', 'Confitería / Pastelería', 'Heladería',
+        'Verdulería / Frutería', 'Carnicería', 'Fiambrería', 'Pescadería',
+        'Farmacia', 'Dietética', 'Ferretería', 'Vinería / Bebidas',
+        'Hotel / Hospedaje', 'Distribuidora / Mayorista', 'Otro'
+    ];
     const TIPOS_REGISTRO_FISCAL = ['Monotributista', 'Responsable Inscripto', 'Exento', 'Consumidor Final', 'Otro'];
     const PREVENTISTAS_ASIGNABLES = ['Iván', 'Ulises', 'Directo a la Distribuidora'];
 
