@@ -22,6 +22,11 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <!-- Chart.js: gráficos del panel de Estadísticas -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+    <!-- SheetJS: generar Excel (.xlsx) descargable -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- jsPDF + autoTable: generar reportes PDF descargables -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     
     <style>
         :root {
@@ -442,6 +447,8 @@
         .tag-chip.nuevo { background: linear-gradient(135deg, #d1fae5, #6ee7b7); color: #065f46; border-color: #34d399; font-weight: 800; }
         .tag-chip.nuevo::before { content: "✨"; font-size: 0.9rem; margin-right: 2px; }
 
+        .tag-chip.navidad { background: linear-gradient(135deg, #fecaca, #16a34a); color: white; border-color: #dc2626; font-weight: 800; text-shadow: 0 1px 2px rgba(0,0,0,0.25); }
+
         .tag-chip.active { 
             background: linear-gradient(135deg, var(--primary), var(--primary-light));
             color: white;
@@ -714,15 +721,6 @@
         }
 
         /* DESKTOP NAV & CARRITO FLOTANTE */
-        .desktop-nav { display: none; position: fixed; right: 20px; top: 100px; z-index: 1400; gap: 8px; flex-direction: column; }
-        @media (min-width: 769px) { .desktop-nav { display: flex; } }
-
-        .desktop-nav-btn {
-            width: 50px; height: 50px; border-radius: 16px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
-        }
-
         .cart-float-main {
             position: fixed; right: 20px; bottom: 20px;
             width: 70px; height: 70px;
@@ -1171,7 +1169,7 @@
 
         /* Antes solo #clientes-body tenía este padding: #pedidos-body y
            #estadisticas-body quedaban con el contenido pegado a los bordes. */
-        #clientes-body, #pedidos-body, #estadisticas-body, #preventistas-body, #alta-clientes-body, #mis-compras-body, #mis-estadisticas-body {
+        #clientes-body, #pedidos-body, #estadisticas-body, #preventistas-body, #alta-clientes-body, #mis-compras-body, #mis-estadisticas-body, #reposicion-body {
             overflow-y: auto; flex: 1 1 auto;
             padding: 18px 24px 26px;
             /* Firefox: oculta la barra de scroll visible mantenendo el scroll funcional */
@@ -1185,7 +1183,7 @@
         /* PC / Tablet: el popup se agranda para aprovechar mejor el espacio */
         @media (min-width: 700px) {
             .clientes-modal-card { max-width: 680px; max-height: 82vh; }
-            #clientes-body, #pedidos-body, #estadisticas-body, #preventistas-body, #alta-clientes-body, #mis-compras-body, #mis-estadisticas-body { padding: 22px 32px 32px; }
+            #clientes-body, #pedidos-body, #estadisticas-body, #preventistas-body, #alta-clientes-body, #mis-compras-body, #mis-estadisticas-body, #reposicion-body { padding: 22px 32px 32px; }
         }
         @media (min-width: 1024px) {
             .clientes-modal-card { max-width: 760px; }
@@ -1194,7 +1192,7 @@
         /* Celular angosto: que no quede pegado a los bordes de la pantalla */
         @media (max-width: 420px) {
             .clientes-modal-card { width: 94vw; max-height: 90vh; }
-            #clientes-body, #pedidos-body, #estadisticas-body, #preventistas-body, #alta-clientes-body, #mis-compras-body, #mis-estadisticas-body { padding: 14px 16px 22px; }
+            #clientes-body, #pedidos-body, #estadisticas-body, #preventistas-body, #alta-clientes-body, #mis-compras-body, #mis-estadisticas-body, #reposicion-body { padding: 14px 16px 22px; }
             .clientes-header { padding: 16px 16px 12px; }
         }
 
@@ -1406,6 +1404,35 @@
         .estadistica-bar-track { height: 7px; border-radius: 4px; background: #f0f4f8; overflow: hidden; }
         .estadistica-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--primary), var(--primary-light)); }
         .mode-preventa .estadistica-bar-fill { background: linear-gradient(90deg, #FF6F00, #FF8C00); }
+
+        /* REPOSICIÓN POR PROVEEDOR */
+        .reposicion-descarga-row { display: flex; gap: 10px; margin: 14px 0; }
+        .reposicion-descarga-btn {
+            flex: 1; padding: 11px; border-radius: 12px; font-weight: 800; font-size: 0.8rem;
+            cursor: pointer; border: none; color: white;
+            display: flex; align-items: center; justify-content: center; gap: 7px;
+        }
+        .reposicion-descarga-btn.excel { background: linear-gradient(135deg, #16a34a, #22c55e); }
+        .reposicion-descarga-btn.pdf { background: linear-gradient(135deg, #dc2626, #ef4444); }
+
+        .reposicion-proveedor-card { border: 1.5px solid var(--border); border-radius: 14px; margin-bottom: 12px; overflow: hidden; }
+        .reposicion-proveedor-header {
+            background: #f8fafb; padding: 12px 14px; cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center; gap: 10px;
+        }
+        .reposicion-proveedor-nombre { font-size: 0.85rem; font-weight: 900; color: var(--text-dark); }
+        .reposicion-proveedor-resumen { font-size: 0.66rem; color: var(--text-muted); margin-top: 2px; }
+        .reposicion-proveedor-total { font-size: 0.85rem; font-weight: 900; color: var(--primary); white-space: nowrap; }
+        .reposicion-proveedor-items { display: none; padding: 4px 14px 12px; }
+        .reposicion-proveedor-card.abierto .reposicion-proveedor-items { display: block; }
+        .reposicion-item-row {
+            display: flex; justify-content: space-between; gap: 10px;
+            padding: 7px 0; border-bottom: 1px dashed var(--border); font-size: 0.76rem;
+        }
+        .reposicion-item-row:last-child { border-bottom: none; }
+        .reposicion-item-nombre { color: var(--text-dark); font-weight: 700; }
+        .reposicion-item-sku { color: var(--text-muted); font-size: 0.64rem; }
+        .reposicion-item-cantidad { font-weight: 900; color: var(--primary); white-space: nowrap; }
 
         /* Ficha de detalle de un cliente puntual */
         .estadisticas-cliente-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
@@ -1709,6 +1736,18 @@
         .side-menu-item i { width: 18px; text-align: center; color: var(--primary); }
         .mode-preventa .side-menu-item { color: #f8fafc; }
         .mode-preventa .side-menu-item:hover { background: #334155; }
+
+        .navidad-switch {
+            width: 40px; height: 22px; border-radius: 20px; background: #cbd5e1;
+            position: relative; flex-shrink: 0; transition: background 0.2s ease;
+        }
+        .navidad-switch.on { background: #16a34a; }
+        .navidad-switch-dot {
+            position: absolute; top: 2px; left: 2px; width: 18px; height: 18px;
+            border-radius: 50%; background: white; transition: transform 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .navidad-switch.on .navidad-switch-dot { transform: translateX(18px); }
         .mode-preventa .side-menu-item i { color: #FF8C00; }
         #side-menu-logout { color: #ef4444; }
         #side-menu-logout i { color: #ef4444; }
@@ -1989,18 +2028,17 @@
             <div class="side-menu-item" id="side-menu-estadisticas" style="display:none;" onclick="openEstadisticasPanel()"><i class="fas fa-chart-column"></i> Estadísticas</div>
             <div class="side-menu-item" id="side-menu-preventistas" style="display:none;" onclick="openPreventistasPanel()"><i class="fas fa-user-tie"></i> Preventistas</div>
             <div class="side-menu-item" id="side-menu-alta-clientes" style="display:none;" onclick="openAltaClientesPanel()"><i class="fas fa-user-plus"></i> Alta de Clientes</div>
+            <div class="side-menu-item" id="side-menu-reposicion" style="display:none;" onclick="openReposicionPanel()"><i class="fas fa-truck-ramp-box"></i> Reposición por Proveedor</div>
+            <div class="side-menu-item" id="side-menu-navidad-toggle" style="display:none; justify-content:space-between;" onclick="toggleChipNavidad()">
+                <span><i class="fas fa-tree"></i> Chip de Navidad</span>
+                <span class="navidad-switch" id="navidad-switch"><span class="navidad-switch-dot"></span></span>
+            </div>
             <div class="side-menu-item" id="side-menu-mis-compras" style="display:none;" onclick="openMisComprasPanel()"><i class="fas fa-receipt"></i> Mis Compras</div>
             <div class="side-menu-item" id="side-menu-mis-estadisticas" style="display:none;" onclick="openMisEstadisticasPanel()"><i class="fas fa-chart-column"></i> Mis Estadísticas</div>
             <div class="side-menu-item" onclick="openInstallModal()"><i class="fas fa-mobile-screen-button"></i> Instalar App</div>
             <div class="side-menu-item" id="side-menu-logout" style="display:none;" onclick="sideMenuLogout()"><i class="fas fa-right-from-bracket"></i> Cerrar Sesión</div>
         </nav>
     </aside>
-
-    <div class="desktop-nav" id="desktop-nav">
-        <button class="desktop-nav-btn" onclick="window.location.href='buscar.html'"><i class="fas fa-search"></i></button>
-        <button class="desktop-nav-btn" onclick="openLocationModal()"><i class="fas fa-map-marker-alt"></i></button>
-        <button class="desktop-nav-btn" onclick="openAboutModal()"><i class="fas fa-info-circle"></i></button>
-    </div>
 
     <!-- WIDGET FLOTANTE DE WHATSAPP CON PREGUNTAS FRECUENTES (estilo ventana de chat) -->
     <div class="ws-widget-container">
@@ -2105,6 +2143,7 @@
         <div class="tag-chip-divider" id="tag-chip-marcas-divider" style="display:none;">|</div>
         <div class="tag-chip todos active" onclick="selectTagFilter('TODOS', this)"><i class="fas fa-th-large"></i><span>Ver Todo</span></div>
         <div class="tag-chip promo" onclick="selectTagFilter('PROMO', this)"><span>Ofertas</span></div>
+        <div class="tag-chip navidad" id="tag-chip-navidad" onclick="selectTagFilter('NAVIDAD', this)" style="display:none;"><span>🎄 Navidad</span></div>
         <div class="tag-chip sintacc" onclick="selectTagFilter('SINTACC', this)"><img src="https://www.argentina.gob.ar/sites/default/files/sin_gluten_legal-01.png" alt="Sin Gluten" class="sin-gluten-logo"><span>Sin Gluten / Sin TACC</span></div>
         <div class="tag-chip nuevo" onclick="selectTagFilter('NUEVOS', this)"><span>Nuevos</span></div>
     </div>
@@ -2421,6 +2460,17 @@
                 <button class="btn-close" onclick="closeAltaClientesPanel()">✕</button>
             </div>
             <div id="alta-clientes-body"></div>
+        </div>
+    </div>
+
+    <!-- PANEL "REPOSICIÓN POR PROVEEDOR" (solo Administración) -->
+    <div class="modal-overlay" id="reposicion-modal">
+        <div class="modal-card clientes-modal-card">
+            <div class="clientes-header">
+                <h2><i class="fas fa-truck-ramp-box"></i> Reposición por Proveedor</h2>
+                <button class="btn-close" onclick="closeReposicionPanel()">✕</button>
+            </div>
+            <div id="reposicion-body"></div>
         </div>
     </div>
 
@@ -2893,6 +2943,7 @@
         startSplashCarousel();
         restoreSessionIfAny();
         loadProductsFromSheets();
+        cargarConfiguracionApp();
         startHeroAutoSlide();
         initScrollTopButton();
         initInstallPrompt();
@@ -3484,6 +3535,7 @@
         const etiqueta = (row['Etiqueta (Ofertas - Nuevos)'] || '').toString().trim().toUpperCase();
         const isNew = etiqueta.includes('NUEVO');
         const isPromo = !isNew && (etiqueta.includes('OFERTA') || etiqueta.includes('PROMO'));
+        const isNavidad = etiqueta.includes('NAVIDAD');
 
         const glutenCol = (row['Sin Gluten / Sin Tacc'] || '').toString().trim().toUpperCase();
         const isSinTacc = glutenCol.includes('GLUTEN') || glutenCol.includes('TACC') || glutenCol === 'SI' || glutenCol === 'SÍ'
@@ -3508,7 +3560,7 @@
             sku, mainCategory, subCategory: '', title, brand, proveedor,
             packInfo, caracteristicasBulto: packInfo,
             priceNormal: precioGeneral, pricePromoVal: 0, finalPrice: precioGeneral,
-            isPromo, isNew, isSinTacc, image: normalImage, isOutOfStock,
+            isPromo, isNew, isNavidad, isSinTacc, image: normalImage, isOutOfStock,
             expiration, expirationDate, rowOrder: i
         };
 
@@ -3819,6 +3871,7 @@
             if (selectedTagFilter === 'PROMO') matchesTag = p.isPromo;
             else if (selectedTagFilter === 'SINTACC') matchesTag = p.isSinTacc;
             else if (selectedTagFilter === 'NUEVOS') matchesTag = p.isNew;
+            else if (selectedTagFilter === 'NAVIDAD') matchesTag = p.isNavidad;
 
             let matchesQuery = productMatchesSearch(p, query);
 
@@ -4311,6 +4364,10 @@
         if (preventistasEl) preventistasEl.style.display = vePanelPreventistas ? 'flex' : 'none';
         const altaClientesEl = document.getElementById('side-menu-alta-clientes');
         if (altaClientesEl) altaClientesEl.style.display = vePanelPreventistas ? 'flex' : 'none';
+        const reposicionEl = document.getElementById('side-menu-reposicion');
+        if (reposicionEl) reposicionEl.style.display = vePanelPreventistas ? 'flex' : 'none';
+        const navidadToggleEl = document.getElementById('side-menu-navidad-toggle');
+        if (navidadToggleEl) navidadToggleEl.style.display = vePanelPreventistas ? 'flex' : 'none';
 
         // "Mis Compras" / "Mis Estadísticas": solo el propio Comercio logueado con
         // cuenta real (CUIT + contraseña), nunca staff ni el CUIT-solo de siempre.
@@ -6518,8 +6575,262 @@
         resultado.innerHTML = `<div class="clientes-error" style="background:#eef7f0; border-color:#86efac; color:#166534;"><i class="fas fa-circle-check"></i> Listo. Puede entrar con el CUIT ${cuit} en "Usuario" y la contraseña que pusiste en "Clave". La primera vez, le vamos a pedir que confirme sus datos.</div>`;
     }
 
+    // ==========================================================
+    //  REPOSICIÓN POR PROVEEDOR (solo Administración): cruza lo vendido con la
+    //  columna "Empresa / Distribuidora" de cada producto, para saber cuánto pedirle
+    //  a cada proveedor. Descarga real en Excel y PDF.
+    // ==========================================================
+    let reposicionPeriodo = 'mes';
+    let reposicionDesdeCustom = '';
+    let reposicionHastaCustom = '';
+    let reposicionDataCache = [];
+
+    function openReposicionPanel() {
+        closeSideMenu();
+        reposicionPeriodo = 'mes';
+        document.getElementById('reposicion-modal').classList.add('active');
+        renderReposicionPanel();
+    }
+    function closeReposicionPanel() {
+        document.getElementById('reposicion-modal').classList.remove('active');
+    }
+
+    function getRangoFechasReposicion() {
+        const ahora = new Date();
+        if (reposicionPeriodo === 'semana') {
+            const desde = new Date(ahora); desde.setDate(ahora.getDate() - 7);
+            return { desde: desde.toISOString(), hasta: null };
+        }
+        if (reposicionPeriodo === 'mes') {
+            return { desde: new Date(ahora.getFullYear(), ahora.getMonth(), 1).toISOString(), hasta: null };
+        }
+        if (reposicionPeriodo === 'anio') {
+            return { desde: new Date(ahora.getFullYear(), 0, 1).toISOString(), hasta: null };
+        }
+        if (reposicionPeriodo === 'personalizado') {
+            const desde = reposicionDesdeCustom ? new Date(reposicionDesdeCustom + 'T00:00:00').toISOString() : null;
+            const hasta = reposicionHastaCustom ? new Date(reposicionHastaCustom + 'T23:59:59').toISOString() : null;
+            return { desde, hasta };
+        }
+        return { desde: null, hasta: null };
+    }
+
+    function renderReposicionPanel() {
+        const body = document.getElementById('reposicion-body');
+        body.innerHTML = `
+            <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:10px;">Elegí un período para ver cuánto vendiste de cada proveedor, y saber cuánto pedirle para reponer.</p>
+            <div class="estadisticas-periodo-row" id="reposicion-periodo-row"></div>
+            <div id="reposicion-custom-dates"></div>
+            <div class="reposicion-descarga-row" id="reposicion-descarga-row" style="display:none;">
+                <button type="button" class="reposicion-descarga-btn excel" onclick="descargarReposicionExcel()"><i class="fas fa-file-excel"></i> Excel</button>
+                <button type="button" class="reposicion-descarga-btn pdf" onclick="descargarReposicionPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
+            </div>
+            <div id="reposicion-resultados"></div>
+        `;
+        renderReposicionPeriodoChips();
+        cargarReposicion();
+    }
+
+    function renderReposicionPeriodoChips() {
+        const container = document.getElementById('reposicion-periodo-row');
+        if (!container) return;
+        container.innerHTML = ESTADISTICAS_PERIODOS.map(p => `
+            <div class="estadisticas-periodo-chip ${reposicionPeriodo === p.valor ? 'active' : ''}" onclick="selectReposicionPeriodo('${p.valor}')">${p.label}</div>
+        `).join('');
+    }
+
+    function selectReposicionPeriodo(periodo) {
+        reposicionPeriodo = periodo;
+        renderReposicionPeriodoChips();
+        renderReposicionCustomDates();
+        if (periodo !== 'personalizado') cargarReposicion();
+    }
+
+    function renderReposicionCustomDates() {
+        const container = document.getElementById('reposicion-custom-dates');
+        if (!container) return;
+        if (reposicionPeriodo !== 'personalizado') { container.innerHTML = ''; return; }
+        container.innerHTML = `
+            <div class="estadisticas-custom-dates">
+                <input type="date" id="reposicion-desde" class="form-control" value="${reposicionDesdeCustom}" onchange="onReposicionCustomDateChange()">
+                <input type="date" id="reposicion-hasta" class="form-control" value="${reposicionHastaCustom}" onchange="onReposicionCustomDateChange()">
+            </div>
+        `;
+    }
+
+    function onReposicionCustomDateChange() {
+        reposicionDesdeCustom = document.getElementById('reposicion-desde').value;
+        reposicionHastaCustom = document.getElementById('reposicion-hasta').value;
+        if (reposicionDesdeCustom && reposicionHastaCustom) cargarReposicion();
+    }
+
+    async function cargarReposicion() {
+        const container = document.getElementById('reposicion-resultados');
+        if (!container) return;
+        container.innerHTML = `<div class="clientes-loading">Cargando...</div>`;
+        document.getElementById('reposicion-descarga-row').style.display = 'none';
+
+        const client = getSupabaseClient();
+        if (!client) { container.innerHTML = `<div class="clientes-error">Todavía no está conectado Supabase.</div>`; return; }
+
+        const { desde, hasta } = getRangoFechasReposicion();
+        const { data, error } = await client.rpc('productos_vendidos_por_proveedor', {
+            p_clave: activePreventaKey, p_desde: desde, p_hasta: hasta
+        });
+
+        if (error) { container.innerHTML = `<div class="clientes-error">${error.message}</div>`; return; }
+
+        reposicionDataCache = data || [];
+        if (reposicionDataCache.length === 0) {
+            container.innerHTML = `<p style="text-align:center; color:#999; padding:20px 0;">Sin ventas en este período.</p>`;
+            return;
+        }
+
+        const porProveedor = {};
+        reposicionDataCache.forEach(row => {
+            if (!porProveedor[row.proveedor]) porProveedor[row.proveedor] = [];
+            porProveedor[row.proveedor].push(row);
+        });
+
+        let html = '';
+        Object.keys(porProveedor).forEach((proveedor, idx) => {
+            const items = porProveedor[proveedor];
+            const totalFacturacion = items.reduce((sum, it) => sum + Number(it.facturacion), 0);
+            const totalUnidades = items.reduce((sum, it) => sum + Number(it.cantidad_vendida), 0);
+            const idProveedor = 'reposicion-prov-' + idx;
+            html += `
+                <div class="reposicion-proveedor-card" id="${idProveedor}">
+                    <div class="reposicion-proveedor-header" onclick="toggleReposicionProveedor('${idProveedor}')">
+                        <div>
+                            <div class="reposicion-proveedor-nombre">${proveedor}</div>
+                            <div class="reposicion-proveedor-resumen">${items.length} producto${items.length === 1 ? '' : 's'} · ${totalUnidades} unidades vendidas</div>
+                        </div>
+                        <div class="reposicion-proveedor-total">${fmtMoney(totalFacturacion)}</div>
+                    </div>
+                    <div class="reposicion-proveedor-items">
+                        ${items.map(it => `
+                            <div class="reposicion-item-row">
+                                <div>
+                                    <div class="reposicion-item-nombre">${it.producto}</div>
+                                    <div class="reposicion-item-sku">SKU ${it.sku || 'sin SKU'}</div>
+                                </div>
+                                <div class="reposicion-item-cantidad">${Number(it.cantidad_vendida)} un.</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+        document.getElementById('reposicion-descarga-row').style.display = 'flex';
+    }
+
+    function toggleReposicionProveedor(id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('abierto');
+    }
+
+    function descargarReposicionExcel() {
+        if (typeof XLSX === 'undefined' || reposicionDataCache.length === 0) return;
+
+        const filas = reposicionDataCache.map(r => ({
+            'Proveedor': r.proveedor,
+            'SKU': r.sku || '',
+            'Producto': r.producto,
+            'Cantidad Vendida': Number(r.cantidad_vendida),
+            'Facturación': Number(r.facturacion)
+        }));
+
+        const hoja = XLSX.utils.json_to_sheet(filas);
+        const libro = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(libro, hoja, 'Reposición');
+        XLSX.writeFile(libro, `Reposicion_LosMayorga_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
+
+    function descargarReposicionPDF() {
+        if (typeof window.jspdf === 'undefined' || reposicionDataCache.length === 0) return;
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        doc.setFontSize(16);
+        doc.text('Los Mayorga - Reposición por Proveedor', 14, 16);
+        doc.setFontSize(9);
+        doc.setTextColor(120);
+        doc.text(`Generado el ${new Date().toLocaleDateString('es-AR')}`, 14, 22);
+
+        const filas = reposicionDataCache.map(r => [
+            r.proveedor, r.sku || '-', r.producto, Number(r.cantidad_vendida).toString(),
+            '$' + Number(r.facturacion).toLocaleString('es-AR', { minimumFractionDigits: 2 })
+        ]);
+
+        doc.autoTable({
+            startY: 28,
+            head: [['Proveedor', 'SKU', 'Producto', 'Cantidad', 'Facturación']],
+            body: filas,
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [0, 31, 84] }
+        });
+
+        doc.save(`Reposicion_LosMayorga_${new Date().toISOString().slice(0,10)}.pdf`);
+    }
+
     function getStaffKeyForClientes() {
         return activePreventaKey || '';
+    }
+
+    // ==========================================================
+    //  CONFIGURACIÓN GENERAL (switch de Navidad, y futuros interruptores).
+    //  Se lee UNA vez al abrir la app, para todos los roles por igual.
+    // ==========================================================
+    let mostrarChipNavidad = false;
+
+    async function cargarConfiguracionApp() {
+        const client = getSupabaseClient();
+        if (!client) return;
+
+        const { data, error } = await client
+            .from('configuracion')
+            .select('clave, valor')
+            .eq('clave', 'mostrar_chip_navidad')
+            .maybeSingle();
+
+        if (error || !data) return; // Supabase todavía no conectado, o tabla no creada: se ignora en silencio
+
+        mostrarChipNavidad = data.valor === 'true';
+        aplicarVisibilidadChipNavidad();
+    }
+
+    function aplicarVisibilidadChipNavidad() {
+        const chip = document.getElementById('tag-chip-navidad');
+        if (chip) chip.style.display = mostrarChipNavidad ? 'flex' : 'none';
+
+        const switchEl = document.getElementById('navidad-switch');
+        if (switchEl) switchEl.classList.toggle('on', mostrarChipNavidad);
+    }
+
+    async function toggleChipNavidad() {
+        const client = getSupabaseClient();
+        if (!client) { alert('Todavía no está conectado Supabase.'); return; }
+
+        const nuevoValor = !mostrarChipNavidad;
+        const { error } = await client.rpc('set_configuracion', {
+            p_clave_staff: activePreventaKey,
+            p_clave: 'mostrar_chip_navidad',
+            p_valor: nuevoValor ? 'true' : 'false'
+        });
+
+        if (error) { alert('No se pudo guardar: ' + error.message); return; }
+
+        mostrarChipNavidad = nuevoValor;
+        aplicarVisibilidadChipNavidad();
+
+        // Si estaba filtrado por Navidad y se acaba de apagar el chip, vuelve a "Ver Todo"
+        if (!mostrarChipNavidad && selectedTagFilter === 'NAVIDAD') {
+            resetToTodosTag();
+            filterProducts();
+        }
     }
 
     let clientesSearchQuery = '';
