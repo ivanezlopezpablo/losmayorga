@@ -4393,7 +4393,22 @@
         } catch (e) { /* Sesión corrupta o localStorage no disponible: se ignora y arranca como público */ }
     }
 
+    // Traba básica contra intentos repetidos de login (fuerza bruta de CUIT/contraseña):
+    // después de varios intentos fallidos seguidos, obliga a esperar cada vez más antes
+    // de dejar probar de nuevo. No reemplaza una protección real del lado del servidor
+    // (alguien podría recargar la página para saltearla), pero sí frena los intentos
+    // automatizados simples y desalienta la prueba manual repetida.
+    let loginIntentosFallidos = 0;
+    let loginBloqueadoHasta = 0;
+
     async function loginPreventa() {
+        if (Date.now() < loginBloqueadoHasta) {
+            const segundosRestantes = Math.ceil((loginBloqueadoHasta - Date.now()) / 1000);
+            document.getElementById('login-error').style.display = 'block';
+            document.getElementById('login-error').innerHTML = `<i class="fas fa-triangle-exclamation"></i> Demasiados intentos. Esperá ${segundosRestantes} segundo${segundosRestantes === 1 ? '' : 's'} y probá de nuevo.`;
+            return;
+        }
+
         const key = document.getElementById('pass-input').value.trim();
         const usuarioTipeado = document.getElementById('user-input').value.trim();
 
@@ -4441,6 +4456,12 @@
             }
         }
 
+        loginIntentosFallidos++;
+        if (loginIntentosFallidos >= 4) {
+            // A partir del 4to intento fallido seguido, espera creciente: 10s, 20s, 30s...
+            const segundosEspera = (loginIntentosFallidos - 3) * 10;
+            loginBloqueadoHasta = Date.now() + segundosEspera * 1000;
+        }
         document.getElementById('login-error').style.display = 'block';
     }
 
@@ -4513,6 +4534,9 @@
 
     // Aplica el login (usado tanto por clave de staff como por CUIT de Comercio validado)
     function loginComoStaff(key, nombreMostrado) {
+        // Login exitoso: se resetea la traba de intentos fallidos.
+        loginIntentosFallidos = 0;
+        loginBloqueadoHasta = 0;
         currentRole = "PREVENTA";
         activePreventaKey = key;
         activePreventista = nombreMostrado;
@@ -5389,7 +5413,7 @@
         } else if (activePreventaKey === COMERCIOS_KEY && comercioAutenticadoData) {
             camposClienteHtml = `
                 <div class="cliente-picker-locked">
-                    <input type="text" id="client-name" class="form-control cliente-picker-locked-input" value="${comercioAutenticadoData.nombre_fantasia}" readonly required>
+                    <input type="text" id="client-name" class="form-control cliente-picker-locked-input" value="${escapeHtml(comercioAutenticadoData.nombre_fantasia)}" readonly required>
                 </div>
             `;
         } else {
@@ -5448,7 +5472,7 @@
             ` : (ultimoPedidoBuscando ? `<p class="btn-repetir-pedido-loading">Buscando pedidos anteriores...</p>` : '');
             return `
                 <div class="cliente-picker-locked">
-                    <input type="text" id="client-name" class="form-control cliente-picker-locked-input" value="${carritoClienteSeleccionado.nombre_fantasia}" readonly required>
+                    <input type="text" id="client-name" class="form-control cliente-picker-locked-input" value="${escapeHtml(carritoClienteSeleccionado.nombre_fantasia)}" readonly required>
                     <button type="button" class="cliente-picker-clear-btn" onclick="limpiarClienteSeleccionadoCarrito()" title="Cambiar cliente"><i class="fas fa-times"></i></button>
                 </div>
                 ${infoUltimoPedido}
@@ -5508,8 +5532,8 @@
         carritoClienteResultadosCache = data.slice(0, 8);
         dd.innerHTML = carritoClienteResultadosCache.map((c, i) => `
             <div class="cliente-picker-option" onmousedown="seleccionarClienteParaCarrito(${i})">
-                <div class="cliente-picker-option-name">${c.nombre_fantasia}</div>
-                <div class="cliente-picker-option-meta">${c.nombre_dueño || '-'} · ${c.direccion || 'Sin dirección'} · CUIT ${c.cuit}${c.preventista_asignado ? ' · Cliente de ' + c.preventista_asignado : ''}</div>
+                <div class="cliente-picker-option-name">${escapeHtml(c.nombre_fantasia)}</div>
+                <div class="cliente-picker-option-meta">${escapeHtml(c.nombre_dueño) || '-'} · ${escapeHtml(c.direccion) || 'Sin dirección'} · CUIT ${escapeHtml(c.cuit)}${c.preventista_asignado ? ' · Cliente de ' + escapeHtml(c.preventista_asignado) : ''}</div>
             </div>
         `).join('');
         dd.classList.add('visible');
@@ -6909,8 +6933,8 @@
         let html = visibles.map(c => `
             <div class="cliente-item" onclick="openClienteDetail('${c.id}')">
                 <div>
-                    <div class="cliente-item-name">${c.nombre_fantasia}</div>
-                    <div class="cliente-item-meta">${c.nombre_dueño || '-'} · CUIT ${c.cuit} · ${c.localidad || 'Sin localidad'}${c.preventista_asignado ? ' · ' + c.preventista_asignado : ''}</div>
+                    <div class="cliente-item-name">${escapeHtml(c.nombre_fantasia)}</div>
+                    <div class="cliente-item-meta">${escapeHtml(c.nombre_dueño) || '-'} · CUIT ${escapeHtml(c.cuit)} · ${escapeHtml(c.localidad) || 'Sin localidad'}${c.preventista_asignado ? ' · ' + escapeHtml(c.preventista_asignado) : ''}</div>
                 </div>
                 <i class="fas fa-chevron-right" style="color:var(--text-muted);"></i>
             </div>
@@ -6948,23 +6972,23 @@
 
         body.innerHTML = `
             <button type="button" class="marcas-back-btn" onclick="renderClientesList()"><i class="fas fa-arrow-left"></i> Volver</button>
-            <h3 style="font-size:1.05rem; font-weight:900; margin-bottom:10px;">${c.nombre_fantasia}</h3>
+            <h3 style="font-size:1.05rem; font-weight:900; margin-bottom:10px;">${escapeHtml(c.nombre_fantasia)}</h3>
 
             ${mapaSrc ? `<iframe class="cliente-map-frame" src="${mapaSrc}" loading="lazy"></iframe>` : '<p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:10px;">Sin dirección cargada para mostrar en el mapa.</p>'}
 
-            <div class="cliente-detail-row"><div class="cliente-detail-label">Dueño</div><div class="cliente-detail-value">${c.nombre_dueño || '-'}</div></div>
-            <div class="cliente-detail-row"><div class="cliente-detail-label">CUIT</div><div class="cliente-detail-value">${c.cuit}</div></div>
-            <div class="cliente-detail-row"><div class="cliente-detail-label">WhatsApp</div><div class="cliente-detail-value">${c.celular_whatsapp || '-'}</div></div>
-            <div class="cliente-detail-row"><div class="cliente-detail-label">Dirección</div><div class="cliente-detail-value">${c.direccion || '-'}</div></div>
-            <div class="cliente-detail-row"><div class="cliente-detail-label">Localidad</div><div class="cliente-detail-value">${c.localidad || '-'}</div></div>
-            <div class="cliente-detail-row"><div class="cliente-detail-label">Provincia</div><div class="cliente-detail-value">${c.provincia || '-'}</div></div>
-            <div class="cliente-detail-row"><div class="cliente-detail-label">Email</div><div class="cliente-detail-value">${c.email || '-'}</div></div>
-            <div class="cliente-detail-row"><div class="cliente-detail-label">Rubro</div><div class="cliente-detail-value">${c.rubro || '-'}</div></div>
-            <div class="cliente-detail-row"><div class="cliente-detail-label">Tipo de Registro</div><div class="cliente-detail-value">${c.tipo_registro || '-'}</div></div>
-            <div class="cliente-detail-row"><div class="cliente-detail-label">Zona de reparto</div><div class="cliente-detail-value">${c.zona_reparto || '-'}</div></div>
-            <div class="cliente-detail-row"><div class="cliente-detail-label">Cliente de</div><div class="cliente-detail-value">${c.preventista_asignado || '-'}</div></div>
-            <div class="cliente-detail-row"><div class="cliente-detail-label">Notas</div><div class="cliente-detail-value">${c.notas || '-'}</div></div>
-            <div class="cliente-detail-row"><div class="cliente-detail-label">Alta</div><div class="cliente-detail-value">${c.fecha_alta ? new Date(c.fecha_alta).toLocaleDateString('es-AR') : '-'} · ${c.dado_de_alta_por || '-'}</div></div>
+            <div class="cliente-detail-row"><div class="cliente-detail-label">Dueño</div><div class="cliente-detail-value">${escapeHtml(c.nombre_dueño) || '-'}</div></div>
+            <div class="cliente-detail-row"><div class="cliente-detail-label">CUIT</div><div class="cliente-detail-value">${escapeHtml(c.cuit)}</div></div>
+            <div class="cliente-detail-row"><div class="cliente-detail-label">WhatsApp</div><div class="cliente-detail-value">${escapeHtml(c.celular_whatsapp) || '-'}</div></div>
+            <div class="cliente-detail-row"><div class="cliente-detail-label">Dirección</div><div class="cliente-detail-value">${escapeHtml(c.direccion) || '-'}</div></div>
+            <div class="cliente-detail-row"><div class="cliente-detail-label">Localidad</div><div class="cliente-detail-value">${escapeHtml(c.localidad) || '-'}</div></div>
+            <div class="cliente-detail-row"><div class="cliente-detail-label">Provincia</div><div class="cliente-detail-value">${escapeHtml(c.provincia) || '-'}</div></div>
+            <div class="cliente-detail-row"><div class="cliente-detail-label">Email</div><div class="cliente-detail-value">${escapeHtml(c.email) || '-'}</div></div>
+            <div class="cliente-detail-row"><div class="cliente-detail-label">Rubro</div><div class="cliente-detail-value">${escapeHtml(c.rubro) || '-'}</div></div>
+            <div class="cliente-detail-row"><div class="cliente-detail-label">Tipo de Registro</div><div class="cliente-detail-value">${escapeHtml(c.tipo_registro) || '-'}</div></div>
+            <div class="cliente-detail-row"><div class="cliente-detail-label">Zona de reparto</div><div class="cliente-detail-value">${escapeHtml(c.zona_reparto) || '-'}</div></div>
+            <div class="cliente-detail-row"><div class="cliente-detail-label">Cliente de</div><div class="cliente-detail-value">${escapeHtml(c.preventista_asignado) || '-'}</div></div>
+            <div class="cliente-detail-row"><div class="cliente-detail-label">Notas</div><div class="cliente-detail-value">${escapeHtml(c.notas) || '-'}</div></div>
+            <div class="cliente-detail-row"><div class="cliente-detail-label">Alta</div><div class="cliente-detail-value">${c.fecha_alta ? new Date(c.fecha_alta).toLocaleDateString('es-AR') : '-'} · ${escapeHtml(c.dado_de_alta_por) || '-'}</div></div>
 
             <div style="display:flex; gap:10px; margin-top:16px;">
                 <button class="tour-btn primary" style="flex:1;" onclick="openClienteForm('edit')"><i class="fas fa-pen"></i> Editar</button>
@@ -7220,14 +7244,14 @@
             return `
                 <div class="pedido-item" onclick="openPedidoDetail(${p.id})">
                     <div class="pedido-item-top">
-                        <span class="pedido-item-cliente">${p.cliente}</span>
+                        <span class="pedido-item-cliente">${escapeHtml(p.cliente)}</span>
                         <span class="pedido-item-total">$${Number(p.total).toLocaleString('es-AR', {minimumFractionDigits:2})}</span>
                     </div>
                     <div class="pedido-item-meta">
                         <span class="pedido-rol-badge ${getRolBadgeClass(p.rol)}">${getRolLabel(p.rol)}</span>
                         <span>${fechaTexto}</span>
                         <span>· ${p.cantidad_items} ítem${p.cantidad_items === 1 ? '' : 's'}</span>
-                        ${p.preventista ? `<span>· ${p.preventista}</span>` : ''}
+                        ${p.preventista ? `<span>· ${escapeHtml(p.preventista)}</span>` : ''}
                     </div>
                 </div>
             `;
@@ -7261,8 +7285,8 @@
         const itemsHtml = items.map(it => `
             <div class="pedido-detail-item-row">
                 <div>
-                    <strong>${it.cantidad}x ${it.nombre}</strong><br>
-                    <span style="font-size:0.68rem; color:var(--text-muted);">${it.marca || '-'} · SKU ${it.sku || '-'}</span>
+                    <strong>${it.cantidad}x ${escapeHtml(it.nombre)}</strong><br>
+                    <span style="font-size:0.68rem; color:var(--text-muted);">${escapeHtml(it.marca) || '-'} · SKU ${escapeHtml(it.sku) || '-'}</span>
                 </div>
                 <div>$${Number(it.subtotal).toLocaleString('es-AR', {minimumFractionDigits:2})}</div>
             </div>
@@ -7274,12 +7298,12 @@
                 <span class="pedido-rol-badge ${getRolBadgeClass(p.rol)}">${getRolLabel(p.rol)}</span>
                 <span style="font-size:0.72rem; color:var(--text-muted);">${fechaTexto}</span>
             </div>
-            <h3 style="font-size:1.05rem; font-weight:900; margin-bottom:10px;">${p.cliente}</h3>
+            <h3 style="font-size:1.05rem; font-weight:900; margin-bottom:10px;">${escapeHtml(p.cliente)}</h3>
 
-            <div class="cliente-detail-row"><div class="cliente-detail-label">Dirección</div><div class="cliente-detail-value">${p.direccion || '-'}</div></div>
-            ${p.caracteristicas_domicilio ? `<div class="cliente-detail-row"><div class="cliente-detail-label">Domicilio</div><div class="cliente-detail-value">${p.caracteristicas_domicilio}</div></div>` : ''}
-            ${p.medio_pago ? `<div class="cliente-detail-row"><div class="cliente-detail-label">Medio de pago</div><div class="cliente-detail-value">${p.medio_pago}</div></div>` : ''}
-            ${p.preventista ? `<div class="cliente-detail-row"><div class="cliente-detail-label">Preventista</div><div class="cliente-detail-value">${p.preventista}</div></div>` : ''}
+            <div class="cliente-detail-row"><div class="cliente-detail-label">Dirección</div><div class="cliente-detail-value">${escapeHtml(p.direccion) || '-'}</div></div>
+            ${p.caracteristicas_domicilio ? `<div class="cliente-detail-row"><div class="cliente-detail-label">Domicilio</div><div class="cliente-detail-value">${escapeHtml(p.caracteristicas_domicilio)}</div></div>` : ''}
+            ${p.medio_pago ? `<div class="cliente-detail-row"><div class="cliente-detail-label">Medio de pago</div><div class="cliente-detail-value">${escapeHtml(p.medio_pago)}</div></div>` : ''}
+            ${p.preventista ? `<div class="cliente-detail-row"><div class="cliente-detail-label">Preventista</div><div class="cliente-detail-value">${escapeHtml(p.preventista)}</div></div>` : ''}
 
             <div style="margin:14px 0 8px; font-weight:800; font-size:0.85rem;">Productos</div>
             ${itemsHtml}
@@ -7395,6 +7419,21 @@
     }
 
     function fmtMoney(n) { return '$' + Number(n || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 }); }
+
+    // Limpia texto antes de insertarlo en pantalla como HTML (nombre, dirección, dueño,
+    // etc.). Es obligatorio para cualquier dato que un Cliente puede escribir él mismo
+    // (autoservicio, "completar mi perfil") y que después ve el Staff/Administración --
+    // sin esto, alguien podría escribir código malicioso en su propio nombre y que se
+    // ejecute en la pantalla de quien lo mira después.
+    function escapeHtml(texto) {
+        if (texto === null || texto === undefined) return '';
+        return String(texto)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
 
     // ---------- Estructura general del panel ----------
     function renderEstadisticasPanel() {
@@ -7700,10 +7739,10 @@
             const inicial = (row.cliente || '?').charAt(0).toUpperCase();
             return `
                 <div class="estadistica-row" onclick="abrirDetalleClienteEstadisticasPorIndice(${i}, ${estadisticasClienteBusqueda ? 'true' : 'false'})">
-                    <div class="estadistica-rank ${i===0?'top1':i===1?'top2':i===2?'top3':''}">${i < 3 ? (i+1) : inicial}</div>
+                    <div class="estadistica-rank ${i===0?'top1':i===1?'top2':i===2?'top3':''}">${i < 3 ? (i+1) : escapeHtml(inicial)}</div>
                     <div class="estadistica-row-body">
                         <div class="estadistica-row-top">
-                            <span class="estadistica-row-nombre">${row.cliente}</span>
+                            <span class="estadistica-row-nombre">${escapeHtml(row.cliente)}</span>
                             <span class="estadistica-row-total">${fmtMoney(total)}</span>
                         </div>
                         <div class="estadistica-row-meta">${row.cantidad_pedidos} pedido${row.cantidad_pedidos === 1 ? '' : 's'}</div>
@@ -7766,9 +7805,9 @@
             <button type="button" class="marcas-back-btn" onclick="volverAlRankingClientes()"><i class="fas fa-arrow-left"></i> Volver al ranking</button>
 
             <div class="estadisticas-cliente-header">
-                <div class="estadisticas-cliente-avatar">${inicial}</div>
+                <div class="estadisticas-cliente-avatar">${escapeHtml(inicial)}</div>
                 <div>
-                    <div class="estadisticas-cliente-nombre">${nombreCliente}</div>
+                    <div class="estadisticas-cliente-nombre">${escapeHtml(nombreCliente)}</div>
                     <div class="estadisticas-cliente-freq"><i class="fas fa-repeat"></i> ${frecuenciaTexto}</div>
                 </div>
             </div>
@@ -7883,7 +7922,7 @@
                     <div class="estadistica-rank ${i===0?'top1':i===1?'top2':i===2?'top3':''}">${i+1}</div>
                     <div class="estadistica-row-body">
                         <div class="estadistica-row-top">
-                            <span class="estadistica-row-nombre">${row.preventista}</span>
+                            <span class="estadistica-row-nombre">${escapeHtml(row.preventista)}</span>
                             <span class="estadistica-row-total">${fmtMoney(total)}</span>
                         </div>
                         <div class="estadistica-row-meta">${row.cantidad_pedidos} pedido${row.cantidad_pedidos === 1 ? '' : 's'}</div>
