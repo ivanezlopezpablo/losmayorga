@@ -3598,8 +3598,23 @@
         const client = getSupabaseClient();
         if (!client) return null;
 
-        const { data, error } = await client.from('productos').select('*');
-        if (error || !data || data.length === 0) return null;
+        // Supabase limita cada consulta a un máximo de filas por defecto (normalmente
+        // 1.000), aunque no se lo pidas explícitamente. Con más de 4.000 productos, hay
+        // que pedirlos en tandas hasta traerlos todos -- si no, el catálogo queda cortado
+        // a mitad de camino (exactamente lo que estaba pasando).
+        const TAMANO_TANDA = 1000;
+        let desde = 0;
+        let data = [];
+        while (true) {
+            const { data: tanda, error } = await client.from('productos').select('*').range(desde, desde + TAMANO_TANDA - 1);
+            if (error) { console.error('[Productos] Error trayendo tanda desde Supabase:', error); return null; }
+            if (!tanda || tanda.length === 0) break;
+            data = data.concat(tanda);
+            if (tanda.length < TAMANO_TANDA) break; // última tanda: ya no hay más filas
+            desde += TAMANO_TANDA;
+        }
+
+        if (data.length === 0) return null;
 
         const publico = [];
         const preventa = [];
